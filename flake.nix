@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
  
-    nix-darwin.url = "github:lnl7/nix-darwin/master";
+    nix-darwin.url = "github:lnl7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
  
     home-manager.url = "github:nix-community/home-manager";
@@ -15,31 +15,32 @@
   };
  
   outputs = inputs @ { self, nixpkgs, nix-darwin, nix-homebrew, home-manager, ... }:
-  let
-    nixpkgsConfig = {
-      config.allowUnfree = true;
-    };
+  let 
+    # TODO replace with your own username, email, system, and hostname
+    username = "youturn";
+    useremail = "youturn@gmail.com";
+    system = "aarch64-darwin"; # aarch64-darwin or x86_64-darwin
+    hostname = "Rorschach";
+    specialArgs =
+      inputs
+      // {
+        inherit username useremail hostname;
+      };
   in {
-    darwinConfigurations = let
-      inherit (inputs.nix-darwin.lib) darwinSystem;
-    in {
-      machine = darwinSystem {
-        system = "aarch64-darwin";
-        
-        specialArgs = { inherit inputs; };
-
-        modules = [
-          {
-            nixpkgs = nixpkgsConfig;
-            system.stateVersion = 4;
-          }
-          ./hosts/mbp/configuration.nix
-          inputs.home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.youturn = import ./home/home.nix;
-          }
+    darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
+      inherit system specialArgs;
+      modules = [
+        {
+          nixpkgs.config.allowUnfree = true;
+        }
+        ./hosts/mbp/configuration.nix
+        inputs.home-manager.darwinModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = specialArgs;
+          home-manager.users.youturn = import ./home/home.nix;
+        }
         ];
       };
     };
