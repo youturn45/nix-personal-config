@@ -51,21 +51,12 @@
     mtr      # network diagnostic tool
   ];
 
-  programs = {
+  /*programs = {
     # modern vim
     neovim = {
       enable = true;
       defaultEditor = true;
       vimAlias = true;
-    };
-
-    # A modern replacement for ‘ls’
-    # useful in bash/zsh prompt, not in nushell.
-    eza = {
-      enable = true;
-      git = true;
-      icons = true;
-      enableZshIntegration = true;
     };
 
     # terminal file manager
@@ -79,7 +70,7 @@
         };
       };
     };
-  };
+  };*/
 
   environment.variables.EDITOR = "nvim";
 
@@ -134,12 +125,13 @@
       # Tools
       "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
       "stats" # beautiful system monitor
-      "eudic" # 欧路词典
       "obsidian" # markdown note app
       "linearmouse" # invert roll
       "hiddenbar" # hidden dock alternative
       "maccy" # clipboard manager
       "iterm2" # terminal
+      "Moonlight" # remote desktop
+
     ];
   };
 }

@@ -45,20 +45,20 @@
     darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
       inherit system specialArgs;
       modules = [
-        ./hosts/mbp/configuration.nix
         ./modules/nix-core.nix
         ./modules/host-users.nix
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
         ./modules/apps.nix
         ./modules/system.nix
 
-        inputs.home-manager.darwinModules.home-manager
+        home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = specialArgs;
           home-manager.users.${username} = import ./home;
           home-manager.backupFileExtension = "backup";
+          
         }
       ];
     };
