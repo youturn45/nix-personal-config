@@ -6,7 +6,7 @@
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
     '';
     shellAliases = {
-      ls = "ls --color";
+      lc = "ls --color";
     };
   };
 

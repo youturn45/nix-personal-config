@@ -14,13 +14,16 @@
     extra-platforms = [ "x86_64-darwin" "aarch64-darwin" ];
   };
 
-  nix.settings.trusted-substituters = [
-    "https://mirrors.ustc.edu.cn/nix-channels/store"
-    "https://cache.nixos.org"
-  ];
+  #nix.settings.trusted-substituters = [
+  #  "https://mirrors.ustc.edu.cn/nix-channels/store"
+  #  "https://cache.nixos.org"
+  #];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  # don't wan't the daemon service to be managed for you.
+  # nix.useDaemon = true;
 
   # Auto upgrade nix package and the daemon service.
   # services.nix-daemon.enable = true;

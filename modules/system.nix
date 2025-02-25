@@ -34,9 +34,13 @@
         static-only = true;
         scroll-to-open = true;
         # customize Hot Corners(触发角, 鼠标移动到屏幕角落时触发的动作)
-        # wvous-tl-corner = 2;  # top-left - Mission Control
-        # wvous-tr-corner = 13;  # top-right - Lock Screen
-        # wvous-bl-corner = 3;  # bottom-left - Application Windows
+        #wvous-tl-corner = 2;  # top-left - Mission Control
+        #wvous-tr-corner = 13;  # top-right - Lock Screen
+        #wvous-bl-corner = 3;  # bottom-left - Application Windows
+
+        wvous-tl-corner = 1;  # top-left - nothing
+        wvous-tr-corner = 1;  # top-right - nothing
+        wvous-bl-corner = 1;  # bottom-left - nothing
         wvous-br-corner = 4;  # bottom-right - Desktop
         expose-group-apps = true;
       };

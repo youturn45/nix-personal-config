@@ -46,11 +46,10 @@
       inherit system specialArgs;
       modules = [
         ./modules/nix-core.nix
+        ./modules/system.nix
+        ./modules/apps.nix
         ./modules/host-users.nix
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
-        ./modules/apps.nix
-        ./modules/system.nix
-
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
