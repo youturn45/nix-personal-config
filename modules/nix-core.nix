@@ -14,6 +14,11 @@
     extra-platforms = [ "x86_64-darwin" "aarch64-darwin" ];
   };
 
+  nix.settings.trusted-substituters = [
+    "https://mirrors.ustc.edu.cn/nix-channels/store"
+    "https://cache.nixos.org"
+  ];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
