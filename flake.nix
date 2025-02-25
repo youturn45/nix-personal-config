@@ -1,6 +1,15 @@
 {
   description = "Nix configuration";
- 
+
+  # the nixConfig here only affects the flake itself, not the system configuration!
+  nixConfig = {
+    substituters = [
+      # Query the mirror of USTC first, and then the official cache.
+      "https://mirrors.ustc.edu.cn/nix-channels/store"
+      "https://cache.nixos.org"
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
  
@@ -14,7 +23,13 @@
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
   };
  
-  outputs = inputs @ { self, nixpkgs, nix-darwin, nix-homebrew, home-manager, ... }:
+  outputs = inputs @ { 
+    self, 
+    nixpkgs, 
+    nix-darwin, 
+    nix-homebrew, 
+    home-manager, 
+    ... }:
   let 
     # TODO replace with your own username, email, system, and hostname
     username = "youturn";
@@ -30,19 +45,22 @@
     darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
       inherit system specialArgs;
       modules = [
-        {
-          nixpkgs.config.allowUnfree = true;
-        }
         ./hosts/mbp/configuration.nix
+        ./modules/nix-core.nix
+        ./modules/host-users.nix
+        # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
+        ./modules/apps.nix
+        ./modules/system.nix
+
         inputs.home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = specialArgs;
-          home-manager.users.youturn = import ./home/home.nix;
+          home-manager.users.${username} = import ./home;
+          home-manager.backupFileExtension = "backup";
         }
-        ];
-      };
+      ];
     };
   };
 }
