@@ -2,19 +2,19 @@
   description = "Nix configuration";
 
   # the nixConfig here only affects the flake itself, not the system configuration!
-  nixConfig = {
+  /*nixConfig = {
     substituters = [
       # Query the mirror of USTC first, and then the official cache.
       "https://mirrors.ustc.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
     ];
-  };
+  };*/
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
  
-    nix-darwin.url = "github:lnl7/nix-darwin";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    darwin.url = "github:lnl7/nix-darwin";
+    darwin.inputs.nixpkgs.follows = "nixpkgs";
  
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -26,7 +26,7 @@
   outputs = inputs @ { 
     self, 
     nixpkgs, 
-    nix-darwin, 
+    darwin, 
     nix-homebrew, 
     home-manager, 
     ... }:
@@ -42,7 +42,7 @@
         inherit username useremail hostname;
       };
   in {
-    darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
+    darwinConfigurations."${hostname}" = darwin.lib.darwinSystem {
       inherit system specialArgs;
       modules = [
         ./modules/nix-core.nix
