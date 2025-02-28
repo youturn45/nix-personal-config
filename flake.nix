@@ -12,21 +12,35 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
+    
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    nix-darwin = {
+      url = "github:lnl7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
  
-    darwin.url = "github:lnl7/nix-darwin";
-    darwin.inputs.nixpkgs.follows = "nixpkgs";
- 
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    # home-manager, used for managing user configuration
+    home-manager = {
+      url = "github:nix-community/home-manager/master";
+      # url = "github:nix-community/home-manager/release-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     nix-homebrew.inputs.nixpkgs.follows = "nixpkgs";
+
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nur-ryan4yin.url = "github:ryan4yin/nur-packages";
   };
  
   outputs = inputs @ { 
     self, 
     nixpkgs, 
-    darwin, 
+    nix-darwin, 
     nix-homebrew, 
     home-manager, 
     ... }:
@@ -42,13 +56,13 @@
         inherit username useremail hostname;
       };
   in {
-    darwinConfigurations."${hostname}" = darwin.lib.darwinSystem {
+    darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
       inherit system specialArgs;
       modules = [
-        ./modules/nix-core.nix
-        ./modules/system.nix
-        ./modules/apps.nix
-        ./modules/host-users.nix
+        ./modules/darwin/nix-core.nix
+        ./modules/darwin/system.nix
+        ./modules/darwin/apps.nix
+        ./modules/darwin/host-users.nix
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
         home-manager.darwinModules.home-manager
         {

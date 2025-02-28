@@ -7,6 +7,8 @@
     ./core.nix
     ./git.nix
     ./starship.nix
+    ./base/gui/terminal/alacritty/default.nix
+    # ./neovim # TODO correctly import neovim
   ];
 
   # Home Manager needs a bit of information about you and the

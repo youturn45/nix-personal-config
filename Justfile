@@ -84,3 +84,7 @@ fmt:
 gcroot:
   ls -al /nix/var/nix/gcroots/auto/
 
+# Justfile for building dot
+[group('dot')]
+dot:
+  darwin-rebuild switch --flake .
