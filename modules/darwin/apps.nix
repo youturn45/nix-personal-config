@@ -131,6 +131,7 @@
       "hiddenbar" # hidden dock alternative
       "maccy" # clipboard manager
       "iterm2" # terminal
+      "ghostty" # terminal
       "Moonlight" # remote desktop
 
     ];

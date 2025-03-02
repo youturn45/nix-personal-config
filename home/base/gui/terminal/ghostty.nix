@@ -22,10 +22,10 @@
     settings = {
       theme = "catppuccin-mocha";
 
-      font-family = "JetBrains Mono";
-      font-size = 13;
+      font-family = "Fira Code";
+      font-size = 14;
 
-      background-opacity = 0.93;
+      background-opacity = 0.5;
       # only supported on macOS;
       background-blur-radius = 10;
       scrollback-limit = 20000;
