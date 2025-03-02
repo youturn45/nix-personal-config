@@ -1,15 +1,9 @@
-{ username, pkgs, ... }:
+{ username, myLib, ... }:
 
 {
   # import sub modules
-  imports = [
-    ./shell.nix
-    ./core.nix
-    ./git.nix
-    ./starship.nix
-    ./base/gui/terminal/alacritty/default.nix
-    # ./neovim # TODO correctly import neovim
-  ];
+  # TODO correctly import neovim
+  imports = myLib.collectModulesRecursively ./.;
 
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
