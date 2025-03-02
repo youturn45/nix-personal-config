@@ -32,7 +32,6 @@
 
     ghostty = {
       url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     nur-ryan4yin.url = "github:ryan4yin/nur-packages";
 
@@ -56,22 +55,36 @@
     useremail = "youturn@gmail.com";
     system = "aarch64-darwin"; # aarch64-darwin or x86_64-darwin
     hostname = "Rorschach";
+
     inherit (nixpkgs) lib;
     myLib = import ./my-lib { inherit lib; haumeaLib = haumea.lib; };
     specialArgs =
       inputs
       // {
         inherit username useremail hostname myLib;
+        # use unstable branch for some packages to get the latest updates
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          inherit system; # refer the `system` parameter form outer scope recursively
+          # To use chrome, we need to allow the installation of non-free software
+          config.allowUnfree = true;
+        };
+        pkgs-stable = import inputs.nixpkgs {
+          inherit system;
+          # To use chrome, we need to allow the installation of non-free software
+          config.allowUnfree = true;
+        };
       };
   in {
     darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
       inherit system specialArgs;
       modules = [
         ./modules/common # NOTE shared by nixos and nix-darwin
-        ./modules/darwin/nix-core.nix
-        ./modules/darwin/system.nix
-        ./modules/darwin/apps.nix
-        ./modules/darwin/host-users.nix
+        ./modules/darwin
+        #./modules/darwin/nix-core.nix
+        #./modules/darwin/system.nix
+        #./modules/darwin/apps.nix
+        #./modules/darwin/host-users.nix
+
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
         home-manager.darwinModules.home-manager
         {
