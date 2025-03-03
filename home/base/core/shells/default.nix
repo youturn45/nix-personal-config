@@ -31,4 +31,13 @@ in {
       export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
     '';
   };
+
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    initExtra = ''
+      export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
+      eval "$(starship init zsh)"
+    '';
+  };
 }

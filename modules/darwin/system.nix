@@ -24,7 +24,6 @@
       # menuExtraClock.Show24Hour = true;  # show 24 hour clock
       # customize dock
       dock = {
-        enable = true;
         orientation = "left";
         tilesize = 96;
         autohide = true;
@@ -78,7 +77,6 @@
 
       # customize trackpad
       trackpad = {
-        # tap - 轻触触摸板, click - 点击触摸板
         Clicking = true;  # enable tap to click(轻触触摸板相当于点击)
         TrackpadRightClick = true;  # enable two finger right click
         TrackpadThreeFingerDrag = true;  # enable three finger drag
@@ -177,11 +175,11 @@
 
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
-  # programs.zsh.enable = true;
-  programs.fish.enable = true;
+  programs.zsh.enable = true;
+  # programs.fish.enable = true;
   environment.shells = [
     # pkgs.zsh
-    pkgs.fish
+    pkgs.zsh
   ];
 
   # Fonts
