@@ -22,9 +22,9 @@
 
     defaults = {
       # menuExtraClock.Show24Hour = true;  # show 24 hour clock
-      
       # customize dock
       dock = {
+        enable = true;
         orientation = "left";
         tilesize = 96;
         autohide = true;
@@ -43,9 +43,15 @@
         wvous-bl-corner = 1;  # bottom-left - nothing
         wvous-br-corner = 4;  # bottom-right - Desktop
         expose-group-apps = true;
+
+        /*entries = [ 
+          { path = "/Applications/Google Chrome.app"; }
+          { path = "/Applications/Ghostty.app"; }
+          { path = "/Applications/WeChat.app"; }
+          { path = "/Applications/Cursor.app"; }
+          { path = "/Applications/Obsidian.app"; }
+        ];*/
       };
-
-
 
       # customize finder
       finder = {
@@ -91,7 +97,6 @@
         AppleKeyboardUIMode = 3;  # Mode 3 enables full keyboard control.
         ApplePressAndHoldEnabled = true;  # enable press and hold
         AppleSpacesSwitchOnActivate = true;
-        # If you press and hold certain keyboard keys when in a text area, the key’s character begins to repeat.
         # This is very useful for vim users, they use `hjkl` to move cursor.
         # sets how long it takes before it starts repeating.
         InitialKeyRepeat = 15;  # normal minimum is 15 (225 ms), maximum is 120 (1800 ms)
@@ -197,3 +202,4 @@
     ];
   };
 }
+

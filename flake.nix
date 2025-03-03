@@ -50,27 +50,27 @@
     haumea,
     ... }:
   let 
-    # TODO replace with your own username, email, system, and hostname
-    username = "youturn";
-    useremail = "youturn@gmail.com";
-    system = "aarch64-darwin"; # aarch64-darwin or x86_64-darwin
-    hostname = "Rorschach";
-
     inherit (nixpkgs) lib;
     myLib = import ./my-lib { inherit lib; haumeaLib = haumea.lib; };
+    myvars = import ./vars {inherit lib;};
+
+    system = "aarch64-darwin";
+    hostname = "Rorschach";
+    
     specialArgs =
       inputs
       // {
-        inherit username useremail hostname myLib;
+        inherit myvars myLib;
+        # Add both username and hostname to specialArgs
+        inherit (myvars) username useremail userfullname;
+        inherit hostname system;  # Add hostname to specialArgs
         # use unstable branch for some packages to get the latest updates
         pkgs-unstable = import inputs.nixpkgs-unstable {
-          inherit system; # refer the `system` parameter form outer scope recursively
-          # To use chrome, we need to allow the installation of non-free software
+          inherit system;
           config.allowUnfree = true;
         };
         pkgs-stable = import inputs.nixpkgs {
           inherit system;
-          # To use chrome, we need to allow the installation of non-free software
           config.allowUnfree = true;
         };
       };
@@ -84,16 +84,14 @@
         #./modules/darwin/system.nix
         #./modules/darwin/apps.nix
         #./modules/darwin/host-users.nix
-
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = specialArgs;
-          home-manager.users.${username} = import ./home;
+          home-manager.users.${specialArgs.username} = import ./home;
           home-manager.backupFileExtension = "backup";
-          
         }
       ];
     };
