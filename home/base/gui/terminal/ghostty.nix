@@ -25,9 +25,9 @@
       font-family = "Fira Code";
       font-size = 14;
 
-      background-opacity = 0.5;
+      background-opacity = 0.3;
       # only supported on macOS;
-      background-blur-radius = 10;
+      background-blur-radius = 2;
       scrollback-limit = 20000;
 
       # https://ghostty.org/docs/config/reference#command
