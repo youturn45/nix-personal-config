@@ -1,5 +1,6 @@
 {
   config,
+  pkgs,
   pkgs-unstable,
   ...
 }: let
@@ -34,10 +35,22 @@ in {
 
   programs.zsh = {
     enable = true;
-    enableCompletion = true;
+    enableCompletion = false;
     initExtra = ''
       export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
-      eval "$(starship init zsh)"
-    '';
+    '' + builtins.readFile ./.zshrc;
+
+    zplug = {
+      enable = true;
+      
+      plugins = [
+        { name = "zsh-users/zsh-autosuggestions"; }
+        { name = "zsh-users/zsh-completions"; }
+        { name = "zdharma-continuum/fast-syntax-highlighting"; }
+        { name = "zsh-users/zsh-history-substring-search"; }
+        { name = "Aloxaf/fzf-tab"; }
+        
+      ];
+    };
   };
 }

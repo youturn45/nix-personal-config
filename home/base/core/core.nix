@@ -65,6 +65,21 @@
       icons = "auto";
     };
 
+    lsd = {
+      enable = true;
+      enableAliases = true;
+      settings = {
+        color.yaml = "catppuccin-mocha";
+        color.when = "always";
+        size = "short";
+        sorting = {
+          column = "name";
+          dir-grouping = "first";
+          reverse = false;
+        };
+      };
+    };
+
     # a cat(1) clone with syntax highlighting and Git integration.
     bat = {
       enable = true;

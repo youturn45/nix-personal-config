@@ -5,6 +5,8 @@
   # TODO correctly import neovim
   imports = myLib.collectModulesRecursively ./.;
 
+  # intergrate catppuccin theme
+  
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
   home = {
