@@ -49,6 +49,10 @@
     wget
     httpie
     mtr      # network diagnostic tool
+    
+    # 视频处理
+    ffmpeg
+    
   ];
 
   /*programs = {
@@ -94,14 +98,8 @@
     # For details, see https://github.com/mas-cli/mas 
     masApps = {
       # TODO Feel free to add your favorite apps here.
-
-      Xcode = 497799835;
       Wechat = 836500024;
-      # NeteaseCloudMusic = 944848654;
-      # QQ = 451108668;
-      # WeCom = 1189898970;  # Wechat for Work
       TecentMetting = 1484048379;
-      # QQMusic = 595615424;
     };
 
     taps = [
@@ -112,16 +110,17 @@
     # TODO Feel free to add your favorite apps here.
     brews = [
       "libomp"
+    #  "ffmpeg"
     ];
 
     # `brew install --cask`
     # TODO Feel free to add your favorite apps here.
     casks = [
+      # browser
       "google-chrome"
       "visual-studio-code"
 
       # IM & audio & remote desktop & meeting
-      "telegram"
       "discord"
       
       # Tools
@@ -134,7 +133,6 @@
       "iterm2" # terminal
       "ghostty" # terminal
       "Moonlight" # remote desktop
-
     ];
   };
 }
