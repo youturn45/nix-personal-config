@@ -99,7 +99,7 @@
     masApps = {
       # TODO Feel free to add your favorite apps here.
       Wechat = 836500024;
-      TecentMetting = 1484048379;
+      #TecentMetting = 1484048379;
     };
 
     taps = [
