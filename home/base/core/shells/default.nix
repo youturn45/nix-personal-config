@@ -42,14 +42,12 @@ in {
 
     zplug = {
       enable = true;
-      
       plugins = [
         { name = "zsh-users/zsh-autosuggestions"; }
         { name = "zsh-users/zsh-completions"; }
         { name = "zdharma-continuum/fast-syntax-highlighting"; }
         { name = "zsh-users/zsh-history-substring-search"; }
         { name = "Aloxaf/fzf-tab"; }
-        
       ];
     };
   };

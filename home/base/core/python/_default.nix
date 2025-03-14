@@ -1,12 +1,10 @@
 { pkgs, ... }:
  let
-   pyver = "312";
+   python = pkgs.python311;
  in
  {
    home.packages = with pkgs; [
-    python312
-    python312Packages.pip
-    python312Packages.virtualenvwrapper
+     python
      #python.pkgs.pip
      #pyright # python language server
    ];

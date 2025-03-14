@@ -21,6 +21,7 @@
     automatic = lib.mkDefault true;
     options = lib.mkDefault "--delete-older-than 7d";
   };
+  
   #nix.settings.trusted-substituters = [
   #  "https://mirrors.ustc.edu.cn/nix-channels/store"
   #  "https://cache.nixos.org"
