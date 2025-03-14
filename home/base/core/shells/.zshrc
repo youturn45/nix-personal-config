@@ -30,3 +30,7 @@ function show_proxy() {
     echo -e "https_proxy: ${https_proxy:-未设置}"
     echo -e "all_proxy: ${all_proxy:-未设置}"
 }
+
+function show_ip() {
+    curl ip.im/info
+}

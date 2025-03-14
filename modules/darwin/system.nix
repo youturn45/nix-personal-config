@@ -12,6 +12,8 @@
   ###################################################################################
 {
   system = {
+
+
     stateVersion = 6;
     # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
     activationScripts.postUserActivation.text = ''
@@ -21,7 +23,7 @@
     '';
 
     defaults = {
-      # menuExtraClock.Show24Hour = true;  # show 24 hour clock
+      # menuExtraClock.Show24Hour = true; # show 24 hour clock
       # customize dock
       dock = {
         orientation = "left";
@@ -30,19 +32,26 @@
         autohide-time-modifier = 0.1;
         mineffect = "scale";
         show-recents = false;  # disable recent apps
-        static-only = true;
+        static-only = false; # show only active apps
         scroll-to-open = true;
+        
         # customize Hot Corners(触发角, 鼠标移动到屏幕角落时触发的动作)
         #wvous-tl-corner = 2;  # top-left - Mission Control
         #wvous-tr-corner = 13;  # top-right - Lock Screen
         #wvous-bl-corner = 3;  # bottom-left - Application Windows
-
+        
         wvous-tl-corner = 1;  # top-left - nothing
         wvous-tr-corner = 1;  # top-right - nothing
         wvous-bl-corner = 1;  # bottom-left - nothing
         wvous-br-corner = 4;  # bottom-right - Desktop
         expose-group-apps = true;
-
+        persistent-apps = [
+          "/Applications/Google Chrome.app"
+          "/Applications/Ghostty.app"
+          "/Applications/WeChat.app"
+          "/Applications/Obsidian.app"
+          "/Applications/Spotify.app"
+        ];
         /*entries = [ 
           { path = "/Applications/Google Chrome.app"; }
           { path = "/Applications/Ghostty.app"; }
@@ -84,6 +93,7 @@
       ActivityMonitor = {
         IconType = 6;  # show CPU usage in graph view
       };
+
       # customize settings that not supported by nix-darwin directly
       # Incomplete list of macOS `defaults` commands :
       #   https://github.com/yannbertrand/macos-defaults
@@ -109,6 +119,7 @@
         NSNavPanelExpandedStateForSaveMode = true;  # expand save panel by default(保存文件时的路径选择/文件名输入页)
         NSNavPanelExpandedStateForSaveMode2 = true;
       };
+
       spaces = {
         spans-displays = false;  # Display have seperate spaces
       };
@@ -119,27 +130,32 @@
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
+        
         ".GlobalPreferences" = {
           # automatically switch to a new space when switching to the application
           AppleSpacesSwitchOnActivate = true;
         };
+
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
           WebKitDeveloperExtras = true;
         };
+        
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on network or USB volumes
           DSDontWriteNetworkStores = true;
-          DSDontWriteUSBStores = true;
-          
+          DSDontWriteUSBStores = true;  
         };
+
         "com.apple.spaces" = {
           "spans-displays" = 0; # Display have seperate spaces
         };
+
         "com.apple.menuextra.clock" = {
           FlashDateSeparators = true;
           DateFormat = "EEE d MMM HH:mm:ss";
         };
+
         "com.apple.WindowManager" = {
           EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop
           StandardHideDesktopIcons = 0; # Show items on desktop
@@ -147,20 +163,33 @@
           StageManagerHideWidgets = 0;
           StandardHideWidgets = 0;
         };
+
         "com.apple.screensaver" = {
           # Require password immediately after sleep or screen saver begins
           askForPassword = 1;
           askForPasswordDelay = 0;
         };
+
         "com.apple.screencapture" = {
           location = "~/Desktop/screenshots";
           type = "png";
         };
+
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
         };
+
         # Prevent Photos from opening automatically when devices are plugged in
         "com.apple.ImageCapture".disableHotPlug = true;
+
+        "com.raycast.macos" = {
+          raycastGlobalHotkey = "Command-49";
+          useHyperKeyIcon = true;
+          onboardingCompleted = true;
+          "onboarding_setupHotkey" = true;
+          "NSStatusItem Visible raycastIcon" = false;
+          "emojiPicker_skinTone" = "standard";
+        };
       };
 
       loginwindow = {

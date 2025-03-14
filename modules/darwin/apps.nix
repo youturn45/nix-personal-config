@@ -25,7 +25,7 @@
     zstd # zstd compression
 
     # monitoring
-    duf      # Better disk usage viewer
+    duf # Better disk usage viewer
     btop # better than htop
     coreutils
     
@@ -49,10 +49,6 @@
     wget
     httpie
     mtr      # network diagnostic tool
-    
-    # 视频处理
-    ffmpeg
-    
   ];
 
   /*programs = {
@@ -84,7 +80,6 @@
   # But on macOS, homebrew has a much larger selection of apps than nixpkgs, especially for GUI apps!
   homebrew = {
     enable = true;
-
     onActivation = {
       autoUpdate = true; # Fetch the newest stable branch of Homebrew's git repo
       upgrade = true; # Upgrade outdated casks, formulae, and App Store apps
@@ -99,7 +94,7 @@
     masApps = {
       # TODO Feel free to add your favorite apps here.
       Wechat = 836500024;
-      #TecentMetting = 1484048379;
+      #TencentMeeting = 1484048379;
     };
 
     taps = [
@@ -122,7 +117,7 @@
 
       # IM & audio & remote desktop & meeting
       "discord"
-      
+
       # Tools
       "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
       "stats" # beautiful system monitor
@@ -133,6 +128,8 @@
       "iterm2" # terminal
       "ghostty" # terminal
       "Moonlight" # remote desktop
+      "Spotify" # music app
+      "aldente" # battery management app
     ];
   };
 }

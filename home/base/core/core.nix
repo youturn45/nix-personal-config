@@ -11,7 +11,6 @@
     gnumake
 
     # Modern cli tools, replacement of grep/sed/...
-
     # Interactively filter its input using fuzzy searching, not limit to filenames.
     fzf
     # search for files by name, faster than find

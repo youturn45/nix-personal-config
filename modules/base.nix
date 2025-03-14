@@ -38,7 +38,6 @@
     p7zip
     zstd
 
-
     # Text Processing
     # Docs: https://github.com/learnbyexample/Command-line-text-processing
     gnugrep # GNU grep, provides `grep`/`egrep`/`fgrep`

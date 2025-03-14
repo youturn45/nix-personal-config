@@ -14,6 +14,7 @@ default:
 ############################################################################
 
 #  TODO Feel free to remove this target if you don't need a proxy to speed up the build process
+# set_proxy
 [group('desktop')]
 darwin-set-proxy:
   sudo python3 scripts/darwin_set_proxy.py
@@ -31,6 +32,37 @@ darwin-debug: darwin-set-proxy
     --extra-experimental-features 'nix-command flakes'
 
   ./result/sw/bin/darwin-rebuild switch --flake .#{{hostname}} --show-trace --verbose
+
+
+
+
+# Justfile for new mac build
+[group ('newmac')]
+shproxy:
+  export http_proxy="127.0.0.1:7890"
+  export https_proxy="127.0.0.1:7890"
+
+[group ('newmac')]
+brew:
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  brew install just 
+
+[group ('newmac')]
+lix:
+  curl -sSf -L https://install.lix.systems/lix | sh -s -- install
+
+[group ('newmac')]
+darwin-channel:
+  nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
+  nix-channel --update
+  nix-build '<darwin>' -A darwin-rebuild
+  nix flake update
+
+# Justfile for building dot
+[group('newmac')]
+dot:
+  ~/result/bin/darwin-rebuild switch --flake .
+
 
 ############################################################################
 #
@@ -83,8 +115,3 @@ fmt:
 [group('nix')]
 gcroot:
   ls -al /nix/var/nix/gcroots/auto/
-
-# Justfile for building dot
-[group('dot')]
-dot:
-  darwin-rebuild switch --flake .
