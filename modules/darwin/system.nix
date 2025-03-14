@@ -30,7 +30,7 @@
         tilesize = 96;
         autohide = true;
         autohide-time-modifier = 0.1;
-        autohide-delay = 0;
+        autohide-delay = 0.01;
         mineffect = "scale";
         show-recents = false;  # disable recent apps
         static-only = false; # show only active apps
