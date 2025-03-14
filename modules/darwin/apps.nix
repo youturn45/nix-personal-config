@@ -105,6 +105,7 @@
     # TODO Feel free to add your favorite apps here.
     brews = [
       "libomp"
+      "batt"
     #  "ffmpeg"
     ];
 
