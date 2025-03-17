@@ -130,7 +130,7 @@
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
-      #"aldente" # battery management app # replace with command line batt
+      # "aldente" # battery management app # replace with command line batt
     ];
   };
 }
