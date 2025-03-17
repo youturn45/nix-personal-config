@@ -49,6 +49,7 @@
         persistent-apps = [
           "/Applications/Google Chrome.app"
           "/Applications/Ghostty.app"
+          "/Applications/Visual Studio Code.app"
           "/Applications/WeChat.app"
           "/Applications/Obsidian.app"
           "/Applications/Spotify.app"
@@ -64,25 +65,24 @@
 
       # customize finder
       finder = {
-      # Finder Appearance
-      _FXShowPosixPathInTitle = true;      # show full path in finder title
-      AppleShowAllExtensions = true;      # show all file extensions
-      FXPreferredViewStyle = "clmv";      # column view 
-      # NSTableViewDefaultSizeMode = 3;  # Consider removing if redundant with FXPreferredViewStyle
-      FXDefaultSearchScope = "SCcf";
-      FXEnableExtensionChangeWarning = false; # disable warning when changing file extension
-      ShowPathbar = true;                # show path bar
-      ShowStatusBar = true;              # show status bars
-      QuitMenuItem = true;              # enable quit menu item
+        # Finder Appearance
+        _FXShowPosixPathInTitle = true;      # show full path in finder title
+        AppleShowAllExtensions = true;      # show all file extensions
+        FXPreferredViewStyle = "clmv";      # column view 
+        # NSTableViewDefaultSizeMode = 3;  # Consider removing if redundant with FXPreferredViewStyle
+        FXDefaultSearchScope = "SCcf";
+        FXEnableExtensionChangeWarning = false; # disable warning when changing file extension
+        ShowPathbar = true;                # show path bar
+        ShowStatusBar = true;              # show status bars
+        QuitMenuItem = true;              # enable quit menu item
 
-      # Desktop Visibility
-      ShowMountedServersOnDesktop = true;
-      ShowRemovableMediaOnDesktop = true;
-      ShowExternalHardDrivesOnDesktop = true;
-      ShowHardDrivesOnDesktop = true;
-      _FXSortFoldersFirstOnDesktop = true; # Check if this is needed if _FXSortFoldersFirst is set
-      _FXSortFoldersFirst = true;         # Check if this setting also affects the desktop
-
+        # Desktop Visibility
+        ShowMountedServersOnDesktop = true;
+        ShowRemovableMediaOnDesktop = true;
+        ShowExternalHardDrivesOnDesktop = true;
+        ShowHardDrivesOnDesktop = true;
+        _FXSortFoldersFirstOnDesktop = true; # Check if this is needed if _FXSortFoldersFirst is set
+        _FXSortFoldersFirst = true;         # Check if this setting also affects the desktop
       };
 
       # customize trackpad
@@ -91,6 +91,7 @@
         TrackpadRightClick = true;  # enable two finger right click
         TrackpadThreeFingerDrag = true;  # enable three finger drag
       };
+
       ActivityMonitor = {
         IconType = 6;  # show CPU usage in graph view
       };
@@ -124,6 +125,19 @@
       spaces = {
         spans-displays = false;  # Display have seperate spaces
       };
+
+      controlcenter = {
+        AirDrop = false;
+        BatteryShowPercentage = true;
+        Bluetooth = false;
+        Display = false;
+        FocusModes = false;
+        NowPlaying = false;
+        Sound = false;
+        # Wi-fi = false;
+        # Spotlight = false;
+      };
+
       # Customize settings that not supported by nix-darwin directly
       # see the source code of this project to get more undocumented options:
       #    https://github.com/rgcr/m-cli
@@ -131,7 +145,6 @@
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
-        
         ".GlobalPreferences" = {
           # automatically switch to a new space when switching to the application
           AppleSpacesSwitchOnActivate = true;
@@ -184,14 +197,32 @@
         "com.apple.ImageCapture".disableHotPlug = true;
 
         "com.raycast.macos" = {
+          onboardingCompleted = 1;
           raycastGlobalHotkey = "Command-49";
+          raycastIcon = false;
+          raycastShouldFollowSystemAppearance = 1;
           useHyperKeyIcon = true;
-          onboardingCompleted = true;
           "onboarding_setupHotkey" = true;
           "NSStatusItem Visible raycastIcon" = false;
           "emojiPicker_skinTone" = "standard";
         };
+
+        "com.apple.symbolichotkeys" = {
+          AppleSymbolicHotKeys = {
+            # Disable 'Cmd + Space' for Spotlight Search
+            "64" = {
+              enabled = false;
+            };
+            # Disable 'Cmd + Alt + Space' for Finder search window
+            "65" = {
+              # Set to false to disable
+              enabled = true;
+            };
+          };
+        };
       };
+
+
 
       loginwindow = {
         GuestEnabled = false;  # disable guest user
