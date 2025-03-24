@@ -7,6 +7,7 @@
     python312
     python312Packages.pip
     python312Packages.virtualenvwrapper
+    python312Packages.Kaggle
      #python.pkgs.pip
      #pyright # python language server
    ];
