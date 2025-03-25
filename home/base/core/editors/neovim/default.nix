@@ -2,7 +2,7 @@
   config,
   lib,
   pkgs,
-  pkgs-unstable,
+  nixpkgs-unstable,
   ...
 }:
 ###############################################################################
@@ -27,7 +27,7 @@ in {
   programs = {
     neovim = {
       enable = true;
-      package = pkgs-unstable.neovim-unwrapped;
+      package = nixpkgs-unstable.neovim-unwrapped;
 
       # defaultEditor = true; # set EDITOR at system-wide level
       viAlias = true;
