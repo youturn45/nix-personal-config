@@ -1,13 +1,13 @@
 {
   pkgs,
-  nixpkgs-unstable,
+  pkgs-unstable,
   nur-ryan4yin,
   ...
 }: {
   # terminal file manager
   programs.yazi = {
     enable = true;
-    package = nixpkgs-unstable.yazi;
+    package = pkgs-unstable.yazi;
     # Changing working directory when exiting Yazi
     enableBashIntegration = true;
     enableNushellIntegration = true;

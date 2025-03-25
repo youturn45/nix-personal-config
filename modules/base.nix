@@ -5,7 +5,7 @@
   nuenv,
   ...
 } @ args: {
-  nixpkgs.overlays =
+  pkgs.overlays =
     [
       nuenv.overlays.default
     ]

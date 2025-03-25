@@ -1,7 +1,7 @@
 {
   config,
   pkgs,
-  nixpkgs-unstable,
+  pkgs-unstable,
   ...
 }: let
   shellAliases = {
@@ -20,7 +20,7 @@ in {
 
   programs.nushell = {
     enable = true;
-    package = nixpkgs-unstable.nushell;
+    package = pkgs.nushell;
     configFile.source = ./config.nu;
     inherit shellAliases;
   };

@@ -1,4 +1,4 @@
-{ username, myLib, ... }:
+{ myvars, myLib, ... }:
 
 {
   # import sub modules
@@ -10,8 +10,8 @@
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
   home = {
-    username = username;
-    homeDirectory = "/Users/${username}";
+    username = myvars.username;
+    homeDirectory = "/Users/${myvars.username}";
     stateVersion = "25.05";
   };
 

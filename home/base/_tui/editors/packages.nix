@@ -3,7 +3,7 @@
   pkgs-unstable,
   ...
 }: {
-  nixpkgs.config = {
+  pkgs.config = {
     programs.npm.npmrc = ''
       prefix = ''${HOME}/.npm-global
     '';
