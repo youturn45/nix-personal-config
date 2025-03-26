@@ -12,37 +12,37 @@
 
   inputs = {
     # official nix pkgs sources
-    pkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
-    };
-    pkgs-unstable = {
+    nixpkgs = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
     };
-    pkgs-stable = {
+    nixpkgs-unstable = {
+      url = "github:NixOS/nixpkgs/nixos-unstable";
+    };
+    nixpkgs-stable = {
       url = "github:NixOS/nixpkgs/nixos-24.11";
     };
     nix-darwin = {
       url = "github:lnl7/nix-darwin";
-      inputs.pkgs.follows = "pkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # home-manager, used for managing user configuration
     home-manager = {
       url = "github:nix-community/home-manager/master";
       # url = "github:nix-community/home-manager/release-24.11";
-      inputs.pkgs.follows = "pkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # nix-homebrew, used for managing homebrew packages
     nix-homebrew = {
       url = "github:zhaofengli/nix-homebrew";
-      inputs.pkgs.follows = "pkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # haumea, used for managing flake imports
     haumea = {
       url = "github:nix-community/haumea/v0.2.2";
-      inputs.pkgs.follows = "pkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # ghostty, used for managing ghostty packages
@@ -56,8 +56,8 @@
  
   outputs = inputs @ { 
     self, 
-    pkgs, 
-    pkgs-unstable,
+    nixpkgs, 
+    nixpkgs-unstable,
     nur-ryan4yin,
     nix-darwin, 
     nix-homebrew, 
@@ -65,26 +65,37 @@
     haumea,
     ... }:
   let 
-    inherit (pkgs) lib;
+    inherit (nixpkgs) lib;
     myLib = import ./my-lib { inherit lib; haumeaLib = haumea.lib; };
     myvars = import ./vars {}; #{ inherit lib; };
-    
-    specialArgs = {
-      inherit myvars myLib;
-      # pkgs.config.allowUnfree = true;
-      inherit pkgs pkgs-unstable nur-ryan4yin;
-    };
 
-    pkgsConfig = {
-      pkgs.config.allowUnfree = true;
-      pkgs.hostPlatform = myvars.system;
+    specialArgs = {
+      inherit myvars myLib nur-ryan4yin;
+      
+      pkgs = import inputs.nixpkgs {
+        config.allowUnfree = true;
+        inherit (myvars) system;
+        hostPlatform = "${myvars.system}";
+      };
+
+      pkgs-unstable = import inputs.nixpkgs-unstable {
+        config.allowUnfree = true;
+        inherit (myvars) system;
+        hostPlatform = "${myvars.system}";
+      };
+
+      pkgs-stable = import inputs.nixpkgs-stable{
+        config.allowUnfree = true;
+        inherit (myvars) system;
+        hostPlatform = "${myvars.system}";
+      };
     };
 
   in {
     darwinConfigurations."${myvars.hostname}" = nix-darwin.lib.darwinSystem {
       inherit specialArgs;
+      system = "${myvars.system}";
       modules = [
-        pkgsConfig
         ./modules/common # NOTE shared by nixos and nix-darwin
         ./modules/darwin
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
