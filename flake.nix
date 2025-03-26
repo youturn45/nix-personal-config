@@ -67,7 +67,7 @@
   let 
     inherit (nixpkgs) lib;
     myLib = import ./my-lib { inherit lib; haumeaLib = haumea.lib; };
-    myvars = import ./vars {}; #{ inherit lib; };
+    myvars = import ./vars {};
 
     specialArgs = {
       inherit myvars myLib nur-ryan4yin;
@@ -96,19 +96,40 @@
       inherit specialArgs;
       system = "${myvars.system}";
       modules = [
-        ./modules/common # NOTE shared by nixos and nix-darwin
+        ./modules/base # NOTE shared by nixos and nix-darwin
         ./modules/darwin
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
-        home-manager.darwinModules.home-manager
+      ];
+    };
+    nixosConfigurations = import ./nixos-hosts { inherit lib specialArgs; };
+
+    homeConfigurations = home-manager.lib.homeManagerConfiguration {
+      pkgs = inputs.nixpkgs.legacyPackages.${myvars.system};
+      /*extraSpecialArgs = {
+        inherit
+          inputs
+          outputs
+          desktop
+          hostname
+          platform
+          username
+          stateVersion
+          isInstall
+          isLaptop
+          isLima
+          isISO
+          isWorkstation
+          ;
+      };*/
+      modules = [ ../home-manager ];
+    };
+    /*home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = specialArgs;
           home-manager.users.${myvars.username} = import ./home;
           home-manager.backupFileExtension = "backup";
-        }
-      ];
-    };
-    nixosConfigurations = import ./nixos-hosts { inherit lib specialArgs; };
+        }*/
   };
 }

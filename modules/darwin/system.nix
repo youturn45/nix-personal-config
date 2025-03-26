@@ -10,9 +10,9 @@
   #    https://github.com/yannbertrand/macos-defaults
   #
   ###################################################################################
+  
 {
   system = {
-
 
     stateVersion = 6;
     # activationScripts are executed every time you boot the system or run `nixos-rebuild` / `darwin-rebuild`.
@@ -222,11 +222,9 @@
         };
       };
 
-
-
       loginwindow = {
         GuestEnabled = false;  # disable guest user
-        SHOWFULLNAME = true;  # show full name in login window
+        SHOWFULLNAME = false;  # show full name in login window
       };
     };
   };
@@ -237,6 +235,7 @@
   # Create /etc/zshrc that loads the nix-darwin environment.
   # this is required if you want to use darwin's default shell - zsh
   programs.zsh.enable = true;
+  
   # programs.fish.enable = true;
   environment.shells = [
     # pkgs.zsh

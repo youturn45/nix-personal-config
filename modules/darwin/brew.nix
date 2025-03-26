@@ -1,55 +1,12 @@
-{ pkgs, ... }: {
-
   ##########################################################################
   # 
-  #  Install all apps and packages here.
+  #  This file is for configuring Homebrew on macOS.
   #
-  # TODO Fell free to modify this file to fit your needs.
+  #  It allows you to manage applications and packages using Homebrew.
   #
   ##########################################################################
 
-  # Install packages from nix's official package repository.
-  #
-  # The packages installed here are available to all users, and are reproducible across machines, and are rollbackable.
-  # But on macOS, it's less stable than homebrew.
-  #
-  # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
-  environment.systemPackages = with pkgs; [
-    # system tools
-    curl # curl
-    ripgrep # recursively searches directories for a regex pattern
-    git # git
-    just # use Justfile to simplify nix-darwin's commands
-    zip # zip files
-    p7zip # 7zip files
-    zstd # zstd compression
-
-    # monitoring
-    duf # Better disk usage viewer
-    btop # better than htop
-    coreutils
-    
-    # text editor
-    neovim # neovim
-    nano # nano
-
-    # gui tools in terminal 
-    yazi # terminal file manager
-    yq-go # yaml processer https://github.com/mikefarah/yq
-    fzf # A command-line fuzzy finder
-    jq # json processor
-    glow # markdown previewer in terminal
-
-    # development tools
-    gh       # GitHub CLI
-    delta    # Better git diff
-    lazygit  # Terminal UI for git
-
-    # network tools
-    wget
-    httpie
-    mtr      # network diagnostic tool
-  ];
+{ pkgs, ... }: {
 
   /*programs = {
     # modern vim
@@ -71,8 +28,6 @@
       };
     };
   };*/
-
-  environment.variables.EDITOR = "nvim";
 
   # TODO To make this work, homebrew need to be installed manually, see https://brew.sh
   # 
@@ -106,11 +61,12 @@
     brews = [
       "libomp"
       "batt"
-    #  "ffmpeg"
+      # "ffmpeg"
     ];
 
     # `brew install --cask`
     # TODO Feel free to add your favorite apps here.
+
     casks = [
       # browser
       "google-chrome"
@@ -118,19 +74,19 @@
 
       # IM & audio & remote desktop & meeting
       "discord"
+      "element"
 
       # Tools
       "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
       "stats" # beautiful system monitor
       "obsidian" # markdown note app
-      "linearmouse" # invert roll
+      "linearmouse" # invert scroll
       "hiddenbar" # hidden dock alternative
       "maccy" # clipboard manager
       "iterm2" # terminal
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
-      # "aldente" # battery management app # replace with command line batt
     ];
   };
 }
