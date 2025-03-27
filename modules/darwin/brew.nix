@@ -68,25 +68,38 @@
     # TODO Feel free to add your favorite apps here.
 
     casks = [
-      # browser
-      "google-chrome"
-      "visual-studio-code"
+      # Browsers
+      "google-chrome"        # Web browser
+      "firefox"              # Web browser
 
-      # IM & audio & remote desktop & meeting
-      "discord"
-      "element"
+      # Development Tools
+      "visual-studio-code"   # Code editor
 
-      # Tools
-      "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
-      "stats" # beautiful system monitor
-      "obsidian" # markdown note app
-      "linearmouse" # invert scroll
-      "hiddenbar" # hidden dock alternative
-      "maccy" # clipboard manager
-      "iterm2" # terminal
-      "ghostty" # terminal
-      "Moonlight" # remote desktop
-      "Spotify" # music app
+      # Communication & Collaboration
+      "discord"              # Voice, video, and text communication
+      "element"              # Secure messaging app
+
+      # Productivity Tools
+      "obsidian"             # Markdown note-taking app
+      "raycast"              # Quick launcher with plugins (HotKey: alt/option + space)
+      "maccy"                # Clipboard manager
+
+      # System Utilities
+      "stats"                # System monitor with a beautiful interface
+      "linearmouse"          # Invert scroll direction
+      "hiddenbar"            # Alternative to hidden dock
+
+      # Terminal Applications
+      "iterm2"               # Terminal emulator
+      "ghostty"              # Terminal emulator
+
+      # Remote Tools
+      "Moonlight"            # Remote desktop streaming
+      "Zspace"               # NAS tools
+      "Tailscale"            # Simple, secure VPN for private networks
+
+      # Entertainment
+      "Spotify"              # Music streaming app
     ];
   };
 }

@@ -48,19 +48,12 @@
         expose-group-apps = true;
         persistent-apps = [
           "/Applications/Google Chrome.app"
-          "/Applications/Ghostty.app"
-          "/Applications/Visual Studio Code.app"
           "/Applications/WeChat.app"
+          "/Applications/Ghostty.app"
+          #"/Applications/Visual Studio Code.app"
           "/Applications/Obsidian.app"
-          "/Applications/Spotify.app"
+          #"/Applications/Spotify.app"
         ];
-        /*entries = [ 
-          { path = "/Applications/Google Chrome.app"; }
-          { path = "/Applications/Ghostty.app"; }
-          { path = "/Applications/WeChat.app"; }
-          { path = "/Applications/Cursor.app"; }
-          { path = "/Applications/Obsidian.app"; }
-        ];*/
       };
 
       # customize finder
@@ -230,34 +223,6 @@
   };
 
   # Add ability to used TouchID for sudo authentication
-  security.pam.services.sudo_local.touchIdAuth = true;
-
-  # Create /etc/zshrc that loads the nix-darwin environment.
-  # this is required if you want to use darwin's default shell - zsh
-  programs.zsh.enable = true;
-  
-  # programs.fish.enable = true;
-  environment.shells = [
-    # pkgs.zsh
-    pkgs.zsh
-  ];
-
-  # Fonts
-  fonts = {
-    packages = with pkgs; [
-      # icon fonts
-      material-design-icons
-      font-awesome
-      nerd-fonts.fira-code
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.space-mono
-
-      # 思源系列字体是 Adobe 主导的。其中汉字部分被称为「思源黑体」和「思源宋体」，是由 Adobe + Google 共同开发的
-      source-sans # 无衬线字体，不含汉字。字族名叫 Source Sans 3 和 Source Sans Pro，以及带字重的变体，加上 Source Sans 3 VF
-      source-serif # 衬线字体，不含汉字。字族名叫 Source Code Pro，以及带字重的变体
-      source-han-sans # 思源黑体
-      source-han-serif # 思源宋体
-    ];
-  };
+  security.pam.services.sudo_local.touchIdAuth = true; 
 }
 
