@@ -14,30 +14,29 @@
   localBin = "${config.home.homeDirectory}/.local/bin";
   goBin = "${config.home.homeDirectory}/go/bin";
   rustBin = "${config.home.homeDirectory}/.cargo/bin";
+  claudeCodeDir = "${config.home.homeDirectory}/.local/share/claude-code";
 in {
-  # only works in bash/zsh, not nushell
   home.shellAliases = shellAliases;
 
-  programs.nushell = {
-    enable = true;
-    package = pkgs.nushell;
-    configFile.source = ./config.nu;
-    inherit shellAliases;
-  };
-
-  programs.bash = {
-    enable = true;
-    enableCompletion = true;
-    bashrcExtra = ''
-      export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
-    '';
-  };
+  # Add Node.js and npm to the environment
+  home.packages = with pkgs; [
+    nodejs
+    nodePackages.npm
+  ];
 
   programs.zsh = {
     enable = true;
     enableCompletion = false;
     initExtra = ''
       export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
+      
+      # Install claude-code locally if not already installed
+      if [ ! -d "${claudeCodeDir}/node_modules/.bin" ]; then
+        mkdir -p "${claudeCodeDir}"
+        cd "${claudeCodeDir}"
+        npm install @anthropic-ai/claude-code
+      fi
+      export PATH="${claudeCodeDir}/node_modules/.bin:$PATH"
     '' + builtins.readFile ./.zshrc;
 
     zplug = {

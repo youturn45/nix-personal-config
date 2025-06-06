@@ -69,7 +69,7 @@
         _FXShowPosixPathInTitle = true;      # show full path in finder title
         AppleShowAllExtensions = true;      # show all file extensions
         FXPreferredViewStyle = "clmv";      # column view 
-        # NSTableViewDefaultSizeMode = 3;  # Consider removing if redundant with FXPreferredViewStyle
+        NSTableViewDefaultSizeMode = 2;     # smaller text size (1=small, 2=medium, 3=large)
         FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false; # disable warning when changing file extension
         ShowPathbar = true;                # show path bar
@@ -252,7 +252,7 @@
       nerd-fonts.fira-code
       nerd-fonts.jetbrains-mono
       nerd-fonts.space-mono
-
+      
       # 思源系列字体是 Adobe 主导的。其中汉字部分被称为「思源黑体」和「思源宋体」，是由 Adobe + Google 共同开发的
       source-sans # 无衬线字体，不含汉字。字族名叫 Source Sans 3 和 Source Sans Pro，以及带字重的变体，加上 Source Sans 3 VF
       source-serif # 衬线字体，不含汉字。字族名叫 Source Code Pro，以及带字重的变体
