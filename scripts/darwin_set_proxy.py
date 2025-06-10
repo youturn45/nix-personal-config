@@ -8,6 +8,7 @@ import os
 import plistlib
 import shlex
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -39,4 +40,16 @@ for cmd in (
 ):
     print(cmd)
     subprocess.run(shlex.split(cmd), capture_output=False)
+
+# Wait for the daemon to start
+print("Waiting for nix-daemon to start...")
+time.sleep(5)
+
+# Verify the daemon is running
+try:
+    subprocess.run(["nix", "daemon", "--version"], check=True, capture_output=True)
+    print("nix-daemon is running")
+except subprocess.CalledProcessError:
+    print("Error: nix-daemon failed to start")
+    exit(1)
 

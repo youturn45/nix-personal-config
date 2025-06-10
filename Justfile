@@ -115,3 +115,23 @@ fmt:
 [group('nix')]
 gcroot:
   ls -al /nix/var/nix/gcroots/auto/
+
+############################################################################
+#
+#  Rorschach host configuration
+#
+############################################################################
+
+# Build and switch to rorschach configuration
+[group('rorschach')]
+rorschach: darwin-set-proxy
+  nix build .#darwinConfigurations.Rorschach.system \
+    --extra-experimental-features 'nix-command flakes'
+  ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach
+
+# Debug build for rorschach configuration
+[group('rorschach')]
+rorschach-debug: darwin-set-proxy
+  nix build .#darwinConfigurations.Rorschach.system --show-trace --verbose \
+    --extra-experimental-features 'nix-command flakes'
+  ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach --show-trace --verbose

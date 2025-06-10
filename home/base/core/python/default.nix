@@ -13,7 +13,7 @@
     python312Packages.black
     python312Packages.ruff
     python312Packages.mypy
-    python312Packages.poetry
+    python312Packages.poetry-core
 
     # Data Science Core
     python312Packages.numpy

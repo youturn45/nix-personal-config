@@ -69,7 +69,6 @@
         _FXShowPosixPathInTitle = true;      # show full path in finder title
         AppleShowAllExtensions = true;      # show all file extensions
         FXPreferredViewStyle = "clmv";      # column view 
-        NSTableViewDefaultSizeMode = 2;     # smaller text size (1=small, 2=medium, 3=large)
         FXDefaultSearchScope = "SCcf";
         FXEnableExtensionChangeWarning = false; # disable warning when changing file extension
         ShowPathbar = true;                # show path bar
@@ -120,6 +119,7 @@
         NSAutomaticSpellingCorrectionEnabled = false;  # disable auto spelling correction(自动拼写检查)
         NSNavPanelExpandedStateForSaveMode = true;  # expand save panel by default(保存文件时的路径选择/文件名输入页)
         NSNavPanelExpandedStateForSaveMode2 = true;
+        NSTableViewDefaultSizeMode = 2;     # smaller text size (1=small, 2=medium, 3=large)
       };
 
       spaces = {
