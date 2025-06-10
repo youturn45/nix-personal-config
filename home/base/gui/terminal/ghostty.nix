@@ -11,11 +11,7 @@
 {
   programs.ghostty = {
     enable = true;
-    package = 
-        if pkgs.stdenv.isDarwin
-        then pkgs.ghostty # Use the stable version on darwin
-        else pkgs.ghostty; # the stable version
-    # package = ghostty.packages.${pkgs.system}.default; # the latest version
+    package = ghostty.packages.${pkgs.system}.default; # Use the latest version from the flake
     enableBashIntegration = false;
     installBatSyntax = false;
     enableZshIntegration = true;

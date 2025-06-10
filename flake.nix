@@ -63,6 +63,7 @@
     nix-homebrew, 
     home-manager, 
     haumea,
+    ghostty,
     ... }:
   let 
     inherit (nixpkgs) lib;
@@ -70,7 +71,7 @@
     myvars = import ./vars {}; #{ inherit lib; };
 
     specialArgs = {
-      inherit myvars myLib nur-ryan4yin;
+      inherit myvars myLib nur-ryan4yin ghostty;
       
       pkgs = import inputs.nixpkgs {
         config.allowUnfree = true;
