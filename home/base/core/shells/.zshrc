@@ -1,6 +1,7 @@
-eval "$(starship init zsh)"
+# Starship is managed by Home Manager (programs.starship.enableZshIntegration = true)
 
-# used for homebrew
+# Homebrew initialization
+eval "$(/opt/homebrew/bin/brew shellenv)"
 export XDG_DATA_DIRS=$XDG_DATA_DIRS:/opt/homebrew/share
 
 function proxy_on() {
