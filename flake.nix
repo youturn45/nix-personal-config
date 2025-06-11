@@ -36,7 +36,6 @@
     # nix-homebrew, used for managing homebrew packages
     nix-homebrew = {
       url = "github:zhaofengli/nix-homebrew";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # haumea, used for managing flake imports
@@ -111,5 +110,55 @@
       ];
     };
     nixosConfigurations = import ./nixos-hosts { inherit lib specialArgs; };
+
+    # Development shells
+    devShells.${myvars.system} = {
+      default = specialArgs.pkgs.mkShell {
+        buildInputs = with specialArgs.pkgs; [
+          nodejs_22
+          python3
+        ];
+        
+        shellHook = ''
+          echo "🚀 Development environment loaded"
+          echo "Node.js: $(node --version)"
+          echo "npm: $(npm --version)"
+          
+          # Setup npm directories and config
+          export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+          export NPM_CONFIG_CACHE="$HOME/.npm-cache"
+          export PATH="$HOME/.npm-global/bin:$PATH"
+          
+          # Create directories
+          mkdir -p "$HOME/.npm-global"
+          mkdir -p "$HOME/.npm-cache"
+          
+          # Install claude-code if not available
+          if ! command -v claude-code >/dev/null 2>&1; then
+            echo "📦 Installing claude-code..."
+            npm install -g @anthropic-ai/claude-code
+            echo "✅ claude-code installed successfully"
+          else
+            echo "✅ claude-code already available"
+          fi
+          
+          echo "💡 Use 'claude-code' to start Claude Code"
+          echo "💡 Use 'exit' to leave development environment"
+        '';
+      };
+      
+      # Alternative shell for testing without auto-install
+      minimal = specialArgs.pkgs.mkShell {
+        buildInputs = with specialArgs.pkgs; [
+          nodejs_22
+        ];
+        
+        shellHook = ''
+          export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+          export PATH="$HOME/.npm-global/bin:$PATH"
+          echo "Minimal dev shell loaded. Run 'npm install -g @anthropic-ai/claude-code' to install manually."
+        '';
+      };
+    };
   };
 }

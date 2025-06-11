@@ -66,7 +66,8 @@
 
     lsd = {
       enable = true;
-      enableAliases = true;
+      enableBashIntegration = true;
+      enableZshIntegration = true;
       settings = {
         color.yaml = "catppuccin-mocha";
         color.when = "always";

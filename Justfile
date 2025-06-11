@@ -125,7 +125,7 @@ gcroot:
 # Build and switch to rorschach configuration
 [group('rorschach')]
 rorschach: darwin-set-proxy
-  nix build .#darwinConfigurations.Rorschach.system \
+  darwin-rebuild build .#darwinConfigurations.Rorschach.system \
     --extra-experimental-features 'nix-command flakes'
   ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach
 
@@ -135,3 +135,11 @@ rorschach-debug: darwin-set-proxy
   nix build .#darwinConfigurations.Rorschach.system --show-trace --verbose \
     --extra-experimental-features 'nix-command flakes'
   ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach --show-trace --verbose
+
+[group('rorschach')]
+ror: darwin-set-proxy
+  darwin-rebuild build --flake .#Rorschach
+
+[group('rorschach')]
+ror-switch: darwin-set-proxy
+  sudo darwin-rebuild switch --flake .#Rorschach

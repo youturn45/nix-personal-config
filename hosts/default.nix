@@ -9,7 +9,8 @@
 
   # Common system settings
   system = {
-    # stateVersion = 4;
+    stateVersion = 4;
+    primaryUser = "youturn";
     defaults = {
       NSGlobalDomain = {
         AppleShowAllExtensions = true;
