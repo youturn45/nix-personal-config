@@ -51,6 +51,9 @@
     caddy # A webserver with automatic HTTPS via Let's Encrypt(replacement of nginx)
     croc # File transfer between computers securely and easily
     ncdu # analyzer your disk usage Interactively, via TUI(replacement of `du`)
+    
+    # development tools (moved from system packages)
+    gh # GitHub CLI
   ];
 
   programs = {

@@ -27,7 +27,7 @@ in {
   programs.zsh = {
     enable = true;
     enableCompletion = false;
-    initExtra = ''
+    initContent = ''
       export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
       
       # Install claude-code locally if not already installed

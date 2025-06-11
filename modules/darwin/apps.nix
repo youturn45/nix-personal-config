@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ pkgs, myvars, ... }: {
 
   ##########################################################################
   # 
@@ -8,6 +8,12 @@
   #
   ##########################################################################
 
+  # Required system configuration (using centralized variables)
+  system = {
+    primaryUser = myvars.primaryUser;  # Required for homebrew functionality
+    stateVersion = myvars.darwinStateVersion;  # Required for nix-darwin
+  };
+
   # Install packages from nix's official package repository.
   #
   # The packages installed here are available to all users, and are reproducible across machines, and are rollbackable.
@@ -15,40 +21,23 @@
   #
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
   environment.systemPackages = with pkgs; [
-    # system tools
-    curl # curl
-    ripgrep # recursively searches directories for a regex pattern
-    git # git
-    just # use Justfile to simplify nix-darwin's commands
-    zip # zip files
-    p7zip # 7zip files
-    zstd # zstd compression
-
-    # monitoring
-    duf # Better disk usage viewer
-    btop # better than htop
-    coreutils
-    
-    # text editor
-    neovim # neovim
-    nano # nano
-
-    # gui tools in terminal 
-    yazi # terminal file manager
-    yq-go # yaml processer https://github.com/mikefarah/yq
-    fzf # A command-line fuzzy finder
-    jq # json processor
-    glow # markdown previewer in terminal
-
-    # development tools
-    gh       # GitHub CLI
-    delta    # Better git diff
-    lazygit  # Terminal UI for git
-
-    # network tools
+    # Core system tools - available system-wide
+    curl
     wget
+    git # Keep at system level for system-wide availability
+    just # Keep for build commands
+    zip
+    p7zip
+    zstd
+    coreutils
+    nano # Simple editor for system-level editing
+    
+    # Basic system utilities
+    jq # Keep for system scripts
+    
+    # Network tools
     httpie
-    mtr      # network diagnostic tool
+    mtr
   ];
 
   /*programs = {
@@ -127,7 +116,7 @@
       "hiddenbar" # hidden dock alternative
       "maccy" # clipboard manager
       "iterm2" # terminal
-      # "ghostty" # terminal
+      "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
       # "aldente" # battery management app # replace with command line batt

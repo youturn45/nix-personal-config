@@ -88,6 +88,10 @@ Access via: `nix develop`
 
 ## Important Notes
 
+- **Centralized Variables**: All system settings (versions, user info) are centralized in `vars/default.nix`
+- **System Configuration**: 
+  - `modules/darwin/apps.nix`: Core system settings and Homebrew
+  - `modules/darwin/system-settings.nix`: macOS defaults and UI preferences
 - **Proxy Configuration**: The build process includes proxy setup for Chinese networks (`darwin-set-proxy`)
 - **Claude Code Integration**: Development shell automatically includes claude-code
 - **Theme**: Uses Catppuccin Mocha theme throughout the system

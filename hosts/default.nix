@@ -7,21 +7,7 @@
     ../modules/darwin
   ];
 
-  # Common system settings
-  system = {
-    stateVersion = 4;
-    primaryUser = "youturn";
-    defaults = {
-      NSGlobalDomain = {
-        AppleShowAllExtensions = true;
-        ApplePressAndHoldEnabled = false;
-      };
-      dock = {
-        autohide = true;
-        show-recents = false;
-      };
-    };
-  };
+  # System settings are handled in modules/darwin/system-unified.nix
 
   # Common user settings
   users.users.youturn = {
@@ -40,9 +26,5 @@
     ];
   };
 
-  # Common shell configuration
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-  };
+  # Shell configuration is now handled in modules/darwin/system-unified.nix
 } 
