@@ -67,28 +67,22 @@
   let 
     inherit (nixpkgs) lib;
     myLib = import ./my-lib { inherit lib; haumeaLib = haumea.lib; };
-    myvars = import ./vars {}; #{ inherit lib; };
+    myvars = import ./vars { inherit lib; };
+    
+    # Helper function to create consistent package sets
+    mkPkgs = nixpkgs: system: import nixpkgs {
+      config.allowUnfree = true;
+      inherit system;
+      hostPlatform = system;
+    };
 
     specialArgs = {
       inherit myvars myLib nur-ryan4yin ghostty;
+      vars = myvars;  # Alias for modules expecting 'vars'
       
-      pkgs = import inputs.nixpkgs {
-        config.allowUnfree = true;
-        inherit (myvars) system;
-        hostPlatform = "${myvars.system}";
-      };
-
-      pkgs-unstable = import inputs.nixpkgs-unstable {
-        config.allowUnfree = true;
-        inherit (myvars) system;
-        hostPlatform = "${myvars.system}";
-      };
-
-      pkgs-stable = import inputs.nixpkgs-stable{
-        config.allowUnfree = true;
-        inherit (myvars) system;
-        hostPlatform = "${myvars.system}";
-      };
+      pkgs = mkPkgs inputs.nixpkgs myvars.system;
+      pkgs-unstable = mkPkgs inputs.nixpkgs-unstable myvars.system;
+      pkgs-stable = mkPkgs inputs.nixpkgs-stable myvars.system;
     };
 
   in {
@@ -109,7 +103,7 @@
         }
       ];
     };
-    nixosConfigurations = import ./nixos-hosts { inherit lib specialArgs; };
+    nixosConfigurations = import ./_nixos-hosts { inherit lib specialArgs; };
 
     # Development shells
     devShells.${myvars.system} = {

@@ -1,7 +1,7 @@
-{ myLib, ... }:
+{ myLib, vars, ... }:
 
 {
   imports = myLib.collectModulesRecursively ./.;
 
-  time.timeZone = "Asia/Shanghai";
+  time.timeZone = vars.timeZone;
 }

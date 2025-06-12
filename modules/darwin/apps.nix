@@ -4,7 +4,7 @@
   # 
   #  Install all apps and packages here.
   #
-  # TODO Fell free to modify this file to fit your needs.
+  # Feel free to modify this file to fit your needs.
   #
   ##########################################################################
 
@@ -63,7 +63,7 @@
 
   environment.variables.EDITOR = "nvim";
 
-  # TODO To make this work, homebrew need to be installed manually, see https://brew.sh
+  # To make this work, homebrew needs to be installed manually, see https://brew.sh
   # 
   # The apps installed by homebrew are not managed by nix, and not reproducible!
   # But on macOS, homebrew has a much larger selection of apps than nixpkgs, especially for GUI apps!
@@ -81,7 +81,7 @@
     # otherwise Apple Store will refuse to install them.
     # For details, see https://github.com/mas-cli/mas 
     masApps = {
-      # TODO Feel free to add your favorite apps here.
+      # Feel free to add your favorite apps here.
       Wechat = 836500024;
       #TencentMeeting = 1484048379;
     };
@@ -91,7 +91,7 @@
     ];
 
     # `brew install`
-    # TODO Feel free to add your favorite apps here.
+    # Feel free to add your favorite apps here.
     brews = [
       "libomp"
       "batt"
@@ -99,7 +99,7 @@
     ];
 
     # `brew install --cask`
-    # TODO Feel free to add your favorite apps here.
+    # Feel free to add your favorite apps here.
     casks = [
       # browser
       "google-chrome"

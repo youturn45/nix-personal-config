@@ -1,8 +1,7 @@
 { myvars, myLib, ... }:
 
 {
-  # import sub modules
-  # TODO correctly import neovim
+  # import sub modules - neovim now correctly imported via shared module
   imports = myLib.collectModulesRecursively ./.;
 
   # intergrate catppuccin theme

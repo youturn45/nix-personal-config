@@ -6,7 +6,7 @@ let
       inherit specialArgs system;
       modules = modules ++ [
         ../modules/common # NOTE shared by nixos and nix-darwin
-        ../modules/nixos/common # shared by bare-metal and vm nixos machines
+        ../modules/_nixos/common # shared by bare-metal and vm nixos machines
         { networking.hostName = hostname; }
         (lib.path.append ./. hostname) # NOTE config specific to this host
       ];
@@ -20,7 +20,7 @@ in
     hostname = "myVm";
     system = "x86_64-linux";
     modules = [
-      ../modules/nixos/vm # only for nixos vm
+      ../modules/_nixos/vm # only for nixos vm
     ];
   };
 

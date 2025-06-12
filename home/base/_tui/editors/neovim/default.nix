@@ -9,15 +9,14 @@
 #
 #  AstroNvim's configuration and all its dependencies(lsp, formatter, etc.)
 #
-#e#############################################################################
+###############################################################################
 let
   shellAliases = {
     v = "nvim";
     vdiff = "nvim -d";
   };
-  # the path to nvim directory
-  # to make this symlink work, we need to git clone this repo to your home directory.
-  configPath = "${config.home.homeDirectory}/nix-config/home/base/tui/editors/neovim/nvim";
+  # Fixed path to nvim directory
+  configPath = "${config.home.homeDirectory}/nix-config/home/base/_tui/editors/neovim/nvim";
 in {
   xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink configPath;
 
@@ -67,6 +66,7 @@ in {
         # search all the plugins using https://search.nixos.org/packages
         telescope-fzf-native-nvim
 
+        # TODO: Optimize - specify only needed grammars instead of all
         nvim-treesitter.withAllGrammars
       ];
     };
