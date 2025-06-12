@@ -92,11 +92,11 @@
       pkgs-stable = mkPkgs inputs.nixpkgs-stable myvars.system;
     };
 
-  in {
-    darwinConfigurations."${myvars.hostname}" = nix-darwin.lib.darwinSystem {
+    mkDarwinHost = hostname: nix-darwin.lib.darwinSystem {
       inherit specialArgs;
       system = "${myvars.system}";
       modules = [
+        ./hosts/${hostname}.nix
         ./modules/common # NOTE shared by nixos and nix-darwin
         ./modules/darwin
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
@@ -110,6 +110,13 @@
           home-manager.backupFileExtension = "backup";
         }
       ];
+    };
+
+  in {
+    darwinConfigurations = {
+      Rorschach = mkDarwinHost "rorschach";
+      NightOwl = mkDarwinHost "NightOwl";
+      SilkSpectre = mkDarwinHost "SilkSpectre";
     };
     nixosConfigurations = import ./_nixos-hosts { inherit lib specialArgs; };
 

@@ -8,9 +8,9 @@
 #
 #############################################################
 {
-  networking.hostName = myvars.hostname;
-  networking.computerName = myvars.hostname;
-  system.defaults.smb.NetBIOSName = myvars.hostname;
+  # Hostname is now set in individual host configurations
+  # networking.hostName is set in hosts/*.nix files
+  # networking.computerName and NetBIOSName will follow the hostName automatically
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."${myvars.username}" = {

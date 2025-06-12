@@ -6,9 +6,6 @@
     
     # Automatically add keys to SSH agent
     addKeysToAgent = "yes";
-    
-    # Start SSH agent if not running
-    startAgent = true;
 
     matchBlocks = {
       github = {
@@ -18,8 +15,6 @@
         port = 443;
         identityFile = "~/.ssh/rorschach";  # Use standard SSH key
         identitiesOnly = true;
-        addKeysToAgent = "yes";
-        useKeychain = "yes";
       };
     };
 
