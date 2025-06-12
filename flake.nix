@@ -109,48 +109,25 @@
     devShells.${myvars.system} = {
       default = specialArgs.pkgs.mkShell {
         buildInputs = with specialArgs.pkgs; [
-          nodejs_22  # Latest LTS version
           python3
         ];
         
         shellHook = ''
           echo "🚀 Development environment loaded"
-          echo "Node.js: $(node --version)"
-          echo "npm: $(npm --version)"
-          
-          # Setup npm directories and config
-          export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-          export NPM_CONFIG_CACHE="$HOME/.npm-cache"
-          export PATH="$HOME/.npm-global/bin:$PATH"
-          
-          # Create directories
-          mkdir -p "$HOME/.npm-global"
-          mkdir -p "$HOME/.npm-cache"
-          
-          # Install claude-code if not available
-          if ! command -v claude-code >/dev/null 2>&1; then
-            echo "📦 Installing claude-code..."
-            npm install -g @anthropic-ai/claude-code
-            echo "✅ claude-code installed successfully"
-          else
-            echo "✅ claude-code already available"
-          fi
-          
-          echo "💡 Use 'claude-code' to start Claude Code"
+          echo "💡 Node.js and npm are available via Home Manager"
+          echo "💡 claude-code is managed via Home Manager activation"
           echo "💡 Use 'exit' to leave development environment"
         '';
       };
       
-      # Alternative shell for testing without auto-install
+      # Alternative minimal shell for testing
       minimal = specialArgs.pkgs.mkShell {
         buildInputs = with specialArgs.pkgs; [
-          nodejs_22
+          python3
         ];
         
         shellHook = ''
-          export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-          export PATH="$HOME/.npm-global/bin:$PATH"
-          echo "Minimal dev shell loaded. Run 'npm install -g @anthropic-ai/claude-code' to install manually."
+          echo "Minimal dev shell loaded."
         '';
       };
     };

@@ -19,27 +19,29 @@
   ];
 
   # Create npm directories and install claude-code on activation
-  home.activation.setupNpm = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  home.activation.setupNpm = lib.hm.dag.entryAfter ["linkGeneration"] ''
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-global
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-cache
     
     if [[ ! -v DRY_RUN ]]; then
-      # Check if npm is available and install claude-code
-      if command -v npm >/dev/null 2>&1; then
-        # Set npm config for this session
+      # Use the nodejs package from the Home Manager generation
+      NODE_BIN_DIR="${pkgs.nodejs_22}/bin"
+      
+      if [[ -x "$NODE_BIN_DIR/npm" ]]; then
+        # Set npm config and ensure node is in PATH for npm scripts
         export NPM_CONFIG_PREFIX="${config.home.homeDirectory}/.npm-global"
-        export PATH="${config.home.homeDirectory}/.npm-global/bin:$PATH"
+        export PATH="$NODE_BIN_DIR:${config.home.homeDirectory}/.npm-global/bin:$PATH"
         
         # Check if claude-code is already installed
         if ! ${config.home.homeDirectory}/.npm-global/bin/claude-code --version >/dev/null 2>&1; then
           echo "Installing claude-code..."
-          npm install -g @anthropic-ai/claude-code
+          "$NODE_BIN_DIR/npm" install -g @anthropic-ai/claude-code
           echo "✓ claude-code installed successfully"
         else
           echo "✓ claude-code already installed"
         fi
       else
-        echo "⚠ npm not found, skipping claude-code installation"
+        echo "⚠ npm not available, skipping claude-code installation"
       fi
     fi
   '';
