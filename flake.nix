@@ -115,7 +115,7 @@
     devShells.${myvars.system} = {
       default = specialArgs.pkgs.mkShell {
         buildInputs = with specialArgs.pkgs; [
-          nodejs_22
+          nodejs_22  # Latest LTS version
           python3
         ];
         

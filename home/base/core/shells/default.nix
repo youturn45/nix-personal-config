@@ -14,29 +14,15 @@
   localBin = "${config.home.homeDirectory}/.local/bin";
   goBin = "${config.home.homeDirectory}/go/bin";
   rustBin = "${config.home.homeDirectory}/.cargo/bin";
-  claudeCodeDir = "${config.home.homeDirectory}/.local/share/claude-code";
 in {
   home.shellAliases = shellAliases;
 
-  # Add Node.js and npm to the environment
-  home.packages = with pkgs; [
-    nodejs
-    nodePackages.npm
-  ];
 
   programs.zsh = {
     enable = true;
     enableCompletion = false;
     initContent = ''
       export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
-      
-      # Install claude-code locally if not already installed
-      if [ ! -d "${claudeCodeDir}/node_modules/.bin" ]; then
-        mkdir -p "${claudeCodeDir}"
-        cd "${claudeCodeDir}"
-        npm install @anthropic-ai/claude-code
-      fi
-      export PATH="${claudeCodeDir}/node_modules/.bin:$PATH"
     '' + builtins.readFile ./.zshrc;
 
     zplug = {

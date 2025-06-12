@@ -1,7 +1,6 @@
 # just is a command runner, Justfile is very similar to Makefile, but simpler.
 
-# TODO update hostname here!
-hostname := "your-hostname"
+hostname := "Rorschach"
 
 # List all the just commands
 default:
@@ -9,57 +8,48 @@ default:
 
 ############################################################################
 #
-#  Darwin related commands
+#  Main Build Commands
 #
 ############################################################################
 
-#  TODO Feel free to remove this target if you don't need a proxy to speed up the build process
-# set_proxy
-[group('desktop')]
-darwin-set-proxy:
+# Set proxy for Chinese networks (remove if not needed)
+[group('build')]
+set-proxy:
   sudo python3 scripts/darwin_set_proxy.py
 
-[group('desktop')]
-darwin: darwin-set-proxy
-  nix build .#darwinConfigurations.{{hostname}}.system \
-    --extra-experimental-features 'nix-command flakes'
+# Build and switch to current host configuration
+[group('build')]
+darwin: set-proxy
+  sudo darwin-rebuild switch --flake .#{{hostname}}
 
-  ./result/sw/bin/darwin-rebuild switch --flake .#{{hostname}}
+# Debug build with verbose output
+[group('build')]
+darwin-debug: set-proxy
+  darwin-rebuild switch --flake .#{{hostname}} --show-trace --verbose
 
-[group('desktop')]
-darwin-debug: darwin-set-proxy
-  nix build .#darwinConfigurations.{{hostname}}.system --show-trace --verbose \
-    --extra-experimental-features 'nix-command flakes'
+############################################################################
+#
+#  Initial Setup Commands (for new Mac)
+#
+############################################################################
 
-  ./result/sw/bin/darwin-rebuild switch --flake .#{{hostname}} --show-trace --verbose
-
-
-
-
-# Justfile for new mac build
-[group ('newmac')]
-shproxy:
-  export http_proxy="127.0.0.1:7890"
-  export https_proxy="127.0.0.1:7890"
-
-[group ('newmac')]
+[group('setup')]
 brew:
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  brew install just 
+  brew install just
 
-[group ('newmac')]
+[group('setup')]
 lix:
   curl -sSf -L https://install.lix.systems/lix | sh -s -- install
 
-[group ('newmac')]
+[group('setup')]
 darwin-channel:
   nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
   nix-channel --update
   nix-build '<darwin>' -A darwin-rebuild
   nix flake update
 
-# Justfile for building dot
-[group('newmac')]
+[group('setup')]
 dot:
   ~/result/bin/darwin-rebuild switch --flake .
 
@@ -118,28 +108,18 @@ gcroot:
 
 ############################################################################
 #
-#  Rorschach host configuration
+#  Host-Specific Shortcuts
 #
 ############################################################################
 
-# Build and switch to rorschach configuration
-[group('rorschach')]
-rorschach: darwin-set-proxy
-  darwin-rebuild build .#darwinConfigurations.Rorschach.system \
-    --extra-experimental-features 'nix-command flakes'
-  ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach
+# Quick build for Rorschach (alias for darwin)
+[group('host')]
+rorschach: darwin
 
-# Debug build for rorschach configuration
-[group('rorschach')]
-rorschach-debug: darwin-set-proxy
-  nix build .#darwinConfigurations.Rorschach.system --show-trace --verbose \
-    --extra-experimental-features 'nix-command flakes'
-  ./result/sw/bin/darwin-rebuild switch --flake .#Rorschach --show-trace --verbose
+# Quick build for Rorschach (shorter alias)
+[group('host')]
+ror: darwin
 
-[group('rorschach')]
-ror: darwin-set-proxy
-  darwin-rebuild build --flake .#Rorschach
-
-[group('rorschach')]
-ror-switch: darwin-set-proxy
-  sudo darwin-rebuild switch --flake .#Rorschach
+# Switch to Rorschach configuration (shorter alias)
+[group('host')]
+ror-switch: darwin
