@@ -3,6 +3,12 @@
 
   programs.ssh = {
     enable = true;
+    
+    # Automatically add keys to SSH agent
+    addKeysToAgent = "yes";
+    
+    # Start SSH agent if not running
+    startAgent = true;
 
     matchBlocks = {
       github = {
@@ -10,8 +16,15 @@
         hostname = "ssh.github.com";
         user = "git";
         port = 443;
-        identityFile = "~/.ssh/Rorschach";
+        identityFile = "~/.ssh/rorschach";
         identitiesOnly = true;
+      };
+      
+      # Default configuration for rorschach key
+      "*" = {
+        identityFile = "~/.ssh/rorschach";
+        addKeysToAgent = "yes";
+        useKeychain = "yes";
       };
     };
 

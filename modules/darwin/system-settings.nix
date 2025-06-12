@@ -102,13 +102,13 @@
 
       # Control Center
       controlcenter = {
-        AirDrop = true;  # Enabled (useful for file sharing)
-        BatteryShowPercentage = true;
-        Bluetooth = true;  # Enabled (useful for devices)
-        Display = true;  # Enabled (useful for external displays)
-        FocusModes = true;  # Enabled (useful for productivity)
-        NowPlaying = true;  # Enabled (useful for media)
-        Sound = true;  # Enabled (useful for audio)
+        AirDrop = false;
+        BatteryShowPercentage = true;  # Keep battery percentage visible
+        Bluetooth = false;
+        Display = false;
+        FocusModes = false;
+        NowPlaying = false;
+        Sound = false;
       };
 
       # Login Window

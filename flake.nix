@@ -49,6 +49,12 @@
       url = "github:ghostty-org/ghostty";
     };
     
+    # agenix, used for managing secrets
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
     # nur-ryan4yin, custom packages used from ryan4yin
     nur-ryan4yin.url = "github:ryan4yin/nur-packages";
   };
@@ -63,6 +69,7 @@
     home-manager, 
     haumea,
     ghostty,
+    agenix,
     ... }:
   let 
     inherit (nixpkgs) lib;
@@ -77,7 +84,7 @@
     };
 
     specialArgs = {
-      inherit myvars myLib nur-ryan4yin ghostty;
+      inherit myvars myLib nur-ryan4yin ghostty agenix;
       vars = myvars;  # Alias for modules expecting 'vars'
       
       pkgs = mkPkgs inputs.nixpkgs myvars.system;
@@ -93,6 +100,7 @@
         ./modules/common # NOTE shared by nixos and nix-darwin
         ./modules/darwin
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
+        agenix.darwinModules.default
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
