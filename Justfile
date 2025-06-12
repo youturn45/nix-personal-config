@@ -123,3 +123,33 @@ ror: darwin
 # Switch to Rorschach configuration (shorter alias)
 [group('host')]
 ror-switch: darwin
+
+# Build and switch to SilkSpectre configuration
+[group('host')]
+silkspectre: set-proxy
+  sudo darwin-rebuild switch --flake .#SilkSpectre
+
+# Debug build for SilkSpectre
+[group('host')]
+silkspectre-debug: set-proxy
+  darwin-rebuild switch --flake .#SilkSpectre --show-trace --verbose
+
+# Quick build for SilkSpectre (shorter alias)
+[group('host')]
+silk: set-proxy
+  sudo darwin-rebuild switch --flake .#SilkSpectre
+
+# Build and switch to NightOwl configuration
+[group('host')]
+nightowl: set-proxy
+  sudo darwin-rebuild switch --flake .#NightOwl
+
+# Debug build for NightOwl
+[group('host')]
+nightowl-debug: set-proxy
+  darwin-rebuild switch --flake .#NightOwl --show-trace --verbose
+
+# Quick build for NightOwl (shorter alias)
+[group('host')]
+owl: set-proxy
+  sudo darwin-rebuild switch --flake .#NightOwl
