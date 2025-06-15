@@ -13,8 +13,8 @@ function proxy_on() {
     export HTTP_PROXY=http://127.0.0.1:7890
     export HTTPS_PROXY=http://127.0.0.1:7890
     # Optional SOCKS proxy
-    # export all_proxy=socks5://127.0.0.1:7890
-    # export ALL_PROXY=socks5://127.0.0.1:7890
+    export all_proxy=socks5://127.0.0.1:7891
+    export ALL_PROXY=socks5://127.0.0.1:7891
     
     echo -e "终端代理已开启。"
     echo -e "当前代理设置："
