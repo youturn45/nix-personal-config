@@ -34,17 +34,17 @@ in
         export NPM_CONFIG_PREFIX="${config.home.homeDirectory}/.npm-global"
         export PATH="$NODE_BIN_DIR:${config.home.homeDirectory}/.npm-global/bin:$PATH"
         
-        # Check if claude-code is already installed
-        if ${config.home.homeDirectory}/.npm-global/bin/claude-code --version >/dev/null 2>&1; then
-          CURRENT_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude-code --version 2>/dev/null || echo "unknown")
-          echo "✓ claude-code already installed (version: $CURRENT_VERSION)"
+        # Check if claude is already installed
+        if ${config.home.homeDirectory}/.npm-global/bin/claude --version >/dev/null 2>&1; then
+          CURRENT_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude --version 2>/dev/null || echo "unknown")
+          echo "✓ claude already installed (version: $CURRENT_VERSION)"
         else
-          echo "Installing claude-code..."
+          echo "Installing claude-code package..."
           if "$NODE_BIN_DIR/npm" install -g @anthropic-ai/claude-code@${claudeCodeVersion}; then
-            NEW_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude-code --version 2>/dev/null || echo "unknown")
-            echo "✓ claude-code installed successfully (version: $NEW_VERSION)"
+            NEW_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude --version 2>/dev/null || echo "unknown")
+            echo "✓ claude-code package installed successfully (version: $NEW_VERSION)"
           else
-            echo "✗ Failed to install claude-code"
+            echo "✗ Failed to install claude-code package"
             exit 1
           fi
         fi
@@ -61,13 +61,13 @@ in
       export NPM_CONFIG_PREFIX="${config.home.homeDirectory}/.npm-global"
       export PATH="$NODE_BIN_DIR:${config.home.homeDirectory}/.npm-global/bin:$PATH"
       
-      if [[ -x "${config.home.homeDirectory}/.npm-global/bin/claude-code" ]]; then
-        echo "Checking for claude-code updates..."
+      if [[ -x "${config.home.homeDirectory}/.npm-global/bin/claude" ]]; then
+        echo "Checking for claude updates..."
         if "$NODE_BIN_DIR/npm" update -g @anthropic-ai/claude-code; then
-          UPDATED_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude-code --version 2>/dev/null || echo "unknown")
-          echo "✓ claude-code update completed (version: $UPDATED_VERSION)"
+          UPDATED_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude --version 2>/dev/null || echo "unknown")
+          echo "✓ claude update completed (version: $UPDATED_VERSION)"
         else
-          echo "⚠ claude-code update check failed"
+          echo "⚠ claude update check failed"
         fi
       fi
     fi
@@ -93,12 +93,12 @@ in
 
   # Shell aliases for convenience
   programs.zsh.shellAliases = lib.mkIf config.programs.zsh.enable {
-    cc = "claude-code";
-    claude = "claude-code";
+    claude-code = "claude";  # Main alias: claude-code -> claude
+    cc = "claude";           # Short alias: cc -> claude
   };
 
   programs.bash.shellAliases = lib.mkIf config.programs.bash.enable {
-    cc = "claude-code";
-    claude = "claude-code";
+    claude-code = "claude";  # Main alias: claude-code -> claude
+    cc = "claude";           # Short alias: cc -> claude
   };
 }
