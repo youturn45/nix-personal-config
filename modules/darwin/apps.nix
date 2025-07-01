@@ -104,7 +104,6 @@
       # browser
       "google-chrome"
       "visual-studio-code"
-
       # IM & audio & remote desktop & meeting
       "discord"
 
@@ -119,6 +118,7 @@
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
+      "tailscale" # VPN
       # "aldente" # battery management app # replace with command line batt
     ];
   };

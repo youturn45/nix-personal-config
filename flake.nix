@@ -83,17 +83,24 @@
       hostPlatform = system;
     };
 
-    specialArgs = {
-      inherit myvars myLib nur-ryan4yin ghostty agenix;
+    # Create system-specific specialArgs
+    mkSpecialArgs = system: {
+      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager;
       vars = myvars;  # Alias for modules expecting 'vars'
       
-      pkgs = mkPkgs inputs.nixpkgs myvars.system;
-      pkgs-unstable = mkPkgs inputs.nixpkgs-unstable myvars.system;
-      pkgs-stable = mkPkgs inputs.nixpkgs-stable myvars.system;
+      pkgs = mkPkgs inputs.nixpkgs system;
+      pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
+      pkgs-stable = mkPkgs inputs.nixpkgs-stable system;
     };
 
+    # Darwin-specific specialArgs (using macOS system from myvars)
+    darwinSpecialArgs = mkSpecialArgs myvars.system;
+    
+    # Linux-specific specialArgs (hardcoded to x86_64-linux for NixOS VMs)
+    linuxSpecialArgs = mkSpecialArgs "x86_64-linux";
+
     mkDarwinHost = hostname: nix-darwin.lib.darwinSystem {
-      inherit specialArgs;
+      specialArgs = darwinSpecialArgs;
       system = "${myvars.system}";
       modules = [
         ./hosts/${hostname}.nix
@@ -105,7 +112,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = specialArgs;
+          home-manager.extraSpecialArgs = darwinSpecialArgs;
           home-manager.users.${myvars.username} = import ./home;
           home-manager.backupFileExtension = "backup";
         }
@@ -118,12 +125,12 @@
       NightOwl = mkDarwinHost "NightOwl";
       SilkSpectre = mkDarwinHost "SilkSpectre";
     };
-    nixosConfigurations = import ./_nixos-hosts { inherit lib specialArgs; };
+    nixosConfigurations = import ./_nixos-hosts { inherit lib; specialArgs = linuxSpecialArgs; };
 
     # Development shells
     devShells.${myvars.system} = {
-      default = specialArgs.pkgs.mkShell {
-        buildInputs = with specialArgs.pkgs; [
+      default = darwinSpecialArgs.pkgs.mkShell {
+        buildInputs = with darwinSpecialArgs.pkgs; [
           python3
         ];
         
@@ -136,8 +143,8 @@
       };
       
       # Alternative minimal shell for testing
-      minimal = specialArgs.pkgs.mkShell {
-        buildInputs = with specialArgs.pkgs; [
+      minimal = darwinSpecialArgs.pkgs.mkShell {
+        buildInputs = with darwinSpecialArgs.pkgs; [
           python3
         ];
         

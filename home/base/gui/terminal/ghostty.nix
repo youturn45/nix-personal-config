@@ -1,16 +1,23 @@
 {
   config,
   lib,
+  pkgs,
+  ghostty,
   ...
 }:
 ###########################################################
 #
 # Ghostty Configuration
-# Using Homebrew version with manual config
+# Cross-platform: Homebrew on Darwin, Nix package on Linux
 #
 ###########################################################
 {
-  # Create Ghostty config file manually since we're using Homebrew version
+  # Install Ghostty on NixOS (on Darwin it's handled by Homebrew)
+  home.packages = lib.optionals pkgs.stdenv.isLinux [
+    ghostty.packages.${pkgs.system}.default
+  ];
+
+  # Create Ghostty config file for both platforms
   home.file."${config.home.homeDirectory}/.config/ghostty/config".text = ''
     # Ghostty Configuration
     theme = catppuccin-mocha

@@ -23,8 +23,10 @@
       # Add keys to agent automatically when used
       AddKeysToAgent yes
       
-      # Use macOS keychain for storing passphrases
-      UseKeychain yes
+      ${lib.optionalString pkgs.stdenv.isDarwin ''
+        # Use macOS keychain for storing passphrases (Darwin only)
+        UseKeychain yes
+      ''}
     '';
   };
 }

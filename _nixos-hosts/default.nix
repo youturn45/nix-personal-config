@@ -1,6 +1,9 @@
 { lib, specialArgs, }:
 
 let
+  # Get inputs from specialArgs
+  inherit (specialArgs) home-manager myvars;
+  
   mkNixosHost = { hostname, system, modules ? [ ] }:
     lib.nixosSystem {
       inherit specialArgs system;
@@ -9,6 +12,16 @@ let
         ../modules/_nixos/common # shared by bare-metal and vm nixos machines
         { networking.hostName = hostname; }
         (lib.path.append ./. hostname) # NOTE config specific to this host
+        
+        # Add Home Manager
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = specialArgs;
+          home-manager.users.${myvars.username} = import ../home;
+          home-manager.backupFileExtension = "backup";
+        }
       ];
     };
 in

@@ -1,4 +1,4 @@
-{ myvars, myLib, ... }:
+{ myvars, myLib, pkgs, ... }:
 
 {
   # import sub modules - neovim now correctly imported via shared module
@@ -10,7 +10,10 @@
   # paths it should manage.
   home = {
     username = myvars.username;
-    homeDirectory = "/Users/${myvars.username}";
+    homeDirectory = 
+      if pkgs.stdenv.isDarwin 
+      then "/Users/${myvars.username}"
+      else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;
   };
 
