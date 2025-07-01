@@ -153,3 +153,24 @@ nightowl-debug: set-proxy
 [group('host')]
 owl: set-proxy
   sudo darwin-rebuild switch --flake .#NightOwl
+
+############################################################################
+#
+#  Utility Commands
+#
+############################################################################
+
+# Type clipboard content into VNC console (useful when paste doesn't work)
+[group('utility')]
+vnc-paste *ARGS='':
+  python3 scripts/vnc_paste.py {{ARGS}}
+
+# Generate ISO image for Proxmox VM installation
+[group('nixos')]
+iso:
+  NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix run github:nix-community/nixos-generators --impure -- --format iso --flake .#myVm --system x86_64-linux
+
+# Generate VMA image for Proxmox VM installation  
+[group('nixos')]
+vma:
+  NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix run github:nix-community/nixos-generators --impure -- --format proxmox --flake .#myVm --system x86_64-linux

@@ -1,4 +1,4 @@
-{ modulesPath, ... }:
+{ modulesPath, lib, ... }:
 
 {
   imports = [
@@ -11,8 +11,8 @@
     fsType = "ext4";
   };
 
-  # Boot configuration for VM
-  boot.loader.grub = {
+  # Boot configuration for VM (can be overridden for ISO)
+  boot.loader.grub = lib.mkDefault {
     enable = true;
     device = "/dev/vda"; # First virtual disk in QEMU
   };
