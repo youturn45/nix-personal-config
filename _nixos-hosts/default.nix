@@ -37,5 +37,38 @@ in
     ];
   };
 
+  # ISO configuration for installation media
+  myVm-iso = lib.nixosSystem {
+    inherit specialArgs;
+    system = "x86_64-linux";
+    modules = [
+      ../modules/common # NOTE shared by nixos and nix-darwin
+      ../modules/_nixos/common # shared by bare-metal and vm nixos machines
+      ./myVm # Use myVm configuration as base
+      
+      # ISO-specific modules
+      "${specialArgs.pkgs.path}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+      
+      {
+        # Override some settings for ISO
+        networking.hostName = "nixos-live";
+        
+        # Enable SSH for remote access
+        services.openssh.enable = true;
+        services.openssh.settings.PermitRootLogin = "yes";
+        users.users.root.initialPassword = "nixos";
+        
+        # Include useful packages for installation
+        environment.systemPackages = with specialArgs.pkgs; [
+          git
+          curl
+          wget
+          vim
+          htop
+        ];
+      }
+    ];
+  };
+
   # anotherVm = mkNixosHost { ... };
 }
