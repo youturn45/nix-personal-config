@@ -34,6 +34,11 @@ in
     system = "x86_64-linux";
     modules = [
       ../modules/_nixos/vm # only for nixos vm
+      
+      # Override home-manager configuration for server
+      {
+        home-manager.users.${myvars.username} = lib.mkForce (import ../home/server);
+      }
     ];
   };
 
