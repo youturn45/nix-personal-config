@@ -150,13 +150,20 @@ in
           ];
           programs.zsh = {
             enable = true;
-            initContent = ''
-              # Initialize starship prompt
-              eval "$(starship init zsh)"
-              
-              # Fix key bindings for terminal compatibility (especially Ghostty over SSH)
+            enableCompletion = true;
+            autosuggestion.enable = true;
+            syntaxHighlighting.enable = true;
+            
+            # Key bindings applied early in zsh initialization
+            localVariables = {
+              # Set terminal options immediately
+              TERM = "xterm-256color";
+            };
+            
+            initExtraFirst = ''
+              # Fix key bindings FIRST - before anything else loads
               bindkey "^[[3~" delete-char           # Delete key (standard)
-              bindkey "^[3;5~" delete-char          # Ctrl+Delete
+              bindkey "^[3;5~" delete-char          # Ctrl+Delete  
               bindkey "^[[P" delete-char            # Delete key alternative
               bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)
               bindkey "^?" backward-delete-char     # Backspace (DEL)
@@ -164,13 +171,16 @@ in
               bindkey "^[[F" end-of-line            # End key
               bindkey "^[[1~" beginning-of-line     # Home alternative
               bindkey "^[[4~" end-of-line           # End alternative
-              
-              # Ghostty-specific fixes
               bindkey "\e[3~" delete-char           # Delete with escape prefix
               bindkey "\177" backward-delete-char   # DEL character (127)
               
               # Set terminal options for better compatibility
-              stty erase '^?'                       # Set erase character to DEL
+              stty erase '^?'
+            '';
+            
+            initContent = ''
+              # Initialize starship prompt
+              eval "$(starship init zsh)"
               
               # Run claude-code installation on first login
               if [[ ! -f "$HOME/.npm-global/bin/claude-code" && -f "$HOME/.local/bin/install-claude-code" ]]; then
