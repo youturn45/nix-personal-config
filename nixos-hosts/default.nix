@@ -210,7 +210,7 @@ in
           '';
 
           # Claude-code installation and configuration
-          home.activation.setupNpm = lib.hm.dag.entryAfter ["writeBoundary"] ''
+          home.activation.setupNpm = home-manager.lib.hm.dag.entryAfter ["writeBoundary"] ''
             export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
             
             # Create directories
@@ -222,7 +222,7 @@ in
             fi
           '';
 
-          home.activation.updateClaudeCode = lib.hm.dag.entryAfter ["setupNpm"] ''
+          home.activation.updateClaudeCode = home-manager.lib.hm.dag.entryAfter ["setupNpm"] ''
             export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
             $DRY_RUN_CMD ${specialArgs.pkgs.nodejs_22}/bin/npm update -g @anthropic-ai/claude-code 2>/dev/null || true
           '';
