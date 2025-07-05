@@ -184,6 +184,9 @@ in
             '';
             
             initContent = ''
+              # Add npm global to PATH
+              export PATH="$HOME/.npm-global/bin:$PATH"
+              
               # Initialize starship prompt
               eval "$(starship init zsh)"
               
