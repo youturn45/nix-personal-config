@@ -93,5 +93,37 @@ in
     ];
   };
 
+  # Live system configuration (not VM)
+  mySystem = mkNixosHost {
+    hostname = "mySystem";
+    system = "x86_64-linux";
+    modules = [
+      # No VM-specific modules for live system
+      
+      # Override home-manager configuration for minimal live system
+      {
+        home-manager.users.${myvars.username} = lib.mkForce {
+          home.stateVersion = "25.05";
+          home.packages = with specialArgs.pkgs; [
+            # Only essential packages for live system
+            git
+            vim
+            curl
+            wget
+            htop
+            tmux
+            openssh
+          ];
+          programs.zsh.enable = true;
+          programs.git = {
+            enable = true;
+            userName = myvars.userfullname;
+            userEmail = myvars.useremail;
+          };
+        };
+      }
+    ];
+  };
+
   # anotherVm = mkNixosHost { ... };
 }
