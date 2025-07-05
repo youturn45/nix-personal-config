@@ -11,6 +11,6 @@
     TERM = pkgs.lib.mkDefault "xterm-256color";
   };
 
-  # Add ghostty terminfo if available
-  environment.etc."terminfo/x/xterm-ghostty".source = "${pkgs.ghostty}/share/terminfo/x/xterm-ghostty";
+  # Simple fix: just create a symlink to xterm-256color for xterm-ghostty
+  environment.etc."terminfo/x/xterm-ghostty".source = "${pkgs.ncurses}/share/terminfo/x/xterm-256color";
 }
