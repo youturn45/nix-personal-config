@@ -3,12 +3,12 @@
 {
   # System-wide proxy environment variables (matching your zsh proxy_on function)
   environment.variables = {
-    http_proxy = "http://127.0.0.1:7890";
-    https_proxy = "http://127.0.0.1:7890";
-    all_proxy = "socks5://127.0.0.1:7891";
-    HTTP_PROXY = "http://127.0.0.1:7890";
-    HTTPS_PROXY = "http://127.0.0.1:7890";
-    ALL_PROXY = "socks5://127.0.0.1:7891";
+    http_proxy = "http://10.0.0.5:7890";
+    https_proxy = "http://10.0.0.5:7890";
+    all_proxy = "socks5://10.0.0.5:7891";
+    HTTP_PROXY = "http://10.0.0.5:7890";
+    HTTPS_PROXY = "http://10.0.0.5:7890";
+    ALL_PROXY = "socks5://10.0.0.5:7891";
     no_proxy = "localhost,127.0.0.1,::1";
     NO_PROXY = "localhost,127.0.0.1,::1";
   };
@@ -23,12 +23,12 @@
   environment.shellInit = ''
     # Proxy management functions (matching your zsh configuration)
     proxy_on() {
-      export http_proxy="http://127.0.0.1:7890"
-      export https_proxy="http://127.0.0.1:7890"
-      export all_proxy="socks5://127.0.0.1:7891"
-      export HTTP_PROXY="http://127.0.0.1:7890"
-      export HTTPS_PROXY="http://127.0.0.1:7890"
-      export ALL_PROXY="socks5://127.0.0.1:7891"
+      export http_proxy="http://10.0.0.5:7890"
+      export https_proxy="http://10.0.0.5:7890"
+      export all_proxy="socks5://10.0.0.5:7891"
+      export HTTP_PROXY="http://10.0.0.5:7890"
+      export HTTPS_PROXY="http://10.0.0.5:7890"
+      export ALL_PROXY="socks5://10.0.0.5:7891"
       echo "代理已开启"
     }
 
