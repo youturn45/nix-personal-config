@@ -162,20 +162,25 @@ in
             
             initExtraFirst = ''
               # Fix key bindings FIRST - before anything else loads
-              bindkey "^[[3~" delete-char           # Delete key (standard)
-              bindkey "^[3;5~" delete-char          # Ctrl+Delete  
-              bindkey "^[[P" delete-char            # Delete key alternative
-              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)
-              bindkey "^?" backward-delete-char     # Backspace (DEL)
+              # Focus on Mac delete key (which is backspace/backward delete)
+              bindkey "^?" backward-delete-char     # Mac delete key (DEL character)
+              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)  
+              bindkey "\177" backward-delete-char   # DEL character (127) - Mac delete
+              bindkey "\b" backward-delete-char     # Backspace alternative
+              bindkey "\e[3~" delete-char           # Forward delete (fn+delete on Mac)
+              bindkey "^[[3~" delete-char           # Forward delete alternative
+              bindkey "^[3;5~" delete-char          # Ctrl+forward delete
+              bindkey "^[[P" delete-char            # Forward delete alternative
+              
+              # Navigation keys
               bindkey "^[[H" beginning-of-line      # Home key
               bindkey "^[[F" end-of-line            # End key
               bindkey "^[[1~" beginning-of-line     # Home alternative
               bindkey "^[[4~" end-of-line           # End alternative
-              bindkey "\e[3~" delete-char           # Delete with escape prefix
-              bindkey "\177" backward-delete-char   # DEL character (127)
               
-              # Set terminal options for better compatibility
+              # Set terminal options for Mac delete key compatibility
               stty erase '^?'
+              stty werase '^W'
             '';
             
             initContent = ''
