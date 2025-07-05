@@ -150,9 +150,17 @@ in
           ];
           programs.zsh = {
             enable = true;
-            initExtra = ''
+            initContent = ''
               # Initialize starship prompt
               eval "$(starship init zsh)"
+              
+              # Fix key bindings for terminal compatibility
+              bindkey "^[[3~" delete-char           # Delete key
+              bindkey "^[3;5~" delete-char          # Ctrl+Delete
+              bindkey "^[[P" delete-char            # Delete key alternative
+              bindkey "^?" backward-delete-char     # Backspace
+              bindkey "^[[H" beginning-of-line      # Home key
+              bindkey "^[[F" end-of-line            # End key
               
               # Run claude-code installation on first login
               if [[ ! -f "$HOME/.npm-global/bin/claude-code" && -f "$HOME/.local/bin/install-claude-code" ]]; then
