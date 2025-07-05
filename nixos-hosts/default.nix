@@ -146,6 +146,7 @@ in
             tmux
             openssh
             starship
+            nodejs_22
           ];
           programs.zsh.enable = true;
           programs.git = {
@@ -187,6 +188,54 @@ in
               };
               format = "$username$hostname$line_break$directory$git_branch$character";
             };
+          };
+
+          # NPM configuration matching home/base/core/dev/npm/
+          home.sessionVariables = {
+            NPM_CONFIG_PREFIX = "\${HOME}/.npm-global";
+            NPM_CONFIG_CACHE = "\${HOME}/.npm-cache";
+          };
+
+          home.sessionPath = [
+            "\${HOME}/.npm-global/bin"
+          ];
+
+          home.file.".npmrc".text = ''
+            prefix=''${HOME}/.npm-global
+            cache=''${HOME}/.npm-cache
+            init-author-name=${myvars.username}
+            init-license=MIT
+            fund=false
+            audit=false
+          '';
+
+          # Claude-code installation and configuration
+          home.activation.setupNpm = lib.hm.dag.entryAfter ["writeBoundary"] ''
+            export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
+            
+            # Create directories
+            $DRY_RUN_CMD mkdir -p $HOME/.npm-global $HOME/.npm-cache $HOME/.config/claude-code
+            
+            # Install claude-code if not present
+            if ! $HOME/.npm-global/bin/claude-code --version 2>/dev/null; then
+              $DRY_RUN_CMD ${specialArgs.pkgs.nodejs_22}/bin/npm install -g @anthropic-ai/claude-code@latest
+            fi
+          '';
+
+          home.activation.updateClaudeCode = lib.hm.dag.entryAfter ["setupNpm"] ''
+            export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
+            $DRY_RUN_CMD ${specialArgs.pkgs.nodejs_22}/bin/npm update -g @anthropic-ai/claude-code 2>/dev/null || true
+          '';
+
+          home.file.".config/claude-code/config.json".text = builtins.toJSON {
+            editor = "vim";
+            theme = "dark";
+          };
+
+          # Shell aliases for claude-code
+          programs.zsh.shellAliases = {
+            claude = "claude-code";
+            cc = "claude";
           };
         };
       }
