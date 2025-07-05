@@ -153,6 +153,12 @@ in
             initExtra = ''
               # Initialize starship prompt
               eval "$(starship init zsh)"
+              
+              # Run claude-code installation on first login
+              if [[ ! -f "$HOME/.npm-global/bin/claude-code" && -f "$HOME/.local/bin/install-claude-code" ]]; then
+                echo "Setting up claude-code..."
+                "$HOME/.local/bin/install-claude-code"
+              fi
             '';
           };
           programs.git = {
@@ -215,22 +221,22 @@ in
             audit=false
           '';
 
-          # Claude-code installation and configuration
-          home.activation.setupNpm = home-manager.lib.hm.dag.entryAfter ["writeBoundary"] ''
+          # Claude-code installation via shell script approach
+          home.file.".local/bin/install-claude-code".source = specialArgs.pkgs.writeShellScript "install-claude-code" ''
             export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
+            export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+            export NPM_CONFIG_CACHE="$HOME/.npm-cache"
             
             # Create directories
-            $DRY_RUN_CMD mkdir -p $HOME/.npm-global $HOME/.npm-cache $HOME/.config/claude-code
+            mkdir -p "$HOME/.npm-global" "$HOME/.npm-cache" "$HOME/.config/claude-code"
             
             # Install claude-code if not present
-            if ! $HOME/.npm-global/bin/claude-code --version 2>/dev/null; then
-              $DRY_RUN_CMD ${specialArgs.pkgs.nodejs_22}/bin/npm install -g @anthropic-ai/claude-code@latest
+            if ! "$HOME/.npm-global/bin/claude-code" --version 2>/dev/null; then
+              echo "Installing claude-code..."
+              "${specialArgs.pkgs.nodejs_22}/bin/npm" install -g @anthropic-ai/claude-code@latest
+            else
+              echo "claude-code already installed"
             fi
-          '';
-
-          home.activation.updateClaudeCode = home-manager.lib.hm.dag.entryAfter ["setupNpm"] ''
-            export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
-            $DRY_RUN_CMD ${specialArgs.pkgs.nodejs_22}/bin/npm update -g @anthropic-ai/claude-code 2>/dev/null || true
           '';
 
           home.file.".config/claude-code/config.json".text = builtins.toJSON {
