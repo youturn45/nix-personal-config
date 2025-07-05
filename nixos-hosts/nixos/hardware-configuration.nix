@@ -13,9 +13,9 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  # Boot loader configuration for UEFI system
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # Boot loader configuration for GRUB system
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/sda";
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/475211da-d6ed-4596-93aa-389f39e7fc44";
