@@ -159,21 +159,4 @@
     };
   };
 
-  # Neovim configuration
-  programs.neovim = {
-    enable = true;
-    package = pkgs-unstable.neovim-unwrapped;
-    viAlias = true;
-    vimAlias = true;
-  };
-
-  # Shell aliases for neovim
-  home.shellAliases = {
-    v = "nvim";
-    vdiff = "nvim -d";
-  };
-
-  # Neovim config directory
-  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink 
-    "${config.home.homeDirectory}/Developer/nix-personal-config/home/base/core/editors/neovim/nvim";
 }
