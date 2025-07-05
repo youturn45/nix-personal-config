@@ -165,6 +165,22 @@ owl: set-proxy
 vnc-paste *ARGS='':
   python3 scripts/vnc_paste.py {{ARGS}}
 
+# Build and switch to NixOS VM configuration
+[group('nixos')]
+nixos-vm: 
+  nix build .#nixosConfigurations.myVm.config.system.build.vm
+  NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
+
+# Build NixOS VM with debug output
+[group('nixos')]
+nixos-vm-debug:
+  nix build .#nixosConfigurations.myVm.config.system.build.vm --show-trace --verbose
+  NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
+
+# Quick build for NixOS VM (shorter alias)
+[group('nixos')]
+vm: nixos-vm
+
 # Generate ISO image for Proxmox VM installation
 [group('nixos')]
 iso:

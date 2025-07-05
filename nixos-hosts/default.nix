@@ -35,9 +35,27 @@ in
     modules = [
       ../modules/_nixos/vm # only for nixos vm
       
-      # Override home-manager configuration for server
+      # Override home-manager configuration for server - minimal packages only
       {
-        home-manager.users.${myvars.username} = lib.mkForce (import ../home/server);
+        home-manager.users.${myvars.username} = lib.mkForce {
+          home.stateVersion = "25.05";
+          home.packages = with specialArgs.pkgs; [
+            # Only essential packages for server
+            git
+            vim
+            curl
+            wget
+            htop
+            tmux
+            openssh
+          ];
+          programs.zsh.enable = true;
+          programs.git = {
+            enable = true;
+            userName = myvars.userfullname;
+            userEmail = myvars.useremail;
+          };
+        };
       }
     ];
   };

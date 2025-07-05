@@ -50,7 +50,7 @@ just dot              # Build and switch to configuration
 ```
 ├── vars/                    # Global variables (hostname, username, system)
 ├── my-lib/                  # Custom helper functions
-├── hosts/                   # Host-specific configurations
+├── darwin-hosts/            # macOS host configurations
 ├── modules/                 # System modules
 │   ├── common/             # Shared between platforms
 │   ├── darwin/             # macOS-specific modules
@@ -60,7 +60,7 @@ just dot              # Build and switch to configuration
 │   │   ├── core/           # Core packages and tools
 │   │   ├── _tui/           # Terminal UI applications
 │   │   └── gui/            # GUI applications
-└── _nixos-hosts/           # NixOS host definitions
+└── nixos-hosts/            # NixOS host definitions
 ```
 
 ### Key Architecture Patterns
