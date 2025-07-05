@@ -145,12 +145,48 @@ in
             htop
             tmux
             openssh
+            starship
           ];
           programs.zsh.enable = true;
           programs.git = {
             enable = true;
             userName = myvars.userfullname;
             userEmail = myvars.useremail;
+          };
+          programs.starship = {
+            enable = true;
+            enableBashIntegration = true;
+            enableZshIntegration = true;
+            settings = {
+              username = {
+                show_always = true;
+                style_user = "bold blue";
+                style_root = "bold red";
+                format = "[$user]($style)";
+              };
+              hostname = {
+                ssh_only = false;
+                format = "[@$hostname](bold green) ";
+              };
+              character = {
+                success_symbol = "[➜](bold green)";
+                error_symbol = "[➜](bold red)";
+                vimcmd_symbol = "[🔒](bold yellow)";
+              };
+              directory = {
+                format = "📁 [$path]($style)[$read_only]($read_only_style) ";
+                style = "bold cyan";
+                read_only = "🔒";
+                truncation_length = 3;
+                truncate_to_repo = true;
+              };
+              git_branch = {
+                symbol = "🌱 ";
+                format = "[$symbol$branch]($style) ";
+                style = "bold purple";
+              };
+              format = "$username$hostname$line_break$directory$git_branch$character";
+            };
           };
         };
       }
