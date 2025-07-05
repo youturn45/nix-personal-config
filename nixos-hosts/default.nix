@@ -148,7 +148,13 @@ in
             starship
             nodejs_22
           ];
-          programs.zsh.enable = true;
+          programs.zsh = {
+            enable = true;
+            initExtra = ''
+              # Initialize starship prompt
+              eval "$(starship init zsh)"
+            '';
+          };
           programs.git = {
             enable = true;
             userName = myvars.userfullname;
