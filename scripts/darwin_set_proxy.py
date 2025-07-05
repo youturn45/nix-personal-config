@@ -25,7 +25,7 @@ pl = plistlib.loads(NIX_DAEMON_PLIST.read_bytes())
 pl["EnvironmentVariables"]["http_proxy"] = HTTP_PROXY
 pl["EnvironmentVariables"]["https_proxy"] = HTTP_PROXY
 
-# remove http proxy
+# remove http proxyx``
 # pl["EnvironmentVariables"].pop("http_proxy", None)
 # pl["EnvironmentVariables"].pop("https_proxy", None)
 

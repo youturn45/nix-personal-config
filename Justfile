@@ -136,7 +136,7 @@ silkspectre-debug: set-proxy
 
 # Quick build for SilkSpectre (shorter alias)
 [group('host')]
-silk: set-proxy
+silk:
   sudo darwin-rebuild switch --flake .#SilkSpectre
 
 # Build and switch to NightOwl configuration

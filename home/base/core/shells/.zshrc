@@ -16,13 +16,14 @@ function proxy_on() {
     export all_proxy=socks5://127.0.0.1:7891
     export ALL_PROXY=socks5://127.0.0.1:7891
     
-    echo -e "终端代理已开启。"
-    echo -e "当前代理设置："
-    echo -e "http_proxy: ${http_proxy:-未设置}"
-    echo -e "https_proxy: ${https_proxy:-未设置}"
-    echo -e "HTTP_PROXY: ${HTTP_PROXY:-未设置}"
-    echo -e "HTTPS_PROXY: ${HTTPS_PROXY:-未设置}"
-    echo -e "all_proxy: ${all_proxy:-未设置}"
+    printf "终端代理已开启。\n"
+    printf "当前代理设置：\n"
+    printf "http_proxy: %s\n" "${http_proxy:-未设置}"
+    printf "https_proxy: %s\n" "${https_proxy:-未设置}"
+    printf "HTTP_PROXY: %s\n" "${HTTP_PROXY:-未设置}"
+    printf "HTTPS_PROXY: %s\n" "${HTTPS_PROXY:-未设置}"
+    printf "all_proxy: %s\n" "${all_proxy:-未设置}"
+    printf "ALL_PROXY: %s\n" "${ALL_PROXY:-未设置}"
 }
 
 function proxy_off(){
@@ -31,22 +32,24 @@ function proxy_off(){
     # Unset uppercase proxy variables
     unset HTTP_PROXY HTTPS_PROXY ALL_PROXY
     
-    echo -e "终端代理已关闭。"
-    echo -e "当前代理设置："
-    echo -e "http_proxy: ${http_proxy:-未设置}"
-    echo -e "https_proxy: ${https_proxy:-未设置}"
-    echo -e "HTTP_PROXY: ${HTTP_PROXY:-未设置}"
-    echo -e "HTTPS_PROXY: ${HTTPS_PROXY:-未设置}"
-    echo -e "all_proxy: ${all_proxy:-未设置}"
+    printf "终端代理已关闭。\n"
+    printf "当前代理设置：\n"
+    printf "http_proxy: %s\n" "${http_proxy:-未设置}"
+    printf "https_proxy: %s\n" "${https_proxy:-未设置}"
+    printf "HTTP_PROXY: %s\n" "${HTTP_PROXY:-未设置}"
+    printf "HTTPS_PROXY: %s\n" "${HTTPS_PROXY:-未设置}"
+    printf "all_proxy: %s\n" "${all_proxy:-未设置}"
+    printf "ALL_PROXY: %s\n" "${ALL_PROXY:-未设置}"
 }
 
 function show_proxy() {
-    echo -e "当前代理设置："
-    echo -e "http_proxy: ${http_proxy:-未设置}"
-    echo -e "https_proxy: ${https_proxy:-未设置}"
-    echo -e "HTTP_PROXY: ${HTTP_PROXY:-未设置}"
-    echo -e "HTTPS_PROXY: ${HTTPS_PROXY:-未设置}"
-    echo -e "all_proxy: ${all_proxy:-未设置}"
+    printf "当前代理设置：\n"
+    printf "http_proxy: %s\n" "${http_proxy:-未设置}"
+    printf "https_proxy: %s\n" "${https_proxy:-未设置}"
+    printf "HTTP_PROXY: %s\n" "${HTTP_PROXY:-未设置}"
+    printf "HTTPS_PROXY: %s\n" "${HTTPS_PROXY:-未设置}"
+    printf "all_proxy: %s\n" "${all_proxy:-未设置}"
+    printf "ALL_PROXY: %s\n" "${ALL_PROXY:-未设置}"
 }
 
 function show_ip() {

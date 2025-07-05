@@ -13,8 +13,9 @@
         hostname = "ssh.github.com";
         user = "git";
         port = 443;
-        identityFile = "~/.ssh/rorschach";  # Use standard SSH key
-        identitiesOnly = true;
+        # Try rorschach key first, but allow fallback to other keys if not available
+        identityFile = "~/.ssh/rorschach";
+        identitiesOnly = false;  # Allow SSH to try other keys if rorschach is not available
       };
     };
 

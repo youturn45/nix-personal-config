@@ -16,13 +16,14 @@
         hostname = "ssh.github.com";
         user = "git";
         port = 443;
+        # Try rorschach key first, but allow fallback to other keys if not available
         identityFile = "~/.ssh/rorschach";
-        identitiesOnly = true;
+        identitiesOnly = false;  # Allow SSH to try other keys if rorschach is not available
       };
       
-      # Default configuration for rorschach key
+      # Default SSH agent and keychain configuration
+      # Note: No default identity file to allow users to use their own keys
       "*" = {
-        identityFile = "~/.ssh/rorschach";
         addKeysToAgent = "yes";
         useKeychain = "yes";
       };
