@@ -11,6 +11,6 @@
     TERM = pkgs.lib.mkDefault "xterm-256color";
   };
 
-  # Simple fix: just create a symlink to xterm-256color for xterm-ghostty
-  environment.etc."terminfo/x/xterm-ghostty".source = "${pkgs.ncurses}/share/terminfo/x/xterm-256color";
+  # Note: For Ghostty terminal, set TERM=xterm-256color in your terminal emulator
+  # or add to your shell profile: export TERM=xterm-256color
 }
