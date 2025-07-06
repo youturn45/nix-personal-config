@@ -17,26 +17,12 @@ return {
         node_decremental = "<bs>", -- Backspace
       },
     }
+    
+    -- Disable auto-install since we use Nix treesitter.withAllGrammars
+    opts.auto_install = false
     opts.ignore_install = { "gotmpl", "wing", "systemverilog" }
 
-    -- add more things to the ensure_installed table protecting against community packs modifying it
-    -- https://github.com/nvim-treesitter/nvim-treesitter/tree/master
-    opts.ensure_installed = require("astrocore").list_insert_unique(opts.ensure_installed, {
-      -- please add only the tree-sitters that are not available in nixpkgs here
-
-      "just",
-      "kdl",
-      "csv",
-      "xml",
-
-      ---- Misc
-      "diff",
-      "git_config",
-      "git_rebase",
-      "gitignore",
-      "gitcommit",
-      "gitattributes",
-      "ssh_config",
-    })
+    -- Clear ensure_installed since we get parsers from Nix
+    opts.ensure_installed = {}
   end,
 }
