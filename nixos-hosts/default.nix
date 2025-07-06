@@ -26,104 +26,8 @@ let
     };
 in
 {
-  # steps to run this vm:
-  #   1. nix build .#nixosConfigurations.myVm.config.system.build.vm
-  #   2. NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
-  myVm = mkNixosHost {
-    hostname = "myVm";
-    system = "x86_64-linux";
-    modules = [
-      ../modules/_nixos/vm # only for nixos vm
-      
-      # Override home-manager configuration for server - minimal packages only
-      {
-        home-manager.users.${myvars.username} = lib.mkForce {
-          home.stateVersion = "25.05";
-          home.packages = with specialArgs.pkgs; [
-            # Only essential packages for server
-            git
-            vim
-            curl
-            wget
-            htop
-            tmux
-            openssh
-          ];
-          programs.zsh.enable = true;
-          programs.git = {
-            enable = true;
-            userName = myvars.userfullname;
-            userEmail = myvars.useremail;
-          };
-        };
-      }
-    ];
-  };
 
-  # ISO configuration for installation media
-  myVm-iso = lib.nixosSystem {
-    inherit specialArgs;
-    system = "x86_64-linux";
-    modules = [
-      ../modules/common # NOTE shared by nixos and nix-darwin
-      ../modules/_nixos/common # shared by bare-metal and vm nixos machines
-      ./myVm # Use myVm configuration as base
-      
-      # ISO-specific modules
-      "${specialArgs.pkgs.path}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-      
-      {
-        # Override some settings for ISO
-        networking.hostName = "nixos-live";
-        
-        # Enable SSH for remote access
-        services.openssh.enable = true;
-        services.openssh.settings.PermitRootLogin = "yes";
-        users.users.root.initialPassword = "nixos";
-        
-        # Include useful packages for installation
-        environment.systemPackages = with specialArgs.pkgs; [
-          git
-          curl
-          wget
-          vim
-          htop
-        ];
-      }
-    ];
-  };
 
-  # Live system configuration (not VM)
-  mySystem = mkNixosHost {
-    hostname = "mySystem";
-    system = "x86_64-linux";
-    modules = [
-      # No VM-specific modules for live system
-      
-      # Override home-manager configuration for minimal live system
-      {
-        home-manager.users.${myvars.username} = lib.mkForce {
-          home.stateVersion = "25.05";
-          home.packages = with specialArgs.pkgs; [
-            # Only essential packages for live system
-            git
-            vim
-            curl
-            wget
-            htop
-            tmux
-            openssh
-          ];
-          programs.zsh.enable = true;
-          programs.git = {
-            enable = true;
-            userName = myvars.userfullname;
-            userEmail = myvars.useremail;
-          };
-        };
-      }
-    ];
-  };
 
   # Configuration for hostname "nixos"
   nixos = mkNixosHost {
@@ -135,6 +39,9 @@ in
       # Override home-manager configuration for minimal live system
       {
         home-manager.users.${myvars.username} = lib.mkForce {
+          imports = [
+            ../home/base/core/dev/npm
+          ];
           home.stateVersion = "25.05";
           home.packages = with specialArgs.pkgs; [
             # Only essential packages for live system
@@ -160,41 +67,9 @@ in
               TERM = "xterm-256color";
             };
             
-            initExtraFirst = ''
-              # Fix key bindings FIRST - before anything else loads
-              # Focus on Mac delete key (which is backspace/backward delete)
-              bindkey "^?" backward-delete-char     # Mac delete key (DEL character)
-              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)  
-              bindkey "\177" backward-delete-char   # DEL character (127) - Mac delete
-              bindkey "\b" backward-delete-char     # Backspace alternative
-              bindkey "\e[3~" delete-char           # Forward delete (fn+delete on Mac)
-              bindkey "^[[3~" delete-char           # Forward delete alternative
-              bindkey "^[3;5~" delete-char          # Ctrl+forward delete
-              bindkey "^[[P" delete-char            # Forward delete alternative
-              
-              # Navigation keys
-              bindkey "^[[H" beginning-of-line      # Home key
-              bindkey "^[[F" end-of-line            # End key
-              bindkey "^[[1~" beginning-of-line     # Home alternative
-              bindkey "^[[4~" end-of-line           # End alternative
-              
-              # Set terminal options for Mac delete key compatibility
-              stty erase '^?'
-              stty werase '^W'
-            '';
-            
-            initContent = ''
-              # Add npm global to PATH
-              export PATH="$HOME/.npm-global/bin:$PATH"
-              
+initContent = ''
               # Initialize starship prompt
               eval "$(starship init zsh)"
-              
-              # Run claude-code installation on first login
-              if [[ ! -f "$HOME/.npm-global/bin/claude-code" && -f "$HOME/.local/bin/install-claude-code" ]]; then
-                echo "Setting up claude-code..."
-                "$HOME/.local/bin/install-claude-code"
-              fi
             '';
           };
           programs.git = {
@@ -238,53 +113,6 @@ in
             };
           };
 
-          # NPM configuration matching home/base/core/dev/npm/
-          home.sessionVariables = {
-            NPM_CONFIG_PREFIX = "\${HOME}/.npm-global";
-            NPM_CONFIG_CACHE = "\${HOME}/.npm-cache";
-          };
-
-          home.sessionPath = [
-            "\${HOME}/.npm-global/bin"
-          ];
-
-          home.file.".npmrc".text = ''
-            prefix=''${HOME}/.npm-global
-            cache=''${HOME}/.npm-cache
-            init-author-name=${myvars.username}
-            init-license=MIT
-            fund=false
-            audit=false
-          '';
-
-          # Claude-code installation via shell script approach
-          home.file.".local/bin/install-claude-code".source = specialArgs.pkgs.writeShellScript "install-claude-code" ''
-            export PATH="${specialArgs.pkgs.nodejs_22}/bin:$PATH"
-            export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-            export NPM_CONFIG_CACHE="$HOME/.npm-cache"
-            
-            # Create directories
-            mkdir -p "$HOME/.npm-global" "$HOME/.npm-cache" "$HOME/.config/claude-code"
-            
-            # Install claude-code if not present
-            if ! "$HOME/.npm-global/bin/claude-code" --version 2>/dev/null; then
-              echo "Installing claude-code..."
-              "${specialArgs.pkgs.nodejs_22}/bin/npm" install -g @anthropic-ai/claude-code@latest
-            else
-              echo "claude-code already installed"
-            fi
-          '';
-
-          home.file.".config/claude-code/config.json".text = builtins.toJSON {
-            editor = "vim";
-            theme = "dark";
-          };
-
-          # Shell aliases for claude-code
-          programs.zsh.shellAliases = {
-            claude = "claude-code";
-            cc = "claude";
-          };
         };
       }
     ];

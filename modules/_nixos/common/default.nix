@@ -5,6 +5,12 @@
 
   system.stateVersion = "24.11";
 
+  # Enable flakes and nix-command globally
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    trusted-users = [ myvars.username ];
+  };
+
   # User configuration
   users.users.${myvars.username} = {
     isNormalUser = true;
