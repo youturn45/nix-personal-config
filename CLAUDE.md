@@ -34,6 +34,21 @@ just fmt              # Format nix files in repository
 just repl             # Open nix repl
 ```
 
+### NixOS Build Commands
+```bash
+# Build and switch NixOS configuration
+sudo nixos-rebuild switch --flake .
+
+# Build specific NixOS host
+sudo nixos-rebuild switch --flake .#nixos
+
+# Test NixOS configuration without switching
+sudo nixos-rebuild test --flake .
+
+# Build NixOS configuration without switching
+sudo nixos-rebuild build --flake .
+```
+
 ### New Mac Setup (Initial Installation)
 ```bash
 just brew             # Install Homebrew and just
@@ -51,16 +66,46 @@ just dot              # Build and switch to configuration
 ├── vars/                    # Global variables (hostname, username, system)
 ├── my-lib/                  # Custom helper functions
 ├── darwin-hosts/            # macOS host configurations
+│   ├── NightOwl.nix        # NightOwl host configuration
+│   ├── SilkSpectre.nix     # SilkSpectre host configuration
+│   ├── rorschach.nix       # Rorschach host configuration
+│   └── default.nix         # Darwin hosts entry point
 ├── modules/                 # System modules
 │   ├── common/             # Shared between platforms
 │   ├── darwin/             # macOS-specific modules
+│   │   ├── apps.nix        # Core system settings and Homebrew
+│   │   ├── system-settings.nix # macOS defaults and UI preferences
+│   │   ├── host-users.nix  # User account management
+│   │   └── nix-core.nix    # Core Nix configuration
 │   └── _nixos/             # NixOS-specific modules
+│       ├── common/         # Common NixOS modules
+│       └── vm/             # VM-specific modules
 ├── home/                   # Home Manager configurations
 │   ├── base/               # Base user configurations
 │   │   ├── core/           # Core packages and tools
+│   │   │   ├── dev/        # Development tools
+│   │   │   ├── editors/    # Text editors (neovim)
+│   │   │   ├── python/     # Python environment
+│   │   │   └── shells/     # Shell configurations
 │   │   ├── _tui/           # Terminal UI applications
+│   │   │   ├── _gpg/       # GPG configuration
+│   │   │   ├── _password-store/ # Password store
+│   │   │   ├── editors/    # Terminal editors
+│   │   │   ├── encryption/ # Encryption tools
+│   │   │   └── zellij/     # Terminal multiplexer
 │   │   └── gui/            # GUI applications
-└── nixos-hosts/            # NixOS host definitions
+│   │       ├── media.nix   # Media applications
+│   │       └── terminal/   # Terminal applications (Ghostty)
+│   └── server/             # Server-specific configurations
+├── nixos-hosts/            # NixOS host definitions
+│   └── nixos/              # NixOS VM configuration
+│       ├── boot.nix        # Boot configuration
+│       ├── hardware-configuration.nix # Hardware settings
+│       ├── proxy.nix       # Proxy configuration
+│       └── terminfo.nix    # Terminal information
+└── scripts/                # Utility scripts
+    ├── darwin_set_proxy.py # Darwin proxy setup
+    └── vnc_paste.py        # VNC paste utility
 ```
 
 ### Key Architecture Patterns
@@ -75,7 +120,9 @@ just dot              # Build and switch to configuration
 
 ### Current Hosts
 - **Rorschach**: MacBook Air M4 (primary Darwin host)
-- **myVm**: NixOS VM for testing
+- **NightOwl**: Darwin host configuration
+- **SilkSpectre**: Darwin host configuration
+- **nixos**: NixOS VM for testing
 
 ## Development Environment
 
