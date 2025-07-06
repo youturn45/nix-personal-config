@@ -11,9 +11,7 @@
     ../base/core/dev/ssh
     
     # Terminal tools only
-    ../base/_tui/editors/neovim
-    ../base/_tui/shell
-    ../base/_tui/multiplexers
+    ../base/core/editors/neovim
     
     # Exclude heavy packages:
     # - No tex (17GB TeX Live)

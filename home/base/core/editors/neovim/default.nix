@@ -41,6 +41,12 @@ in {
       # LD_LIBRARY_PATH is also needed to run the non-FHS binaries downloaded by mason.nvim.
       # it will be set by nix-ld, so we do not need to set it here again.
       extraWrapperArgs = with pkgs; [
+        # Add git to PATH for Neo-tree and other git-dependent plugins
+        "--suffix"
+        "PATH"
+        ":"
+        "${lib.makeBinPath [git]}"
+
         # LIBRARY_PATH is used by gcc before compilation to search directories
         # containing static and shared libraries that need to be linked to your program.
         "--suffix"

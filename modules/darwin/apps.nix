@@ -104,11 +104,9 @@
       # browser
       "google-chrome"
       "visual-studio-code"
+      
       # IM & audio & remote desktop & meeting
       "discord"
-
-      # remote desktop
-      "remote-viewer"
 
       # Tools
       "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
@@ -121,8 +119,7 @@
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
-      "tailscale" # VPN
-      # "aldente" # battery management app # replace with command line batt
+      # "tailscale" # VPN
     ];
   };
 }

@@ -67,7 +67,35 @@ in
               TERM = "xterm-256color";
             };
             
-initContent = ''
+            initExtraFirst = ''
+              # Fix key bindings FIRST - before anything else loads
+              # Focus on Mac delete key (which is backspace/backward delete)
+              bindkey "^?" backward-delete-char     # Mac delete key (DEL character)
+              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)  
+              bindkey "\177" backward-delete-char   # DEL character (127) - Mac delete
+              bindkey "\b" backward-delete-char     # Backspace alternative
+              bindkey "\e[3~" delete-char           # Forward delete (fn+delete on Mac)
+              bindkey "^[[3~" delete-char           # Forward delete alternative
+              bindkey "^[3;5~" delete-char          # Ctrl+forward delete
+              bindkey "^[[P" delete-char            # Forward delete alternative
+              
+              # Navigation keys
+              bindkey "^[[H" beginning-of-line      # Home key
+              bindkey "^[[F" end-of-line            # End key
+              bindkey "^[[1~" beginning-of-line     # Home alternative
+              bindkey "^[[4~" end-of-line           # End alternative
+              
+              # Set terminal options for Mac delete key compatibility
+              stty erase '^?'
+              stty werase '^W'
+            '';
+            
+            initContent = ''
+              # Add npm global to PATH (only if not already there)
+              if [[ ":$PATH:" != *":$HOME/.npm-global/bin:"* ]]; then
+                export PATH="$HOME/.npm-global/bin:$PATH"
+              fi
+              
               # Initialize starship prompt
               eval "$(starship init zsh)"
             '';
