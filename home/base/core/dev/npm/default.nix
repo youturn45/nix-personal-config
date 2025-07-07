@@ -1,12 +1,14 @@
-{ config, pkgs, lib, ... }:
-
-let
-  claudeCodeVersion = "latest"; # Change to specific version if needed
-in
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
+  claudeCodeVersion = "latest"; # Change to specific version if needed
+in {
   # Node.js and npm configuration
   home.packages = with pkgs; [
-    nodejs_22  # Latest LTS version
+    nodejs_22 # Latest LTS version
     # npm comes bundled with nodejs
   ];
 
@@ -26,14 +28,14 @@ in
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-global
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-cache
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.config/claude-code
-    
+
     if [[ ! -v DRY_RUN ]]; then
       NODE_BIN_DIR="${pkgs.nodejs_22}/bin"
-      
+
       if [[ -x "$NODE_BIN_DIR/npm" ]]; then
         export NPM_CONFIG_PREFIX="${config.home.homeDirectory}/.npm-global"
         export PATH="$NODE_BIN_DIR:${config.home.homeDirectory}/.npm-global/bin:$PATH"
-        
+
         # Check if claude is already installed
         if ${config.home.homeDirectory}/.npm-global/bin/claude --version >/dev/null 2>&1; then
           CURRENT_VERSION=$(${config.home.homeDirectory}/.npm-global/bin/claude --version 2>/dev/null || echo "unknown")
@@ -60,7 +62,7 @@ in
       NODE_BIN_DIR="${pkgs.nodejs_22}/bin"
       export NPM_CONFIG_PREFIX="${config.home.homeDirectory}/.npm-global"
       export PATH="$NODE_BIN_DIR:${config.home.homeDirectory}/.npm-global/bin:$PATH"
-      
+
       if [[ -x "${config.home.homeDirectory}/.npm-global/bin/claude" ]]; then
         echo "Checking for claude updates..."
         if "$NODE_BIN_DIR/npm" update -g @anthropic-ai/claude-code; then
@@ -93,12 +95,12 @@ in
 
   # Shell aliases for convenience
   programs.zsh.shellAliases = lib.mkIf config.programs.zsh.enable {
-    claude-code = "claude";  # Main alias: claude-code -> claude
-    cc = "claude";           # Short alias: cc -> claude
+    claude-code = "claude"; # Main alias: claude-code -> claude
+    cc = "claude"; # Short alias: cc -> claude
   };
 
   programs.bash.shellAliases = lib.mkIf config.programs.bash.enable {
-    claude-code = "claude";  # Main alias: claude-code -> claude
-    cc = "claude";           # Short alias: cc -> claude
+    claude-code = "claude"; # Main alias: claude-code -> claude
+    cc = "claude"; # Short alias: cc -> claude
   };
 }

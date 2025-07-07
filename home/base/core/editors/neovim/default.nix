@@ -19,37 +19,34 @@ in {
   # Enable NixVim
   programs.nixvim = {
     enable = true;
-    
-    # Use unstable neovim
-    package = pkgs-unstable.neovim;
-    
+
     # Default editor settings
     viAlias = true;
     vimAlias = true;
-    
+
     # Global settings
     globals = {
       mapleader = " ";
       maplocalleader = ",";
     };
-    
+
     # Vim options
     opts = {
       # Line numbers
       number = true;
       relativenumber = true;
-      
+
       # Indentation
       tabstop = 2;
       shiftwidth = 2;
       expandtab = true;
       smartindent = true;
-      
+
       # Search
       ignorecase = true;
       smartcase = true;
       hlsearch = true;
-      
+
       # UI
       termguicolors = true;
       signcolumn = "auto";
@@ -57,23 +54,23 @@ in {
       swapfile = false;
       title = true;
       titlelen = 20;
-      
+
       # Clipboard
       clipboard = "unnamedplus";
-      
+
       # Completion
       completeopt = ["menu" "menuone" "noselect"];
-      
+
       # Split behavior
       splitbelow = true;
       splitright = true;
-      
+
       # Folding
       foldmethod = "expr";
       foldexpr = "nvim_treesitter#foldexpr()";
       foldenable = false;
     };
-    
+
     # Colorscheme
     colorschemes.catppuccin = {
       enable = true;
@@ -82,7 +79,7 @@ in {
         transparent_background = true;
       };
     };
-    
+
     # Essential plugins
     plugins = {
       # Core functionality
@@ -94,7 +91,7 @@ in {
           fold.enable = true;
         };
       };
-      
+
       # LSP
       lsp = {
         enable = true;
@@ -108,19 +105,19 @@ in {
           marksman.enable = true; # Markdown LSP
         };
       };
-      
+
       # Completion
       nvim-cmp = {
         enable = true;
         autoEnableSources = true;
       };
-      
+
       # Snippets
       luasnip.enable = true;
-      
+
       # File explorer
       neo-tree.enable = true;
-      
+
       # Telescope
       telescope = {
         enable = true;
@@ -128,64 +125,64 @@ in {
           fzf-native.enable = true;
         };
       };
-      
+
       # Git
       gitsigns.enable = true;
       fugitive.enable = true;
-      
+
       # Terminal
       toggleterm.enable = true;
-      
+
       # Autopairs
       nvim-autopairs.enable = true;
-      
+
       # Comments
       comment.enable = true;
-      
+
       # Surround
       nvim-surround.enable = true;
-      
+
       # Which-key
       which-key.enable = true;
-      
+
       # Statusline
       lualine = {
         enable = true;
         theme = "catppuccin";
       };
-      
+
       # Bufferline
       bufferline.enable = true;
-      
+
       # Indent guides
       indent-blankline.enable = true;
-      
+
       # Markdown preview
       markdown-preview.enable = true;
-      
+
       # Copilot
       copilot-vim.enable = true;
-      
+
       # Undo tree
       undotree.enable = true;
-      
+
       # Diagnostics
       trouble.enable = true;
-      
+
       # Formatting
       conform-nvim = {
         enable = true;
         settings = {
           formatters_by_ft = {
-            nix = [ "alejandra" ];
-            rust = [ "rustfmt" ];
-            python = [ "black" ];
-            javascript = [ "prettier" ];
-            typescript = [ "prettier" ];
-            json = [ "prettier" ];
-            yaml = [ "prettier" ];
-            markdown = [ "prettier" ];
-            lua = [ "stylua" ];
+            nix = ["alejandra"];
+            rust = ["rustfmt"];
+            python = ["black"];
+            javascript = ["prettier"];
+            typescript = ["prettier"];
+            json = ["prettier"];
+            yaml = ["prettier"];
+            markdown = ["prettier"];
+            lua = ["stylua"];
           };
           format_on_save = {
             timeout_ms = 500;
@@ -194,7 +191,7 @@ in {
         };
       };
     };
-    
+
     # Key mappings
     keymaps = [
       # Buffer navigation
@@ -204,7 +201,7 @@ in {
         mode = "n";
         options.desc = "New tab";
       }
-      
+
       # Neo-tree
       {
         key = "<Leader>e";
@@ -212,7 +209,7 @@ in {
         mode = "n";
         options.desc = "Toggle Neo-tree";
       }
-      
+
       # Telescope
       {
         key = "<Leader>ff";
@@ -238,7 +235,7 @@ in {
         mode = "n";
         options.desc = "Help tags";
       }
-      
+
       # LSP
       {
         key = "gd";
@@ -270,7 +267,7 @@ in {
         mode = "n";
         options.desc = "Code action";
       }
-      
+
       # Diagnostics
       {
         key = "<Leader>d";
@@ -292,7 +289,7 @@ in {
       }
     ];
   };
-  
+
   # Shell aliases
   home.shellAliases = shellAliases;
   programs.nushell.shellAliases = shellAliases;

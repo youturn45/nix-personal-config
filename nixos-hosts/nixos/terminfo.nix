@@ -1,6 +1,4 @@
-{ pkgs, ... }:
-
-{
+{pkgs, ...}: {
   # Add terminfo database entries for modern terminals
   environment.systemPackages = with pkgs; [
     ncurses # Provides terminfo database

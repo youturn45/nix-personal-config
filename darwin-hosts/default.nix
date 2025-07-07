@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   # Common configuration for all hosts
   imports = [
     ../modules/common
@@ -27,4 +30,4 @@
   };
 
   # Shell configuration is now handled in modules/darwin/system-unified.nix
-} 
+}

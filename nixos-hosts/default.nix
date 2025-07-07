@@ -1,41 +1,44 @@
-{ lib, specialArgs, }:
-
-let
+{
+  lib,
+  specialArgs,
+}: let
   # Get inputs from specialArgs
   inherit (specialArgs) home-manager myvars;
-  
-  mkNixosHost = { hostname, system, modules ? [ ] }:
+
+  mkNixosHost = {
+    hostname,
+    system,
+    modules ? [],
+  }:
     lib.nixosSystem {
       inherit specialArgs system;
-      modules = modules ++ [
-        ../modules/common # NOTE shared by nixos and nix-darwin
-        ../modules/_nixos/common # shared by bare-metal and vm nixos machines
-        { networking.hostName = hostname; }
-        (lib.path.append ./. hostname) # NOTE config specific to this host
-        
-        # Add Home Manager
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = specialArgs;
-          home-manager.users.${myvars.username} = import ../home;
-          home-manager.backupFileExtension = "backup";
-        }
-      ];
+      modules =
+        modules
+        ++ [
+          ../modules/common # NOTE shared by nixos and nix-darwin
+          ../modules/_nixos/common # shared by bare-metal and vm nixos machines
+          {networking.hostName = hostname;}
+          (lib.path.append ./. hostname) # NOTE config specific to this host
+
+          # Add Home Manager
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = specialArgs;
+            home-manager.users.${myvars.username} = import ../home;
+            home-manager.backupFileExtension = "backup";
+          }
+        ];
     };
-in
-{
-
-
-
+in {
   # Configuration for hostname "nixos"
   nixos = mkNixosHost {
     hostname = "nixos";
     system = "x86_64-linux";
     modules = [
       # No VM-specific modules for live system
-      
+
       # Override home-manager configuration for minimal live system
       {
         home-manager.users.${myvars.username} = lib.mkForce {
@@ -60,42 +63,42 @@ in
             enableCompletion = true;
             autosuggestion.enable = true;
             syntaxHighlighting.enable = true;
-            
+
             # Key bindings applied early in zsh initialization
             localVariables = {
               # Set terminal options immediately
               TERM = "xterm-256color";
             };
-            
+
             initExtraFirst = ''
               # Fix key bindings FIRST - before anything else loads
               # Focus on Mac delete key (which is backspace/backward delete)
               bindkey "^?" backward-delete-char     # Mac delete key (DEL character)
-              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)  
+              bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)
               bindkey "\177" backward-delete-char   # DEL character (127) - Mac delete
               bindkey "\b" backward-delete-char     # Backspace alternative
               bindkey "\e[3~" delete-char           # Forward delete (fn+delete on Mac)
               bindkey "^[[3~" delete-char           # Forward delete alternative
               bindkey "^[3;5~" delete-char          # Ctrl+forward delete
               bindkey "^[[P" delete-char            # Forward delete alternative
-              
+
               # Navigation keys
               bindkey "^[[H" beginning-of-line      # Home key
               bindkey "^[[F" end-of-line            # End key
               bindkey "^[[1~" beginning-of-line     # Home alternative
               bindkey "^[[4~" end-of-line           # End alternative
-              
+
               # Set terminal options for Mac delete key compatibility
               stty erase '^?'
               stty werase '^W'
             '';
-            
+
             initContent = ''
               # Add npm global to PATH (only if not already there)
               if [[ ":$PATH:" != *":$HOME/.npm-global/bin:"* ]]; then
                 export PATH="$HOME/.npm-global/bin:$PATH"
               fi
-              
+
               # Initialize starship prompt
               eval "$(starship init zsh)"
             '';
@@ -140,7 +143,6 @@ in
               format = "$username$hostname$line_break$directory$git_branch$character";
             };
           };
-
         };
       }
     ];

@@ -1,6 +1,8 @@
-{ modulesPath, lib, ... }:
-
 {
+  modulesPath,
+  lib,
+  ...
+}: {
   imports = [
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
@@ -18,5 +20,5 @@
   };
 
   # Enable serial console for VM management
-  boot.kernelParams = [ "console=ttyS0" ];
+  boot.kernelParams = ["console=ttyS0"];
 }

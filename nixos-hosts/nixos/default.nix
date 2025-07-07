@@ -1,7 +1,7 @@
-{ myLib, ... }:
-
-{
-  imports = [
-    ./hardware-configuration.nix
-  ] ++ myLib.collectModulesRecursively ./.;
+{myLib, ...}: {
+  imports =
+    [
+      ./hardware-configuration.nix
+    ]
+    ++ myLib.collectModulesRecursively ./.;
 }

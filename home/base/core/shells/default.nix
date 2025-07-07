@@ -17,22 +17,23 @@
 in {
   home.shellAliases = shellAliases;
 
-
   programs.zsh = {
     enable = true;
     enableCompletion = false;
-    initContent = ''
-      export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
-    '' + builtins.readFile ./.zshrc;
+    initContent =
+      ''
+        export PATH="$PATH:${localBin}:${goBin}:${rustBin}"
+      ''
+      + builtins.readFile ./.zshrc;
 
     zplug = {
       enable = true;
       plugins = [
-        { name = "zsh-users/zsh-autosuggestions"; }
-        { name = "zsh-users/zsh-completions"; }
-        { name = "zdharma-continuum/fast-syntax-highlighting"; }
-        { name = "zsh-users/zsh-history-substring-search"; }
-        { name = "Aloxaf/fzf-tab"; }
+        {name = "zsh-users/zsh-autosuggestions";}
+        {name = "zsh-users/zsh-completions";}
+        {name = "zdharma-continuum/fast-syntax-highlighting";}
+        {name = "zsh-users/zsh-history-substring-search";}
+        {name = "Aloxaf/fzf-tab";}
       ];
     };
   };

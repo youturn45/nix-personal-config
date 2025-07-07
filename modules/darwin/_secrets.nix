@@ -1,11 +1,15 @@
-{ config, pkgs, agenix, myvars, ... }:
-
 {
+  config,
+  pkgs,
+  agenix,
+  myvars,
+  ...
+}: {
   # Install agenix CLI tool
   environment.systemPackages = with pkgs; [
     agenix.packages.${pkgs.system}.default
   ];
-  
+
   # Define secrets
   age.secrets = {
     ssh-key-rorschach = {

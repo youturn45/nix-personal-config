@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   imports = [
     ./default.nix
   ];
@@ -15,4 +18,4 @@
   ];
 
   # Host-specific home-manager settings can be added here if needed
-} 
+}

@@ -31,11 +31,11 @@
 
     # Shell integration
     shell-integration = zsh
-    
+
     # Window settings
     window-decoration = true
     window-theme = dark
-    
+
     # Cursor settings
     cursor-style = block
     cursor-style-blink = true

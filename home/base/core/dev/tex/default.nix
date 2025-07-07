@@ -1,31 +1,34 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   # TeX Live with comprehensive package set
   home.packages = with pkgs; [
     # Full TeX Live distribution with most packages
     texlive.combined.scheme-full
-    
+
     # Additional TeX tools
-    texlab          # Language server for LaTeX
-    latexrun        # Tool to build LaTeX documents
-    rubber          # Automated system for building LaTeX documents
-    texstudio       # LaTeX editor (GUI)
-    
+    texlab # Language server for LaTeX
+    latexrun # Tool to build LaTeX documents
+    rubber # Automated system for building LaTeX documents
+    texstudio # LaTeX editor (GUI)
+
     # Document viewers
-    zathura         # Lightweight document viewer
-    evince          # GNOME document viewer
-    
+    zathura # Lightweight document viewer
+    evince # GNOME document viewer
+
     # Image conversion tools for LaTeX
-    imagemagick     # Convert images for inclusion in documents
-    ghostscript     # PostScript interpreter
+    imagemagick # Convert images for inclusion in documents
+    ghostscript # PostScript interpreter
   ];
 
   # Configure environment variables for TeX
   home.sessionVariables = {
     # Set TEXMFHOME for user-specific TeX packages
     TEXMFHOME = "${config.home.homeDirectory}/.texmf";
-    
+
     # Set default PDF viewer
     PDFVIEWER = "zathura";
   };
@@ -68,10 +71,10 @@
   };
 
   # Shell aliases for common TeX operations
-  home.shellAliases = {    
+  home.shellAliases = {
     # Clean LaTeX auxiliary files
     texclean = "rm -f *.aux *.log *.out *.toc *.nav *.snm *.vrb *.fls *.fdb_latexmk *.synctex.gz";
-    
+
     # Quick compile and view (using full path to avoid recursion)
     texview = "pdflatex -interaction=nonstopmode $1 && zathura \${1%.tex}.pdf";
   };

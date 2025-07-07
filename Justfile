@@ -99,7 +99,7 @@ gc:
 [group('nix')]
 fmt:
   # format the nix files in this repo
-  nix fmt
+  nix-shell -p alejandra --run "alejandra ."
 
 # Show all the auto gc roots in the nix store
 [group('nix')]
@@ -153,6 +153,70 @@ nightowl-debug: set-proxy
 [group('host')]
 owl: set-proxy
   sudo darwin-rebuild switch --flake .#NightOwl
+
+############################################################################
+#
+#  Build Testing Commands
+#
+############################################################################
+
+# Pre-build validation (format and flake check)
+[group('test')]
+validate:
+  @echo "🔍 Running pre-build validation..."
+  just fmt
+  nix flake check --no-build
+
+# Build test without switching
+[group('test')]
+build-test: set-proxy validate
+  @echo "🏗️  Testing build without switching..."
+  darwin-rebuild build --flake .#{{hostname}}
+
+# Show current generation for backup reference
+[group('test')]
+current-gen:
+  @echo "📋 Current system generation:"
+  @nix profile history --profile /nix/var/nix/profiles/system | head -n 5
+
+# Safe build process: validate → build-test → switch
+[group('test')]
+safe-build: current-gen validate build-test
+  @echo "✅ Build test passed! Proceeding with switch..."
+  sudo darwin-rebuild switch --flake .#{{hostname}}
+
+# Safe build for specific host
+[group('test')]
+safe-build-host host: 
+  @echo "🔍 Running safe build for {{host}}..."
+  @echo "📋 Current system generation:"
+  @nix profile history --profile /nix/var/nix/profiles/system | head -n 5
+  just fmt
+  nix flake check --no-build
+  @echo "🏗️  Testing build without switching..."
+  darwin-rebuild build --flake .#{{host}}
+  @echo "✅ Build test passed! Proceeding with switch..."
+  sudo python3 scripts/darwin_set_proxy.py
+  sudo darwin-rebuild switch --flake .#{{host}}
+
+# Rollback to previous generation
+[group('test')]
+rollback:
+  @echo "⏪ Rolling back to previous generation..."
+  sudo darwin-rebuild rollback
+
+# List recent generations with details
+[group('test')]
+generations:
+  @echo "📜 Recent system generations:"
+  @nix profile history --profile /nix/var/nix/profiles/system | head -n 10
+
+# Quick fix: rollback if current system has issues
+[group('test')]
+emergency-rollback:
+  @echo "🚨 Emergency rollback to last known good generation..."
+  sudo darwin-rebuild rollback
+  @echo "✅ Rollback complete. Check system status."
 
 ############################################################################
 #

@@ -1,7 +1,10 @@
-{ pkgs, myvars, ... }: {
-
+{
+  pkgs,
+  myvars,
+  ...
+}: {
   ##########################################################################
-  # 
+  #
   #  Install all apps and packages here.
   #
   # Feel free to modify this file to fit your needs.
@@ -10,8 +13,8 @@
 
   # Required system configuration (using centralized variables)
   system = {
-    primaryUser = myvars.primaryUser;  # Required for homebrew functionality
-    stateVersion = myvars.darwinStateVersion;  # Required for nix-darwin
+    primaryUser = myvars.primaryUser; # Required for homebrew functionality
+    stateVersion = myvars.darwinStateVersion; # Required for nix-darwin
   };
 
   # Install packages from nix's official package repository.
@@ -31,16 +34,17 @@
     zstd
     coreutils
     nano # Simple editor for system-level editing
-    
+
     # Basic system utilities
     jq # Keep for system scripts
-    
+
     # Network tools
     httpie
     mtr
   ];
 
-  /*programs = {
+  /*
+    programs = {
     # modern vim
     neovim = {
       enable = true;
@@ -59,12 +63,13 @@
         };
       };
     };
-  };*/
+  };
+  */
 
   environment.variables.EDITOR = "nvim";
 
   # To make this work, homebrew needs to be installed manually, see https://brew.sh
-  # 
+  #
   # The apps installed by homebrew are not managed by nix, and not reproducible!
   # But on macOS, homebrew has a much larger selection of apps than nixpkgs, especially for GUI apps!
   homebrew = {
@@ -79,7 +84,7 @@
     # Applications to install from Mac App Store using mas.
     # You need to install all these Apps manually first so that your apple account have records for them.
     # otherwise Apple Store will refuse to install them.
-    # For details, see https://github.com/mas-cli/mas 
+    # For details, see https://github.com/mas-cli/mas
     masApps = {
       # Feel free to add your favorite apps here.
       Wechat = 836500024;
@@ -95,7 +100,7 @@
     brews = [
       "libomp"
       "batt"
-    #  "ffmpeg"
+      #  "ffmpeg"
     ];
 
     # `brew install --cask`
@@ -104,7 +109,7 @@
       # browser
       "google-chrome"
       "visual-studio-code"
-      
+
       # IM & audio & remote desktop & meeting
       "discord"
 

@@ -57,7 +57,53 @@ just darwin-channel   # Setup Darwin channels
 just dot              # Build and switch to configuration
 ```
 
-**Important**: Update the `hostname` variable in the Justfile before building (currently set to "your-hostname").
+**Important**: Update the `hostname` variable in the Justfile before building (currently set to "Rorschach").
+
+### Build Testing Commands (Recommended for Development)
+```bash
+# Safe build process - validates, tests, then switches
+just safe-build          # Full safe build for current host
+just safe-build-host rorschach  # Safe build for specific host
+
+# Individual testing steps
+just validate            # Pre-build validation (format + flake check)
+just build-test          # Test build without switching
+just current-gen         # Show current generation for reference
+
+# Generation management
+just generations         # List recent system generations
+just rollback           # Rollback to previous generation
+just emergency-rollback  # Quick emergency rollback
+
+# Development workflow example:
+# 1. Make changes to configuration
+# 2. just validate        # Check format and validate flake
+# 3. just build-test      # Test build without applying
+# 4. just safe-build      # Apply changes if build test passes
+# 5. just rollback        # Rollback if issues occur
+```
+
+### Build Testing Philosophy
+
+This repository implements a safe-first approach to system configuration changes:
+
+1. **Validation First**: Always check formatting and flake validity before building
+2. **Test Before Apply**: Build configurations without switching to catch errors early  
+3. **Generation Tracking**: Record current generation before changes for easy rollback
+4. **Atomic Operations**: Either the entire build succeeds or fails cleanly
+5. **Easy Recovery**: Simple rollback commands for quick recovery
+
+**Recommended Development Workflow:**
+- **Development**: Use `just safe-build` for normal development work
+- **Experimentation**: Use `just build-test` to test risky changes without applying
+- **Emergency**: Use `just emergency-rollback` if system becomes unstable
+- **CI/CD**: Use `just validate` in automated pipelines
+
+**Key Benefits:**
+- **Prevents broken systems**: Build testing catches errors before they affect your system
+- **Fast iteration**: Quick validation feedback loop for development
+- **Easy recovery**: One-command rollback to working state
+- **Documentation**: Generation history provides audit trail of changes
 
 ## Architecture
 

@@ -1,8 +1,5 @@
 # Simplified starship config for cross-platform compatibility
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   programs.starship = {
     enable = true;
 
@@ -17,7 +14,7 @@
         style_root = "bold red";
         format = "[$user]($style)";
       };
-      
+
       hostname = {
         ssh_only = false;
         format = "[@$hostname](bold green) ";

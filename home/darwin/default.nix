@@ -1,6 +1,9 @@
-{ myvars, myLib, pkgs, ... }:
-
 {
+  myvars,
+  myLib,
+  pkgs,
+  ...
+}: {
   # Darwin-specific home manager configuration
   imports = myLib.collectModulesRecursively ./.;
 

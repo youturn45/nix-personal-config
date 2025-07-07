@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+{...}: {
   # System-wide proxy environment variables (matching your zsh proxy_on function)
   environment.variables = {
     http_proxy = "http://10.0.0.5:7890";

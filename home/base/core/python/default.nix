@@ -1,9 +1,7 @@
-{ pkgs, ... }:
- let
-   pyver = "312";
- in
- {
-   home.packages = with pkgs; [
+{pkgs, ...}: let
+  pyver = "312";
+in {
+  home.packages = with pkgs; [
     python312
     python312Packages.pip
     python312Packages.virtualenvwrapper
@@ -53,15 +51,14 @@
     python312Packages.pillow
     python312Packages.openpyxl
     python312Packages.sqlalchemy
-   ];
- 
-   programs.zsh.shellAliases = {
-     # Virtual environment aliases
-     mkv = "mkvirtualenv";
-     rmv = "rmvirtualenv";
-     lsv = "lsvirtualenv";
-     wv = "workon";
-     dv = "deactivate";
+  ];
 
-   };
- }
+  programs.zsh.shellAliases = {
+    # Virtual environment aliases
+    mkv = "mkvirtualenv";
+    rmv = "rmvirtualenv";
+    lsv = "lsvirtualenv";
+    wv = "workon";
+    dv = "deactivate";
+  };
+}

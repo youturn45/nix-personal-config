@@ -19,7 +19,7 @@
           style_root = "bold red";
           format = "[$user]($style)";
         };
-        
+
         hostname = {
           ssh_only = false;
           format = "[@$hostname](bold green) ";
@@ -77,7 +77,7 @@
           symbol = "☁️ ";
           format = "[$symbol($profile)(\\($region\\))]($style) ";
         };
-        
+
         gcloud = {
           format = "[$symbol$active(\\($region\\))]($style) ";
           symbol = "🅶 ";
@@ -109,7 +109,7 @@
 
         # Custom three-line format:
         # Line 1: username@hostname + time
-        # Line 2: directory + git info + language/tool info  
+        # Line 2: directory + git info + language/tool info
         # Line 3: prompt character
         format = "$username$hostname$time$line_break$directory$git_branch$git_status$nodejs$python$rust$java$golang$docker_context$aws$gcloud$line_break$character";
 
