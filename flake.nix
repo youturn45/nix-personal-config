@@ -123,13 +123,15 @@
           # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
           agenix.darwinModules.default
           home-manager.darwinModules.home-manager
-          nixvim.homeManagerModules.nixvim
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = darwinSpecialArgs;
             home-manager.users.${myvars.username} = import ./home;
             home-manager.backupFileExtension = "backup";
+            home-manager.sharedModules = [
+              nixvim.homeManagerModules.nixvim
+            ];
           }
         ];
       };
