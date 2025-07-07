@@ -57,6 +57,14 @@
     
     # development tools (moved from system packages)
     gh # GitHub CLI
+    
+    # Formatters for editors
+    glow # Markdown viewer
+    alejandra # Nix formatter
+    rustfmt # Rust formatter
+    black # Python formatter
+    nodePackages.prettier # JS/TS/JSON/YAML/MD formatter
+    stylua # Lua formatter
   ];
 
   programs = {

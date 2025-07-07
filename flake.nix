@@ -55,6 +55,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
+    # nixvim, used for managing neovim configuration
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
     # nur-ryan4yin, custom packages used from ryan4yin
     nur-ryan4yin.url = "github:ryan4yin/nur-packages";
   };
@@ -70,6 +76,7 @@
     haumea,
     ghostty,
     agenix,
+    nixvim,
     ... }:
   let 
     inherit (nixpkgs) lib;
@@ -85,7 +92,7 @@
 
     # Create system-specific specialArgs
     mkSpecialArgs = system: {
-      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager;
+      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager nixvim;
       vars = myvars;  # Alias for modules expecting 'vars'
       
       pkgs = mkPkgs inputs.nixpkgs system;
@@ -109,6 +116,7 @@
         # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
         agenix.darwinModules.default
         home-manager.darwinModules.home-manager
+        nixvim.homeModules.nixvim
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

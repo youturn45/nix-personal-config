@@ -21,6 +21,13 @@ return {
     -- Disable auto-install since we use Nix treesitter.withAllGrammars
     opts.auto_install = false
     opts.ignore_install = { "gotmpl", "wing", "systemverilog" }
+    
+    -- Prevent systemverilog from being installed
+    if opts.ensure_installed then
+      opts.ensure_installed = vim.tbl_filter(function(lang)
+        return lang ~= "systemverilog"
+      end, opts.ensure_installed)
+    end
 
     -- Clear ensure_installed since we get parsers from Nix
     opts.ensure_installed = {}

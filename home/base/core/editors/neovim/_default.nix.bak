@@ -1,0 +1,57 @@
+{
+  config,
+  lib,
+  pkgs,
+  pkgs-unstable,
+  ...
+}:
+###############################################################################
+#
+#  AstroNvim's configuration and all its dependencies(lsp, formatter, etc.)
+#
+###############################################################################
+let
+  shellAliases = {
+    v = "nvim";
+    vdiff = "nvim -d";
+  };
+  # Updated path to nvim directory in new location
+  configPath = "${config.home.homeDirectory}/Developer/nix-personal-config/home/base/core/editors/neovim/nvim";
+in {
+  # Add neovim and glow as packages
+  home.packages = with pkgs-unstable; [ neovim-unwrapped glow ];
+  
+  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink configPath;
+
+  home.shellAliases = shellAliases;
+  programs.nushell.shellAliases = shellAliases;
+
+  programs = {
+    neovim = {
+      enable = true;
+      package = pkgs-unstable.neovim-unwrapped;
+
+      # defaultEditor = true; # set EDITOR at system-wide level
+      viAlias = true;
+      vimAlias = true;
+
+
+      # Currently we use lazy.nvim as neovim's package manager, so comment this one.
+      #
+      # NOTE: These plugins will not be used by astronvim by default!
+      # We should install packages that will compile locally or download FHS binaries via Nix!
+      # and use lazy.nvim's `dir` option to specify the package directory in nix store.
+      # so that these plugins can work on NixOS.
+      #
+      # related project:
+      #  https://github.com/b-src/lazy-nix-helper.nvim
+      plugins = with pkgs.vimPlugins; [
+        # search all the plugins using https://search.nixos.org/packages
+        telescope-fzf-native-nvim
+
+        # TODO: Optimize - specify only needed grammars instead of all
+        nvim-treesitter.withAllGrammars
+      ];
+    };
+  };
+}
