@@ -105,6 +105,42 @@ This repository implements a safe-first approach to system configuration changes
 - **Easy recovery**: One-command rollback to working state
 - **Documentation**: Generation history provides audit trail of changes
 
+### Incremental Configuration Development (NixVim Case Study)
+
+When implementing complex configurations like NixVim, use this proven stepwise approach:
+
+#### **The 7-Step Method:**
+1. **Basic Options** - Start with fundamental vim settings (numbers, indentation, search)
+2. **Colorscheme** - Add theme/appearance (ensures visual feedback works)
+3. **Core Plugins** - Add essential functionality (treesitter for syntax highlighting)
+4. **Language Support** - Add LSP servers and language-specific features
+5. **Completion & Snippets** - Add autocompletion and snippet support
+6. **File Management** - Add file explorer and fuzzy finder (neo-tree, telescope)
+7. **Additional Plugins** - Add remaining plugins, UI enhancements, and keymaps
+
+#### **Methodology:**
+- **Test each step**: Run `just build-test` after each addition
+- **Fix issues immediately**: Address deprecation warnings and errors before proceeding
+- **Commit frequently**: Save working states to enable easy rollback
+- **Document issues**: Record solutions for deprecated options and compatibility problems
+
+#### **Common NixVim Issues & Solutions:**
+- **Module Loading**: Use `home-manager.sharedModules = [nixvim.homeManagerModules.nixvim]`
+- **Deprecated Options**: 
+  - `tsserver` → `ts_ls`
+  - `nvim-cmp` → `cmp` 
+  - `lualine.theme` → `lualine.settings.options.theme`
+- **Rust Analyzer**: Set `installCargo = false` and `installRustc = false`
+- **Web Icons**: Explicitly enable `web-devicons.enable = true`
+- **Unfree Packages**: Remove or configure `allowUnfree` for copilot-vim
+
+#### **Benefits of Stepwise Approach:**
+- **Pinpoint Issues**: Isolate problems to specific components
+- **Maintain Progress**: Never lose working configurations
+- **Learn Incrementally**: Understand each plugin's impact
+- **Reduce Complexity**: Handle one concern at a time
+- **Build Confidence**: See immediate results from each step
+
 ## Architecture
 
 ### Directory Structure
