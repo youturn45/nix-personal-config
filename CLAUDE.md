@@ -166,10 +166,22 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   ├── base/               # Base user configurations
 │   │   ├── core/           # Core packages and tools
 │   │   │   ├── dev/        # Development tools
-│   │   │   ├── editors/    # Text editors (neovim)
+│   │   │   │   ├── git/    # Git configuration
+│   │   │   │   ├── npm/    # Node.js and npm setup
+│   │   │   │   ├── ssh/    # SSH configuration
+│   │   │   │   ├── starship/ # Shell prompt configuration
+│   │   │   │   ├── tex/    # LaTeX environment
+│   │   │   │   └── _container/ # Container tools
+│   │   │   ├── editors/    # Text editors
+│   │   │   │   └── neovim/ # NixVim configuration (fully featured)
+│   │   │   │       ├── default.nix # Complete NixVim setup with LSP, completion, plugins
+│   │   │   │       ├── _default.nix.bak # Backup of previous config
+│   │   │   │       ├── _nvim.bak/ # AstroNvim backup directory
+│   │   │   │       └── README.md # NixVim setup documentation
 │   │   │   ├── python/     # Python environment
-│   │   │   └── shells/     # Shell configurations
-│   │   ├── _tui/           # Terminal UI applications
+│   │   │   ├── shells/     # Shell configurations (zsh, nushell)
+│   │   │   └── core.nix    # Core packages and CLI tools
+│   │   ├── _tui/           # Terminal UI applications (disabled with _)
 │   │   │   ├── _gpg/       # GPG configuration
 │   │   │   ├── _password-store/ # Password store
 │   │   │   ├── editors/    # Terminal editors
@@ -177,7 +189,10 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   │   │   └── zellij/     # Terminal multiplexer
 │   │   └── gui/            # GUI applications
 │   │       ├── media.nix   # Media applications
-│   │       └── terminal/   # Terminal applications (Ghostty)
+│   │       └── terminal/   # Terminal applications
+│   │           └── ghostty.nix # Ghostty terminal emulator
+│   ├── darwin/             # macOS-specific user configurations
+│   │   └── default.nix     # Darwin user profile entry point
 │   └── server/             # Server-specific configurations
 ├── nixos-hosts/            # NixOS host definitions
 │   └── nixos/              # NixOS VM configuration
@@ -200,6 +215,10 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 
 4. **Centralized Variables**: All system variables (hostname, username, timezone) defined in `vars/default.nix`.
 
+5. **NixVim Integration**: Uses `home-manager.sharedModules` approach for proper module loading of NixVim within the Home Manager context.
+
+6. **Incremental Development**: Configuration supports stepwise development with build testing at each stage.
+
 ### Current Hosts
 - **Rorschach**: MacBook Air M4 (primary Darwin host)
 - **NightOwl**: Darwin host configuration
@@ -219,13 +238,21 @@ Access via: `nix develop`
 
 - **Centralized Variables**: All system settings (versions, user info) are centralized in `vars/default.nix`
 - **System Configuration**: 
-  - `modules/darwin/apps.nix`: Core system settings and Homebrew
+  - `modules/darwin/apps.nix`: Core system settings and Homebrew packages
   - `modules/darwin/system-settings.nix`: macOS defaults and UI preferences
+  - `modules/darwin/host-users.nix`: User account management
+  - `modules/darwin/nix-core.nix`: Core Nix configuration and settings
+- **Editor Configuration**: 
+  - `home/base/core/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
+  - Supports 7+ LSP servers (Nix, Lua, Rust, Python, TypeScript, Bash, Markdown)
+  - Auto-formatting with conform-nvim for multiple languages
+  - Full key binding setup for productivity
+- **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
 - **Proxy Configuration**: The build process includes proxy setup for Chinese networks (`darwin-set-proxy`)
 - **Claude Code Integration**: Development shell automatically includes claude-code
-- **Theme**: Uses Catppuccin Mocha theme throughout the system
+- **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
 - **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
-- **Target Directory**: Configuration should be cloned to `~/Zero/nix-config` (per referenced architecture)
+- **Build Testing**: Comprehensive testing infrastructure with validation, build-test, and rollback capabilities
 
 ## Network Configuration
 
