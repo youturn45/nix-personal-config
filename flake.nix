@@ -117,7 +117,7 @@
         specialArgs = darwinSpecialArgs;
         system = "${myvars.system}";
         modules = [
-          ./darwin-hosts/${hostname}.nix
+          ./hosts/darwin/${hostname}.nix
           ./modules/common # NOTE shared by nixos and nix-darwin
           ./modules/darwin
           # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
@@ -141,7 +141,7 @@
       NightOwl = mkDarwinHost "NightOwl";
       SilkSpectre = mkDarwinHost "SilkSpectre";
     };
-    nixosConfigurations = import ./nixos-hosts {
+    nixosConfigurations = import ./hosts/nixos {
       inherit lib;
       specialArgs = linuxSpecialArgs;
     };

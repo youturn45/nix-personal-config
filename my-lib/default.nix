@@ -7,8 +7,7 @@
 
   - Files and directories starting with `_` are ignored.
   - The `default.nix` file **directly** under that directory is ignored.
-  - If one sub directory containing a `default.nix` file, only that `default.nix` file is included and other files are ignored.
-
+  - If one sub directory containing a `default.nix` file, only that `default.nix` file is included and other files are ignore
   # Inputs
 
   `dir`
