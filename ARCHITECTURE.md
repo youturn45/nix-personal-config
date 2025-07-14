@@ -1,7 +1,7 @@
 # Nix Personal Configuration - Architecture Documentation
 
-> **Generated**: December 6, 2025  
-> **Version**: Based on `nix-improvements` branch  
+> **Generated**: January 2025  
+> **Version**: Production-ready configuration (post-cleanup)  
 > **System**: Multi-platform Nix configuration (macOS + NixOS)
 
 ## Table of Contents
@@ -57,11 +57,18 @@ nix-personal-config/
 ├── 📁 hosts/                  # Host-specific configurations
 │   ├── default.nix            # Common host settings
 │   └── rorschach.nix          # Primary macOS host (MacBook Air M4)
-├── 📁 _nixos-hosts/           # NixOS VM configurations
-│   ├── default.nix            # NixOS host generator
-│   └── myVm/                  # Development/testing VM
+├── 📁 hosts/                  # Host configurations
+│   ├── darwin/                # macOS host configurations
+│   │   ├── NightOwl.nix       # NightOwl host configuration
+│   │   ├── SilkSpectre.nix    # SilkSpectre host configuration
+│   │   ├── rorschach.nix      # Rorschach host configuration
+│   │   └── default.nix        # Darwin hosts entry point
+│   └── nixos/                 # NixOS host configurations
+│       ├── default.nix        # NixOS host generator
+│       └── nixos/             # Development/testing VM
 └── 📁 scripts/                # Utility scripts
-    └── darwin_set_proxy.py    # Proxy configuration for Chinese networks
+    ├── darwin_set_proxy.py    # Configurable proxy setup (local/network modes)
+    └── vnc_paste.py           # VNC clipboard utility
 ```
 
 ## Root Configuration
@@ -524,7 +531,19 @@ background-blur-radius = 20;
 - Host-specific application preferences
 - Network and hardware configuration
 
-## _nixos-hosts/ - NixOS VM Configuration
+## hosts/ - Host Configuration
+
+### hosts/darwin/ - macOS Host Configurations
+
+**Purpose**: macOS-specific host configurations using nix-darwin
+
+**Host Files:**
+- **rorschach.nix**: Primary development machine (MacBook Air M4)
+- **NightOwl.nix**: Secondary macOS host
+- **SilkSpectre.nix**: Tertiary macOS host
+- **default.nix**: Common Darwin configuration entry point
+
+### hosts/nixos/ - NixOS VM Configuration
 
 ### default.nix - NixOS Host Generator
 **Purpose**: Factory function for creating NixOS configurations
@@ -563,15 +582,26 @@ NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
 ## Utility Scripts
 
 ### scripts/darwin_set_proxy.py - Network Configuration
-**Purpose**: Automated proxy setup for Nix daemon in Chinese networks
+**Purpose**: Configurable proxy setup for Nix daemon with multiple network modes
 
 **Features:**
 - Automatic nix-daemon plist modification
-- Proxy server configuration (127.0.0.1:7890)
-- Service restart automation
-- Daemon status verification
+- Dual proxy mode support: local (127.0.0.1:7890) and network (10.0.0.5:7890)
+- Command-line mode selection with intelligent defaults
+- Service restart automation with status verification
+- Error handling and usage instructions
 
-**Usage**: Automatically called by Justfile commands when proxy is needed
+**Usage:**
+```bash
+# Local proxy (default)
+python3 scripts/darwin_set_proxy.py
+python3 scripts/darwin_set_proxy.py local
+
+# Network proxy
+python3 scripts/darwin_set_proxy.py network
+```
+
+**Integration**: Works with shell proxy functions in .zshrc for consistent proxy management across shell and system-level operations
 
 ## Architecture Patterns
 
@@ -666,4 +696,4 @@ NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
 
 ---
 
-*This documentation reflects the current state of the `nix-improvements` branch with all recent optimizations and architectural improvements applied.*
+*This documentation reflects the current production-ready state with all architectural improvements, cleanup, and optimizations completed (January 2025).*

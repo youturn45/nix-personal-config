@@ -3,9 +3,24 @@
   myLib,
   pkgs,
   ...
-}: {
-  # import sub modules - only base folder for cross-platform compatibility
-  imports = myLib.collectModulesRecursively ./base;
+}: let
+  # Define minimal modules for NixOS systems
+  nixosModules = [
+    ./base/dev-tools/npm
+    ./base/editors/neovim
+    ./base/dev-tools/git
+    ./base/terminal/starship
+    ./base/terminal/shells
+  ];
+
+  # Full modules for Darwin systems
+  darwinModules = myLib.collectModulesRecursively ./base;
+in {
+  # Conditional imports based on system type
+  imports =
+    if pkgs.stdenv.isLinux
+    then nixosModules
+    else darwinModules;
 
   # intergrate catppuccin theme
 
@@ -18,6 +33,23 @@
       then "/Users/${myvars.username}"
       else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;
+
+    # Essential packages for NixOS systems
+    packages =
+      if pkgs.stdenv.isLinux
+      then
+        with pkgs; [
+          git
+          vim
+          curl
+          wget
+          htop
+          tmux
+          openssh
+          starship
+          nodejs_22
+        ]
+      else [];
   };
 
   # Let Home Manager install and manage itself.

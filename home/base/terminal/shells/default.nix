@@ -4,12 +4,24 @@
   pkgs-unstable,
   ...
 }: let
-  shellAliases = {
+  # Base aliases for all platforms
+  baseAliases = {
     k = "kubectl";
-
     urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
     urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
   };
+
+  # Platform-specific aliases
+  nixosAliases = {
+    rebuild = "sudo nixos-rebuild switch";
+    rebuild-test = "sudo nixos-rebuild test";
+  };
+
+  # Combine aliases based on platform
+  shellAliases =
+    if pkgs.stdenv.isLinux
+    then baseAliases // nixosAliases
+    else baseAliases;
 
   localBin = "${config.home.homeDirectory}/.local/bin";
   goBin = "${config.home.homeDirectory}/go/bin";

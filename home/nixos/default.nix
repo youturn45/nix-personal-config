@@ -7,15 +7,15 @@
   # Minimal server home configuration - only essential tools
   imports = [
     # Core essentials
-    ../base/core/core.nix
-    ../base/core/shells
+    ../base/core.nix
+    ../base/terminal/shells
 
     # Development tools (minimal)
-    ../base/core/dev/git
-    ../base/core/dev/ssh
+    ../base/dev-tools/git
+    ../base/dev-tools/ssh
 
     # Terminal tools only
-    ../base/core/editors/neovim
+    ../base/editors/neovim
 
     # Exclude heavy packages:
     # - No tex (17GB TeX Live)

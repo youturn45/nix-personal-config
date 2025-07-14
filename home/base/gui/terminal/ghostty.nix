@@ -12,7 +12,7 @@
 #
 ###########################################################
 {
-  # Install Ghostty on NixOS (on Darwin it's handled by Homebrew)
+  # Install Ghostty on Linux/NixOS only (macOS/Darwin uses Homebrew installation)
   home.packages = lib.optionals pkgs.stdenv.isLinux [
     ghostty.packages.${pkgs.system}.default
   ];

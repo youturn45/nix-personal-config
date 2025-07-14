@@ -124,7 +124,7 @@
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
-      # "tailscale" # VPN
+      "tailscale" # VPN
     ];
   };
 }

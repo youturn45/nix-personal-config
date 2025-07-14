@@ -141,35 +141,10 @@
       NightOwl = mkDarwinHost "NightOwl";
       SilkSpectre = mkDarwinHost "SilkSpectre";
     };
-    nixosConfigurations = import ./hosts/nixos {
-      inherit lib;
-      specialArgs = linuxSpecialArgs;
-    };
-
-    # Development shells
-    devShells.${myvars.system} = {
-      default = darwinSpecialArgs.pkgs.mkShell {
-        buildInputs = with darwinSpecialArgs.pkgs; [
-          python3
-        ];
-
-        shellHook = ''
-          echo "🚀 Development environment loaded"
-          echo "💡 Node.js and npm are available via Home Manager"
-          echo "💡 claude-code is managed via Home Manager activation"
-          echo "💡 Use 'exit' to leave development environment"
-        '';
-      };
-
-      # Alternative minimal shell for testing
-      minimal = darwinSpecialArgs.pkgs.mkShell {
-        buildInputs = with darwinSpecialArgs.pkgs; [
-          python3
-        ];
-
-        shellHook = ''
-          echo "Minimal dev shell loaded."
-        '';
+    nixosConfigurations = {
+      nixos = import ./hosts/nixos {
+        inherit lib;
+        specialArgs = linuxSpecialArgs;
       };
     };
   };

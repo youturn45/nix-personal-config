@@ -1,358 +1,225 @@
-<div align="center">
-<img src=".github/logo.png" alt="Sith Happens" width="256" />
+# Personal Nix Configuration
 
-# Youturn's [NixOS], [nix-darwin] & [Home Manager] Configurations
-<b>Made with 💝 for <img src=".github/nixos.png" align="center" width="18" alt="NixOS"/> & <img src=".github/apple.png" align="center" width="16" alt="macOS"/></b>
-<br />
+> **A modern, modular Nix configuration for macOS and NixOS systems**
+
+<div align="center">
+
+![NixOS](https://img.shields.io/badge/NixOS-5277C3.svg?style=for-the-badge&logo=nixos&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-000000.svg?style=for-the-badge&logo=apple&logoColor=white)
+![Neovim](https://img.shields.io/badge/Neovim-57A143.svg?style=for-the-badge&logo=neovim&logoColor=white)
+
 </div>
 
-This repository contains a [Nix Flake](https://zero-to-nix.com/concepts/flakes) for configuring my computers and/or their home environment.
-It is not intended to be a drop in configuration for your computer, but might serve as a reference or starting point for your own configuration.
-**If you are looking for a more generic NixOS configuration template, I highly recommend [nix-starter-configs](https://github.com/Misterio77/nix-starter-configs).** 👍️
-These computers are managed by this Nix flake ❄️
+This repository contains a comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configuration supporting both macOS (nix-darwin) and NixOS systems. Built with modularity, reproducibility, and cross-platform compatibility in mind.
 
-|    Hostname   |        Board       |         CPU         |  RAM |          Primary GPU         |     Secondary GPU    |   Role  |   OS  |    State    |
-|:-------------:|:------------------:|:-------------------:|:----:|:----------------------------:|:--------------------:|:-------:|:-----:|:-----------:|
-| `SilkSpectre` | MacBook Pro M1 Pro |     Apple M1 Pro    | 16GB |         Apple M1 Pro         |                      |  laptop | macOS |    Ready    |
-|  `Rorschach`  |   MacBook Air M4   |       Apple M4      | 16GB |           Apple M4           |                      |  laptop | macOS |    Ready    |
-|   `NightOwl`  |     Mac Mini M4    |       Apple M4      | 16GB |           Apple M4           |                      | desktop | macOS |    Ready    |
-| `TheComedian` |   Aoostar WTR PRO  |  AMD Ryzen 5 5825U  | 64GB |     AMD Radeon™ Graphics     |                      |  server | NixOS | In progress |
-|  `Ozymandias` |   Aoostar WTR MAX  |  AMD Ryzen 7 8845HS | 16GB |     AMD Radeon™ Graphics     |                      |  server | NixOS | In progress |
-| `DrManhattan` |   Gigabyte B650M   | AMD Ryzen 9 7950X3D | 64GB | NVIDIA GeForce RTX 4090 24GB | AMD Radeon™ Graphics | desktop | NixOS | In progress |
+## 🏠 Managed Systems
 
+| Hostname     | Platform         | CPU           | Role    | Status |
+|:-------------|:-----------------|:--------------|:--------|:-------|
+| `Rorschach`  | MacBook Air M4   | Apple M4      | Laptop  | ✅ Active |
+| `NightOwl`   | Darwin Host      | -             | Desktop | 🚧 Ready  |
+| `SilkSpectre`| Darwin Host      | -             | Laptop  | 🚧 Ready  |
+| `nixos`      | NixOS VM         | x86_64-linux  | Testing | ✅ Ready  |
 
-Laptops and server host names are Watchmen characters.
+## 🏗️ Architecture
 
-## Structure
+### Repository Structure
 
-- [.github]: GitHub CI/CD workflows Nix ❄️ supercharged ⚡️ by [**Determinate Systems**](https://determinate.systems)
-  - [Nix Installer Action](https://github.com/marketplace/actions/the-determinate-nix-installer)
-  - [FlakeHub Cache Action](https://github.com/marketplace/actions/flakehub-cache)
-  - [Flake Checker Action](https://github.com/marketplace/actions/nix-flake-checker)
-  - [Update Flake Lock Action](https://github.com/marketplace/actions/update-flake-lock)
-- [darwin]: macOS configurations
-  - Includes full system configuration for a MacBook Air M2 15" and MacBook Pro (Mid 2015)
-- [home-manager]: Home Manager configurations
-  - Sane defaults for shell and desktop
-- [nixos]: NixOS configurations
-  - Includes discrete hardware configurations that leverage the [NixOS Hardware modules](https://github.com/NixOS/nixos-hardware).
-
-The [nixos/_mixins] and [home-manager/_mixins] are a collection of composited configurations based on the arguments defined in [flake.nix].
-
-## Installing 💾
-
-- Boot off an .iso image created by this flake using `build-iso console` or `build-iso <desktop>` (*see below*) 💿
-- Put the .iso image on a USB drive, I use [USBImager](https://bztsrc.gitlab.io/usbimager/)
-- Boot the target computer from the USB drive
-- Two installation options are available:
-  1 Run `install-system <hostname> <username>` from a terminal
-   - The install script uses [Disko] to automatically partition and format the disks, then uses my flake via `nixos-install` to complete a full-system installation
-   - This flake is copied to the target user's home directory as `~/Zero/nix-config`
-   - `nixos-enter` is used to automatically chroot into the new system and apply the Home Manager configuration
-  2 The desktop iso image includes the graphical Calamares installer if an ad-hoc system installation is required
-- Make a cuppa 🫖
-- Reboot 🥾
-
-#### Useful commands
-```bash 
-export http_proxy="http://127.0.0.1:7890"
-export https_proxy="http://127.0.0.1:7890"
+```
+nix-personal-config/
+├── 📁 Configuration Entry Points
+│   ├── flake.nix              # Core flake definition
+│   ├── Justfile               # Build commands and workflows
+│   └── CLAUDE.md              # Claude Code integration guide
+├── 📁 vars/                   # Centralized variable management
+│   └── default.nix            # System variables with validation
+├── 📁 my-lib/                 # Custom helper functions
+│   ├── default.nix            # Core helper utilities
+│   └── helpers.nix            # Module discovery system
+├── 📁 hosts/                  # Host-specific configurations
+│   ├── darwin/                # macOS host definitions
+│   │   ├── rorschach.nix      # Primary MacBook Air M4
+│   │   ├── NightOwl.nix       # Desktop configuration
+│   │   └── SilkSpectre.nix    # Laptop configuration
+│   └── nixos/                 # NixOS host definitions
+│       ├── default.nix        # NixOS system configuration
+│       └── hardware-configuration.nix # Auto-generated hardware config
+├── 📁 modules/                # System-level configurations
+│   ├── common/                # Cross-platform shared settings
+│   ├── darwin/                # macOS-specific modules
+│   │   ├── apps.nix           # Application management (Nix + Homebrew)
+│   │   ├── system-settings.nix # macOS defaults and preferences
+│   │   ├── host-users.nix     # User account management
+│   │   ├── nix-core.nix       # Core Nix configuration
+│   │   └── _secrets.nix       # Secret management (agenix)
+│   └── _nixos/common/         # NixOS-specific modules
+├── 📁 home/                   # Home Manager configurations
+│   ├── base/                  # Cross-platform user configurations
+│   │   ├── dev-tools/         # Development tooling
+│   │   │   ├── git/           # Git configuration
+│   │   │   ├── npm/           # Node.js and npm setup
+│   │   │   ├── pip/           # Python package management
+│   │   │   ├── ssh/           # SSH configuration
+│   │   │   └── tex/           # LaTeX environment
+│   │   ├── editors/           # Text editors
+│   │   │   └── neovim/        # Complete NixVim configuration
+│   │   ├── gui/               # GUI applications
+│   │   │   ├── media.nix      # Media applications
+│   │   │   └── terminal/      # Terminal emulators
+│   │   │       └── ghostty.nix # Cross-platform terminal config
+│   │   ├── python/            # Python development environment
+│   │   ├── system/            # System utilities
+│   │   │   ├── btop/          # System monitor
+│   │   │   └── _container/    # Container tools
+│   │   └── terminal/          # Terminal environment
+│   │       ├── shells/        # Shell configurations (zsh)
+│   │       ├── starship/      # Prompt configuration
+│   │       └── yazi/          # File manager
+│   ├── darwin/                # macOS-specific user configurations
+│   └── nixos/                 # NixOS-specific user configurations
+└── 📁 scripts/                # Utility scripts
+    ├── darwin_set_proxy.py    # Configurable proxy setup
+    └── vnc_paste.py           # VNC clipboard utility
 ```
 
-### Installing to a remote host 🌍
+### Key Features
 
-As [Disko] is used to declare the disk layout for all my NixOS hosts, each NixOS configurations can be deployed to a remote host using [nixos-anywhere].
-I've created a simple wrapper around `nixos-anywhere` that makes it a bit simpler to deploy a NixOS configuration to a remote host.
-For example, `malak` is a Hetzner dedicated server.
-To deploy it, enable the Hetzner Rescue system and then execute the following command from one of my workstations:
+- 🔧 **Automatic Module Discovery**: Uses custom `collectModulesRecursively` function
+- 🌐 **Cross-Platform Support**: Shared configurations between macOS and NixOS
+- 📝 **Centralized Variables**: Single source of truth in `vars/default.nix`
+- 🎨 **Consistent Theming**: Catppuccin Mocha throughout the system
+- 🛡️ **Safe Build System**: Validation, testing, and rollback capabilities
+- 🔌 **Configurable Proxy**: Local and network proxy modes
+- ⚡ **Modern Development Environment**: Complete toolchain with LSP, formatters, and more
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- [Nix](https://nixos.org/download.html) with flakes enabled
+- [just](https://github.com/casey/just) command runner
+- Git for repository management
+
+### Build Commands
 
 ```bash
-install-anywhere malak <ip-address>
+# macOS (Darwin) builds
+just darwin           # Build and switch to current host
+just darwin-debug      # Debug build with verbose output
+just rorschach         # Build Rorschach configuration
+just safe-build        # Safe build with validation and testing
+
+# NixOS builds
+sudo nixos-rebuild switch --flake .#nixos
+
+# Maintenance
+just up                # Update all flake inputs
+just fmt               # Format all Nix files
+just gc                # Garbage collect unused store entries
+just clean             # Remove old generations
 ```
 
-When the deployment is complete, the remote host will be automatically rebooted.
-I keep my Home Manager configuration separate from my NixOS configuration, so after the NixOS configuration has been deployed, I SSH in to the remote host and activate the Home Manager configuration:
+### Safe Development Workflow
 
 ```bash
-sudo chown -Rv "$USER":users "$HOME/.config"
-git clone https://github.com/wimpysworld/nix-config "$HOME/Zero/nix-config"
-home-manager switch -b backup --flake "$HOME/Zero/nix-config"
+# 1. Make configuration changes
+# 2. Validate changes
+just validate
+
+# 3. Test build without applying
+just build-test
+
+# 4. Apply changes if tests pass
+just safe-build
+
+# 5. Rollback if needed
+just rollback
 ```
 
-## Applying Changes ✨
+## 🛠️ Development Environment
 
-I clone this repo to `~/Zero/nix-config`. NixOS and Home Manager changes are applied separately because I tend to iterate on the Home Manager configuration more frequently than the NixOS configuration.
+### Editor Configuration
+
+- **NixVim**: Complete Neovim configuration with LSP support
+- **Supported Languages**: Nix, Lua, Rust, Python, TypeScript, Bash, Markdown
+- **Features**: Auto-completion, syntax highlighting, formatting, debugging
+- **Plugins**: Treesitter, telescope, neo-tree, which-key, and more
+
+### Development Tools
+
+- **Git**: Comprehensive configuration with aliases and delta pager
+- **Shell**: Zsh with modern CLI replacements and starship prompt  
+- **Terminal**: Cross-platform Ghostty configuration
+- **Python**: Complete development environment with pip management
+- **Node.js**: Version 22 with npm user-local configuration
+- **Container Tools**: Docker and container development support
+
+## 🌐 Network Configuration
+
+### Proxy Support
+
+The configuration includes flexible proxy support for different network environments:
 
 ```bash
-gh repo clone wimpysworld/nix-config "$HOME/Zero/nix-config"
+# Shell proxy functions
+proxy_on              # Enable local proxy (127.0.0.1:7890)
+proxy_on local         # Explicit local proxy
+proxy_on network       # Network proxy (10.0.0.5:7890)
+proxy_off             # Disable proxy
+proxy_status          # Check current proxy status
+
+# System-level proxy (nix-daemon)
+python3 scripts/darwin_set_proxy.py          # Local proxy
+python3 scripts/darwin_set_proxy.py network  # Network proxy
 ```
 
-- ❄️ **NixOS & macOS:**  A `build-host` and `switch-host` aliases are provided that build the NixOS or nix-darwin configuration and switch to it respectively.
-- 🏠️ **Home Manager:**  A `build-home` and `switch-home` aliases are provided that build the Home Manager configuration and switch to it respectively.
-- 🌍️ **All:** There are also `build-all` and `switch-all` aliases that build and switch to both the NixOS/nix-darwin and Home Manager configurations.
+## 📋 System Requirements
 
-### ISO 📀
+### macOS (Darwin)
+- **Supported**: Apple Silicon (M1, M2, M3, M4) and Intel Macs
+- **OS Version**: macOS 12.0+ (Monterey and later)
+- **Dependencies**: Homebrew for GUI applications
 
-The `build-iso` script is included that creates .iso images from this flake. The following modes are available:
+### NixOS
+- **Architecture**: x86_64-linux, aarch64-linux
+- **VM Support**: QEMU guest utilities included
+- **Hardware**: Automatic hardware detection
 
-- `build-iso console` (*terminal environment*): Includes `install-system` for automated installation.
-- `build-iso pantheon` (*Pantheon Desktop environment*): Includes `install-system` and [Calamares](https://calamares.io/) installation.
-- `build-iso lomiri` (*Lomiri Desktop environment*): Includes `install-system` and [Calamares](https://calamares.io/) installation.
+## 🎯 Design Philosophy
 
-Live images will be left in `$HOME/Zero/nix-config/result/iso/` and are also injected into `~/Quickemu/nixos-console` and `~/Quickemu/nixos-<desktop>` respectively.
-The console .iso image is also periodically built and published via [GitHub Actions](./.github/workflows) and is available in [this project's Releases](https://github.com/wimpysworld/nix-config/releases).
+### Modular Architecture
+- **Separation of Concerns**: Clear boundaries between system, user, and host configurations
+- **Reusability**: Shared modules across platforms with platform-specific overrides
+- **Maintainability**: Automatic module discovery reduces manual configuration
 
-## What's in the box? 🎁
+### Safe-First Approach
+- **Validation**: Pre-build checks for syntax and configuration validity
+- **Testing**: Build configurations without switching to catch errors early
+- **Recovery**: Easy rollback to previous working generations
 
-Nix is configured with [flake support](https://zero-to-nix.com/concepts/flakes) and the [unified CLI](https://zero-to-nix.com/concepts/nix#unified-cli) enabled.
+### Developer Experience
+- **Incremental Development**: Step-by-step approach for complex configurations
+- **Documentation**: Comprehensive guides and inline documentation
+- **Automation**: Justfile commands for common operations
 
-### Structure
+## 📚 Documentation
 
-Here's the directory structure I'm using:
+- [**CLAUDE.md**](./CLAUDE.md): Claude Code integration and usage instructions
+- [**ARCHITECTURE.md**](./ARCHITECTURE.md): Detailed technical architecture documentation
+- [**todo.md**](./todo.md): Current status and completed improvements
 
-```
-.
-├── darwin
-│  ├── _mixins
-│  │  ├── desktop
-│  │  ├── scripts
-│  │  └── users
-│  ├── momin
-│  ├── krall
-│  └── default.nix
-├── home-manager
-│  ├── _mixins
-│  │  ├── configs
-│  │  ├── desktop
-│  │  ├── features
-│  │  ├── scripts
-│  │  ├── services
-│  │  └── users
-│  └── default.nix
-├── lib
-│  └── default.nix
-├── nixos
-│  ├── _mixins
-│  │  ├── configs
-│  │  ├── desktop
-│  │  ├── features
-│  │  ├── scripts
-│  │  ├── services
-│  │  └── users
-│  ├── iso-console
-│  ├── iso-pantheon -> iso-console
-│  ├── iso-lomiri -> iso-console
-│  ├── crawler -> dagger
-│  ├── dagger
-│  ├── malak
-│  ├── phasma
-│  ├── revan
-│  ├── sidious
-│  ├── tanis
-│  ├── vader
-│  └── default.nix
-├── overlays
-│  └── default.nix
-├── pkgs
-│  └── default.nix
-├── secrets
-│  └── secrets.yaml
-└── flake.nix
-```
-- The NixOS, macOS (darwin) and Home Manager configurations are in the `nixos`, `darwin` and `home-manager` directories respectively, they are structured in a similar way with `_mixins` directories that contain the configurations applied via mixin pattern that compose the final configuration.
-- The `lib` directory contains helper functions for the `nixos`, `nix-darwin` and `home-manager` configurations.
-- The `overlays` directory hold my custom overlays.
-- The `pkgs` directory contains my custom local packages.
-- The `secrets` directory contains secrets managed by [sops-nix].
-- The `default.nix` files in the root of each directory are the entry points.
+## 🤝 Contributing
 
-### The Shell 🐚
+This is a personal configuration repository, but feel free to:
 
-Fish shell 🐟️ with [Starship](https://starship.rs/) 🚀 and a collection of tools that deliver a *"[Modern Unix]"* experience.
-The base system has a firewall enabled and also includes [OpenSSH], [sops-nix] for secret management, [Tailscale], [Distrobox](./nixos/_mixins/features/distrobox/default.nix) and, of course, a delightfully configured [micro]. (*Fight me!* 🥊)
-Useful shell scripts I used to keep in muddle of git repos are now migrated to [NixOS scripts](./nixos/_mixins/scripts) and [Home Manager scripts](./home-manager/_mixins/scripts) to provide a declarative, reproducible and `shellcheck` validated toolbox 🧰
+- Use it as inspiration for your own Nix configuration
+- Submit issues for bugs or suggestions
+- Propose improvements via pull requests
 
-![fastfetch on Phasma](.github/screenshots/fastfetch.png)
+## 📄 License
 
-### The Desktop 🖥️
+This configuration is provided as-is for educational and reference purposes. Individual components may have their own licenses.
 
-Hyprland 💧 Pantheon 🏛️ and Lomiri 📱 desktop options are available.
-The font configuration is common for all desktops using [Work Sans](https://fonts.google.com/specimen/Work+Sans) and [Fira Code](https://fonts.google.com/specimen/Fira+Code).
-The usual creature comforts you'd expect to find in a Linux Desktop are integrated such as Pipewire, Bluetooth, Avahi, CUPS, SANE and NetworkManager.
+---
 
-|   Desktops  |        NixOS       |       Home Manager        |       Theme       |
-| :---------: | :----------------: | :-----------------------: | :---------------: |
-| 💧 Hyprland | [Hyprland NixOS]   | [Hyprland Home Manager]   | Catppuccin Mocha  |
-| 🏛️ Pantheon | [Pantheon NixOS]   | [Pantheon Home Manager]   | Catppuccin Mocha  |
-| 📱 Lomiri   | [Lomiri NixOS]     |                           | 🚧                |
-
-## Eye Candy 👀🍬
-
-![Hyprland on Shaa](.github/screenshots/hyprland.png)
-<div align="center"><small>Hyprland on Shaa; <i>a work in progress; soon to be daily driver</i></small></div>
-
-![Pantheon on Phasma](.github/screenshots/pantheon.png)
-<div align="center"><small>Pantheon on Phasma; <i>daily driver</i></small></div>
-
-## Post-install Checklist
-
-Things I currently need to do manually after installation.
-
-### Secrets
-
-- [ ] Provision `/var/lib/private/sops/age/keys.txt`
-- [ ] Provision `~/.config/sops/age/keys.txt`
-- [ ] Run `gpg-restore`
-- [ ] Run `determinate-nixd login`
-- [ ] Keybase - `keybase login`
-- [ ] Tailscale - `sudo tailscale up --operator="$USER"`
-  - Fast switching - <https://tailscale.com/kb/1225/fast-user-switching>
-- [ ] 1Password - authenticate
-- [ ] LastPass - authenticate
-
-### Accounts
-
-- [ ] Atuin
-  - `atuin login -u <username>`
-  - `atuin sync -f`
-- [ ] Brave - enroll sync
-- [ ] Chatterino - authenticate
-- [ ] Discord - authenticate
-- [ ] GitKraken - authenticate with GitHub
-- [ ] Grammarly - authenticate
-- [ ] Maelstral - `maestral_qt`
-- [ ] Matrix - authenticate
-- [ ] Syncthing - Connect API and introduce host
-- [ ] Telegram - authenticate
-- [ ] VSCode - authenticate with GitHub enable sync
-- [ ] Wavebox - authenticate Google and restore profile
-
-### System
-
-`defender` and `fighter` are Ubuntu virtual machines run under [Lima] for my Ubuntu MATE development and testing environments.
-
-- [ ] On Linux run
-  - `incus admin init --minimal`
-  - `create-defender`
-  - `create-fighter`
-- [ ] On macOS run
-  - `install-homebrew`
-  - Run Podman Desktop to create podman machine
-
-#### Malak
-
-- [ ] Create ntfy user and ACLs
-  `sudo ntfy user add --role=admin <username>`
-  `sudo ntfy access everyone <topic> rw`
-
-### Themes
-
-Some applications require manual configuration to apply the correct theme.
-
-- [ ] Enable [Stylus](https://github.com/openstyles/stylus) Sync to Dropbox to get [Catppuccin userstyles](https://github.com/catppuccin/userstyles/releases/tag/all-userstyles-export) and **Enable Patch CSP**
-  - [ ] Brave
-  - [ ] Chrome
-  - [ ] Chromium
-  - [ ] Firefox
-  - [ ] Wavebox
-- [ ] Cider
-  - Open Cider
-  - Menu → Marketplace → Themes
-  - Find Catppuccin and your favorite flavor
-  - Click Install
-- [ ] Discord OpenAsar
-  - [ ] Add Catppuccin CSS
-```css
-/* mocha */
-@import url("https://catppuccin.github.io/discord/dist/catppuccin-mocha.theme.css");
-@import url("https://catppuccin.github.io/discord/dist/catppuccin-mocha-blue.theme.css");
-```
-
-### Windows Boot Manager on multi-disk systems
-
-One of my laptops (`sidious`) is a multi-disk system with Windows 11 Pro 🪟 installed on a separate disk from NixOS.
-The Windows EFI partition is not automatically detected by systemd-boot, because it is on a different disk.
-The following steps are required to copy the Windows Boot Manager to the NixOS EFI partition so dual-booting is possible.
-
-Find Windows EFI Partition
-
-```shell
-lsblk -o NAME,FSTYPE,SIZE,MOUNTPOINT
-```
-
-Mount Windows EFI Partition
-
-```shell
-sudo mkdir /mnt/win-efi
-sudo mount /dev/nvme1n1p1 /mnt/win-efi
-```
-
-Copy Contents of Windows EFI to NixOS EFI
-
-```shell
-sudo rsync -av /mnt/win-efi/EFI/Microsoft/ /boot/EFI/Microsoft/
-```
-
-Clean up
-
-```shell
-sudo umount /mnt/win-efi
-sudo rm -rf /mnt/win-efi
-```
-
-Reboot and systemd-boot should now offer the option to boot NixOS and Windows.
-
-## Inspirations 🧑‍🏫
-
-Before preparing my NixOS and Home Manager configurations I looked at what other Nix users were doing.
-My colleagues shared their configs and tips which included [nome from Luc Perkins], [nixos-config from Cole Helbling], [flake from Ana Hoverbear] and her [Declarative GNOME configuration with NixOS] blog post.
-A couple of friends also shared their configurations and here's [Jon Seager's nixos-config] and [Matthew Croughan's nixcfg].
-
-I liked the directory hierarchy in [Jon Seager's nixos-config] and the mixin pattern used in [Matthew Croughan's nixcfg], so my Nix configuration is influenced by both of those.
-Ana's excellent [Declarative GNOME configuration with NixOS] blog post was essential to achieving a fully declaritive desktop configuration 🚀
-
-**After I created my initial flake I found [nix-starter-configs] by [Gabriel Fontes](https://m7.rs) which is an excellent starting point**.
-I have since incorporated many of the techniques it demonstrates.
-Similarly, some of my nix-darwin configuration is inspired by [nix-darwin-kickstarter].
-
-There's plenty to learn from browsing other people's Nix configurations.
-I recommend a search of [GitHub nixos configuration] from time to time to see what interesting techniques you pick up and new tools you might discover ️🕵️
-
-My use of [Disko] and automated installation script were inspired by the these blog posts:
-- [Setting up my new laptop: nix style](https://bmcgee.ie/posts/2022/12/setting-up-my-new-laptop-nix-style/)
-- [Setting up my machines: nix style](https://aldoborrero.com/posts/2023/01/15/setting-up-my-machines-nix-style/)
-
-[nome from Luc Perkins]: https://github.com/the-nix-way/nome
-[nixos-config from Cole Helbling]: https://github.com/cole-h/nixos-config
-[flake from Ana Hoverbear]: https://github.com/Hoverbear-Consulting/flake
-[Declarative GNOME configuration with NixOS]: https://hoverbear.org/blog/declarative-gnome-configuration-in-nixos/
-[Jon Seager's nixos-config]: https://github.com/jnsgruk/nixos-config
-[Matthew Croughan's nixcfg]: https://github.com/MatthewCroughan/nixcfg
-[GitHub nixos configuration]: https://github.com/search?q=nixos+configuration
-[nix-starter-configs]: https://github.com/Misterio77/nix-starter-configs
-[nix-darwin-kickstarter]: https://github.com/ryan4yin/nix-darwin-kickstarter
-
-[NixOS]: https://nixos.org/
-[nix-darwin]: https://github.com/LnL7/nix-darwin
-[Home Manager]: https://github.com/nix-community/home-manager
-[Disko]: https://github.com/nix-community/disko
-[nixos-anywhere]: https://github.com/nix-community/nixos-anywhere
-[sops-nix]: https://github.com/Mic92/sops-nix
-
-[.github]: ./github/workflows
-[darwin]: ./darwin
-[home-manager]: ./home-manager
-[nixos]: ./nixos
-[nixos/_mixins]: ./nixos/_mixins
-[home-manager/_mixins]: ./home-manager/_mixins
-[flake.nix]: ./flake.nix
-[Modern Unix]: ./home-manager/default.nix
-[OpenSSH]: ./nixos/_mixins/services/ssh/default.nix
-
-[micro]: https://micro-editor.github.io/
-[Tailscale]: https://tailscale.com/
-[Hyprland NixOS]: ./nixos/_mixins/desktop/hyprland/default.nix
-[Pantheon NixOS]: ./nixos/_mixins/desktop/pantheon/default.nix
-[Lomiri NixOS]: ./nixos/_mixins/desktop/lomiri/default.nix
-[Hyprland Home Manager]: ./home-manager/_mixins/desktop/hyprland/default.nix
-[Pantheon Home Manager]: ./home-manager/_mixins/desktop/pantheon/default/.nix
+*Built with ❤️ using [Nix](https://nixos.org/), [nix-darwin](https://github.com/LnL7/nix-darwin), and [Home Manager](https://github.com/nix-community/home-manager)*

@@ -147,11 +147,19 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 ```
 ├── vars/                    # Global variables (hostname, username, system)
 ├── my-lib/                  # Custom helper functions
-├── darwin-hosts/            # macOS host configurations
-│   ├── NightOwl.nix        # NightOwl host configuration
-│   ├── SilkSpectre.nix     # SilkSpectre host configuration
-│   ├── rorschach.nix       # Rorschach host configuration
-│   └── default.nix         # Darwin hosts entry point
+├── hosts/                   # Host configurations
+│   ├── darwin/             # macOS host configurations
+│   │   ├── NightOwl.nix    # NightOwl host configuration
+│   │   ├── SilkSpectre.nix # SilkSpectre host configuration
+│   │   ├── rorschach.nix   # Rorschach host configuration
+│   │   └── default.nix     # Darwin hosts entry point
+│   └── nixos/              # NixOS host configurations
+│       ├── default.nix     # NixOS hosts entry point
+│       └── nixos/          # NixOS VM configuration
+│           ├── boot.nix    # Boot configuration
+│           ├── hardware-configuration.nix # Hardware settings
+│           ├── proxy.nix   # Proxy configuration
+│           └── terminfo.nix # Terminal information
 ├── modules/                 # System modules
 │   ├── common/             # Shared between platforms
 │   ├── darwin/             # macOS-specific modules
@@ -194,12 +202,6 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   ├── darwin/             # macOS-specific user configurations
 │   │   └── default.nix     # Darwin user profile entry point
 │   └── server/             # Server-specific configurations
-├── nixos-hosts/            # NixOS host definitions
-│   └── nixos/              # NixOS VM configuration
-│       ├── boot.nix        # Boot configuration
-│       ├── hardware-configuration.nix # Hardware settings
-│       ├── proxy.nix       # Proxy configuration
-│       └── terminfo.nix    # Terminal information
 └── scripts/                # Utility scripts
     ├── darwin_set_proxy.py # Darwin proxy setup
     └── vnc_paste.py        # VNC paste utility
@@ -248,7 +250,7 @@ Access via: `nix develop`
   - Auto-formatting with conform-nvim for multiple languages
   - Full key binding setup for productivity
 - **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
-- **Proxy Configuration**: The build process includes proxy setup for Chinese networks (`darwin-set-proxy`)
+- **Proxy Configuration**: Configurable proxy support with local (127.0.0.1) and network (10.0.0.5) modes for shell and nix-daemon
 - **Claude Code Integration**: Development shell automatically includes claude-code
 - **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
 - **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
@@ -256,11 +258,39 @@ Access via: `nix develop`
 
 ## Network Configuration
 
-For builds in environments requiring proxy:
+### Proxy Configuration
+
+The repository supports configurable proxy settings with two modes:
+
+#### Shell Proxy Functions (in .zshrc)
 ```bash
-export http_proxy="http://127.0.0.1:7890"
-export https_proxy="http://127.0.0.1:7890"
+# Local proxy (default) - 127.0.0.1:7890
+proxy_on
+proxy_on local
+
+# Network proxy - 10.0.0.5:7890  
+proxy_on network
+
+# Turn off proxy
+proxy_off
+
+# Check proxy status
+proxy_status
 ```
+
+#### Nix-daemon Proxy (for build acceleration)
+```bash
+# Local proxy (default)
+python3 scripts/darwin_set_proxy.py
+python3 scripts/darwin_set_proxy.py local
+
+# Network proxy
+python3 scripts/darwin_set_proxy.py network
+```
+
+**Proxy Presets:**
+- **Local**: `127.0.0.1:7890` (HTTP/HTTPS), `127.0.0.1:7891` (SOCKS)
+- **Network**: `10.0.0.5:7890` (HTTP/HTTPS), `10.0.0.5:7891` (SOCKS)
 
 ## Testing and Validation
 

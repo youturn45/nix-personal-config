@@ -4,10 +4,6 @@
   lib,
   ...
 }: {
-  imports = [
-    ./default.nix
-  ];
-
   # Host-specific settings
   networking.hostName = "SilkSpectre";
   system.defaults.NSGlobalDomain.AppleInterfaceStyle = "Dark";
