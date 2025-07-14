@@ -33,4 +33,14 @@
       PermitRootLogin = "yes";
     };
   };
+
+  # Enable display manager and session management
+  services.xserver = {
+    enable = true;
+    displayManager.lightdm.enable = true;
+    desktopManager.xfce.enable = true;
+  };
+
+  # Enable D-Bus
+  services.dbus.enable = true;
 }

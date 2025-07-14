@@ -12,10 +12,6 @@ in
       # Hardware configuration
       ./hardware-configuration.nix
 
-      # Boot configuration - explicitly disable GRUB to prevent conflicts with systemd-boot
-      {
-        boot.loader.grub.enable = lib.mkForce false;
-      }
 
       # System modules
       ../../modules/common # NOTE shared by nixos and nix-darwin
@@ -34,11 +30,13 @@ in
         home-manager.extraSpecialArgs = specialArgs;
         home-manager.users.${myvars.username} = lib.mkForce {
           imports = [
+            ../../home/base/core.nix
             ../../home/base/dev-tools/npm
             ../../home/base/dev-tools/git
             ../../home/base/terminal/starship
             ../../home/base/terminal/shells
             ../../home/base/editors/neovim
+            ../../home/base/python
           ];
           home.stateVersion = "25.05";
           home.packages = with specialArgs.pkgs; [
