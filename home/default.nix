@@ -21,12 +21,12 @@ in {
     stateVersion = myvars.homeStateVersion;
 
     # Essential packages for NixOS systems (Darwin gets packages from modules)
+    # Note: vim is provided by NixVim configuration, not as standalone package
     packages =
       if pkgs.stdenv.isLinux
       then
         with pkgs; [
           git
-          vim
           curl
           wget
           htop
