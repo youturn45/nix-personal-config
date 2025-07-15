@@ -4,16 +4,11 @@
   pkgs,
   ...
 }: let
-  # Define minimal modules for NixOS systems
-  nixosModules = myLib.collectModulesRecursively ./base;
+  # Define base modules for all platforms
+  baseModules = myLib.collectModulesRecursively ./base;
 in {
-  # Conditional imports based on system type
-  imports =
-    if pkgs.stdenv.isLinux
-    then nixosModules
-    else darwinModules;
-
-  # intergrate catppuccin theme
+  # Import base modules for all platforms
+  imports = baseModules;
 
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -25,47 +20,7 @@ in {
       else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;
 
-    # Essential packages for NixOS systems
-    packages =
-      if pkgs.stdenv.isLinux
-      then
-        with pkgs; [
-          git
-          vim
-          curl
-          wget
-          htop
-          tmux
-          openssh
-          starship
-          nodejs_22
-        ]
-      else [];
-  };
-
-
-  # Full modules for Darwin systems
-  darwinModules = myLib.collectModulesRecursively ./base;
-in {
-  # Conditional imports based on system type
-  imports =
-    if pkgs.stdenv.isLinux
-    then nixosModules
-    else darwinModules;
-
-  # intergrate catppuccin theme
-
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage.
-  home = {
-    username = myvars.username;
-    homeDirectory =
-      if pkgs.stdenv.isDarwin
-      then "/Users/${myvars.username}"
-      else "/home/${myvars.username}";
-    stateVersion = myvars.homeStateVersion;
-
-    # Essential packages for NixOS systems
+    # Essential packages for NixOS systems (Darwin gets packages from modules)
     packages =
       if pkgs.stdenv.isLinux
       then

@@ -11,7 +11,6 @@ in {
     # npm comes bundled with nodejs
   ];
 
-
   # Create npm directories on activation
   home.activation.setupNpm = lib.hm.dag.entryAfter ["linkGeneration"] ''
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-global

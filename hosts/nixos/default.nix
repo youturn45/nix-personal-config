@@ -27,18 +27,7 @@ in
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.extraSpecialArgs = specialArgs;
-        home-manager.users.${myvars.username} = {
-          imports = myLib.collectModulesRecursively ../../home/base;
-          home.stateVersion = "25.05";
-          home.packages = with specialArgs.pkgs; [
-            # Only essential packages for live system
-            curl
-            wget
-            htop
-            tmux
-            openssh
-          ];
-        };
+        home-manager.users.${myvars.username} = import ../../home;
         home-manager.backupFileExtension = "backup";
         home-manager.sharedModules = [
           specialArgs.nixvim.homeManagerModules.nixvim
