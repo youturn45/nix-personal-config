@@ -12,7 +12,6 @@ in
       # Hardware configuration
       ./hardware-configuration.nix
 
-
       # System modules
       ../../modules/common # NOTE shared by nixos and nix-darwin
       ../../modules/_nixos/common # shared by bare-metal and vm nixos machines

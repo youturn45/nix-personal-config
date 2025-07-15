@@ -43,6 +43,7 @@
       persistent-apps = [
         "/Applications/Google Chrome.app"
         "/Applications/Ghostty.app"
+        "/Applications/kitty.app"
         "/Applications/WeChat.app"
         "/Applications/Obsidian.app"
         "/Applications/Spotify.app"

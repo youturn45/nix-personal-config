@@ -10,17 +10,20 @@ This is a personal Nix configuration repository supporting both macOS (nix-darwi
 
 ### Primary Build Commands
 ```bash
-# Build and switch to current host configuration
-just darwin
+# Unified build command - all-in-one with options
+just build                    # Build current host (Rorschach)
+just build NightOwl           # Build specific host
+just build --debug            # Build current host with debug output
+just build SilkSpectre --debug # Build specific host with debug output
+just build --proxy network    # Build with specific proxy mode
 
-# Debug build with verbose output
-just darwin-debug
+# Quick host aliases (for convenience)
+just ror                      # Quick build for Rorschach
+just silk                     # Quick build for SilkSpectre
+just owl                      # Quick build for NightOwl
 
-# Host-specific builds (Rorschach is the main macOS host)
-just rorschach        # Build Rorschach configuration
-just rorschach-debug  # Debug build for Rorschach
-just ror             # Quick build for Rorschach
-just ror-switch      # Switch to Rorschach configuration
+# Available hosts: Rorschach, NightOwl, SilkSpectre
+# Available proxy modes: auto, local, network, off
 ```
 
 ### Nix Management
@@ -62,25 +65,26 @@ just dot              # Build and switch to configuration
 ### Build Testing Commands (Recommended for Development)
 ```bash
 # Safe build process - validates, tests, then switches
-just safe-build          # Full safe build for current host
-just safe-build-host rorschach  # Safe build for specific host
+just safe-build              # Full safe build for current host
+just safe-build NightOwl     # Safe build for specific host
 
 # Individual testing steps
-just validate            # Pre-build validation (format + flake check)
-just build-test          # Test build without switching
-just current-gen         # Show current generation for reference
+just validate                # Pre-build validation (format + flake check)
+just build-test              # Test build without switching (current host)
+just build-test SilkSpectre  # Test build for specific host
+just current-gen             # Show current generation for reference
 
 # Generation management
-just generations         # List recent system generations
-just rollback           # Rollback to previous generation
-just emergency-rollback  # Quick emergency rollback
+just generations             # List recent system generations
+just rollback               # Rollback to previous generation
+just emergency-rollback      # Quick emergency rollback
 
 # Development workflow example:
 # 1. Make changes to configuration
-# 2. just validate        # Check format and validate flake
-# 3. just build-test      # Test build without applying
-# 4. just safe-build      # Apply changes if build test passes
-# 5. just rollback        # Rollback if issues occur
+# 2. just validate            # Check format and validate flake
+# 3. just build-test          # Test build without applying
+# 4. just safe-build          # Apply changes if build test passes
+# 5. just rollback            # Rollback if issues occur
 ```
 
 ### Build Testing Philosophy

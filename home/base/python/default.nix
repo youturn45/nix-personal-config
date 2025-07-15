@@ -3,7 +3,7 @@
     python312
     python312Packages.pip
     python312Packages.virtualenvwrapper
-    
+
     # Development tools
     python312Packages.ipython
     python312Packages.pytest
