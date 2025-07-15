@@ -30,7 +30,6 @@ in
         home-manager.users.${myvars.username} = lib.mkForce {
           imports = [
             ../../home/base/core.nix
-            ../../home/base/dev-tools/npm
             ../../home/base/dev-tools/git
             ../../home/base/terminal/starship
             ../../home/base/terminal/shells
