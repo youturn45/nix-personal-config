@@ -27,15 +27,8 @@ in
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.extraSpecialArgs = specialArgs;
-        home-manager.users.${myvars.username} = lib.mkForce {
-          imports = [
-            ../../home/base/core.nix
-            ../../home/base/dev-tools/git
-            ../../home/base/terminal/starship
-            ../../home/base/terminal/shells
-            ../../home/base/editors/neovim
-            ../../home/base/python
-          ];
+        home-manager.users.${myvars.username} = {
+          imports = myLib.collectModulesRecursively ../../home/base;
           home.stateVersion = "25.05";
           home.packages = with specialArgs.pkgs; [
             # Only essential packages for live system
