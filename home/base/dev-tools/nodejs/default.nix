@@ -3,8 +3,7 @@
   pkgs,
   lib,
   ...
-}: let
-in {
+}: {
   # Node.js and npm configuration
   home.packages = with pkgs; [
     nodejs_22 # Latest LTS version
@@ -26,4 +25,14 @@ in {
     fund=false
     audit=false
   '';
+
+  # Add npm global bin to PATH for user-installed packages
+  home.sessionPath = [
+    "$HOME/.npm-global/bin"
+  ];
+
+  # Set npm prefix to user directory
+  home.sessionVariables = {
+    NPM_CONFIG_PREFIX = "$HOME/.npm-global";
+  };
 }

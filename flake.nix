@@ -109,8 +109,15 @@
     # Darwin-specific specialArgs (using macOS system from myvars)
     darwinSpecialArgs = mkSpecialArgs myvars.system;
 
-    # Linux-specific specialArgs (hardcoded to x86_64-linux for NixOS VMs)
-    linuxSpecialArgs = mkSpecialArgs "x86_64-linux";
+    # Linux-specific specialArgs for NixOS (without pkgs to avoid warnings)
+    nixosSpecialArgs = {
+      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager nixvim;
+      vars = myvars; # Alias for modules expecting 'vars'
+
+      # Only include alternative package sets, let NixOS manage its own pkgs
+      pkgs-unstable = mkPkgs inputs.nixpkgs-unstable "x86_64-linux";
+      pkgs-stable = mkPkgs inputs.nixpkgs-stable "x86_64-linux";
+    };
 
     mkDarwinHost = hostname:
       nix-darwin.lib.darwinSystem {
@@ -144,7 +151,7 @@
     nixosConfigurations = {
       nixos = import ./hosts/nixos {
         inherit lib;
-        specialArgs = linuxSpecialArgs;
+        specialArgs = nixosSpecialArgs;
       };
     };
   };

@@ -5,22 +5,6 @@
   pkgs,
   ...
 }: {
-  # Install Node.js to enable npm
-  home.packages = with pkgs; [
-    nodejs_20
-    # yq-go and ripgrep are already provided by core packages
-  ];
-
-  # Add npm global bin to PATH for user-installed packages
-  home.sessionPath = [
-    "$HOME/.npm-global/bin"
-  ];
-
-  # Set npm prefix to user directory
-  home.sessionVariables = {
-    NPM_CONFIG_PREFIX = "$HOME/.npm-global";
-  };
-
   # Create and manage ~/.claude directory
   home.file.".claude/settings.json".source = ./settings.json;
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
@@ -93,10 +77,10 @@
   home.file.".claude/statsig/.keep".text = "";
   home.file.".claude/commands/.keep".text = "";
 
-  # Install Claude Code on activation
+  # Install Claude Code on activation (requires Node.js from nodejs module)
   home.activation.installClaudeCode = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    PATH="${pkgs.nodejs_20}/bin:$PATH"
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+    export PATH="$HOME/.npm-global/bin:$PATH"
 
     if ! command -v claude >/dev/null 2>&1; then
       echo "Installing Claude Code..."

@@ -33,7 +33,6 @@ in {
           tmux
           openssh
           starship
-          nodejs_22
         ]
       else [];
   };
