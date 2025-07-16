@@ -92,7 +92,7 @@
     };
 
     taps = [
-      "homebrew/services"
+      # Note: homebrew/services is now deprecated - services are built into core
     ];
 
     # `brew install`
@@ -124,7 +124,7 @@
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
-      "tailscale" # VPN
+      "tailscale-app" # VPN
     ];
   };
 }

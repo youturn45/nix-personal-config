@@ -22,7 +22,7 @@
     };
 
     themeFile = "Catppuccin-Mocha";
-    
+
     keybindings = {
       "kitty_mod" = "ctrl+shift";
       # Keep default macOS clipboard behavior
@@ -49,8 +49,6 @@
       "kitty_mod+h" = "kitty_scrollback_nvim";
       "kitty_mod+g" = "kitty_scrollback_nvim --config ksb_builtin_last_cmd_output";
     };
-
-    
 
     # Main configuration settings
     settings = {
