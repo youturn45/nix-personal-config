@@ -44,6 +44,13 @@
       "kitty_mod+6" = "goto_tab 6";
       "kitty_mod+shift+]" = "next_tab";
       "kitty_mod+shift+[" = "previous_tab";
+      # macOS-specific tab shortcuts
+      "cmd+1" = "goto_tab 1";
+      "cmd+2" = "goto_tab 2";
+      "cmd+3" = "goto_tab 3";
+      "cmd+4" = "goto_tab 4";
+      "cmd+left" = "previous_tab";
+      "cmd+right" = "next_tab";
       "cmd+enter" = "no_op";
       "cmd+shift+enter" = "no_op";
       "kitty_mod+h" = "kitty_scrollback_nvim";
