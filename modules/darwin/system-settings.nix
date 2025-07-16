@@ -42,8 +42,6 @@
       # Persistent apps in dock
       persistent-apps = [
         "/Applications/Google Chrome.app"
-        "/Applications/Ghostty.app"
-        "~/Applications/Home Manager Apps/kitty.app"
         "/Applications/WeChat.app"
         "/Applications/Obsidian.app"
         "/Applications/Spotify.app"
