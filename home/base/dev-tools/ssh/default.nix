@@ -5,8 +5,8 @@
   myvars,
   ...
 }: {
-  # Enable SSH agent service to start automatically
-  services.ssh-agent = {
+  # Enable SSH agent service to start automatically (Linux only)
+  services.ssh-agent = lib.mkIf (!pkgs.stdenv.isDarwin) {
     enable = true;
   };
 
@@ -40,8 +40,8 @@
     '';
   };
 
-  # Ensure SSH key is loaded automatically on login
-  home.sessionVariables = {
+  # Ensure SSH key is loaded automatically on login (Linux only)
+  home.sessionVariables = lib.mkIf (!pkgs.stdenv.isDarwin) {
     # SSH agent socket will be set by the service
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };

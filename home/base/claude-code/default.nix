@@ -86,7 +86,7 @@
       echo "Installing Claude Code..."
       npm install -g @anthropic-ai/claude-code
     else
-      echo "Claude Code is already installed at $(which claude)"
+      echo "Claude Code is already installed at $(command -v claude)"
     fi
   '';
 }
