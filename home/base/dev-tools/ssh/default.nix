@@ -5,6 +5,11 @@
   myvars,
   ...
 }: {
+  # Enable SSH agent service to start automatically
+  services.ssh-agent = {
+    enable = true;
+  };
+
   programs.ssh = {
     enable = true;
 
@@ -17,9 +22,9 @@
         hostname = "ssh.github.com";
         user = "git";
         port = 443;
-        # Try rorschach key first, but allow fallback to other keys if not available
-        identityFile = "~/.ssh/rorschach";
-        identitiesOnly = false; # Allow SSH to try other keys if rorschach is not available
+        # Use standard ed25519 key, with fallback to other keys if not available
+        identityFile = "~/.ssh/id_ed25519";
+        identitiesOnly = false; # Allow SSH to try other keys if id_ed25519 is not available
       };
     };
 
@@ -34,4 +39,20 @@
       ''}
     '';
   };
+
+  # Ensure SSH key is loaded automatically on login
+  home.sessionVariables = {
+    # SSH agent socket will be set by the service
+    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+  };
+
+  # Add a shell init script to load SSH key if it's not already loaded
+  programs.zsh.initContent = lib.mkAfter ''
+    # Auto-load SSH key if agent is running but key isn't loaded
+    if [ -n "$SSH_AUTH_SOCK" ] && [ -f ~/.ssh/id_ed25519 ]; then
+      if ! ssh-add -l | grep -q "$(ssh-keygen -lf ~/.ssh/id_ed25519.pub | awk '{print $2}')"; then
+        ssh-add ~/.ssh/id_ed25519 2>/dev/null
+      fi
+    fi
+  '';
 }

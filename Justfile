@@ -19,6 +19,18 @@ smart-proxy mode="auto":
   #!/usr/bin/env bash
   set -euo pipefail
   
+  # Detect platform
+  platform=$(uname -s)
+  
+  # Skip proxy configuration on non-Darwin systems
+  if [ "$platform" != "Darwin" ]; then
+    echo "📡 Non-Darwin platform detected ($platform), skipping nix-daemon proxy configuration"
+    if [ -n "${http_proxy:-}" ]; then
+      echo "🔍 Terminal proxy detected: $http_proxy (shell-only)"
+    fi
+    exit 0
+  fi
+  
   case "{{mode}}" in
     "auto")
       if [ -n "${http_proxy:-}" ]; then
