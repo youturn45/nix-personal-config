@@ -26,6 +26,7 @@
     ast-grep
 
     sad # CLI search and replace, just like sed, but with diff preview.
+    jq # JSON processor - required for claude hooks
     yq-go # yaml processor https://github.com/mikefarah/yq
     just # a command runner like make, but simpler
     delta # A viewer for git and diff output
