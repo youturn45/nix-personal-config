@@ -77,29 +77,37 @@ build host=hostname proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
   
   # Validate host parameter
   case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre")
+    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
       # Normalize host name to match flake configuration
       case "{{host}}" in
         "rorschach") HOST="Rorschach" ;;
         "nightowl") HOST="NightOwl" ;;
         "silkspectre") HOST="SilkSpectre" ;;
+        "nixos") HOST="nixos" ;;
         *) HOST="{{host}}" ;;
       esac
       ;;
     *)
       echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre"
+      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre, nixos"
       exit 1
       ;;
   esac
   
+  # Determine rebuild command based on host type
+  if [ "$HOST" = "nixos" ]; then
+    REBUILD_CMD="nixos-rebuild"
+  else
+    REBUILD_CMD="darwin-rebuild"
+  fi
+  
   # Build with or without debug flags
   if [ "{{debug}}" = "true" ]; then
     echo "🔧 Debug building $HOST with proxy mode: {{proxy_mode}}"
-    sudo darwin-rebuild switch --flake .#$HOST --show-trace --verbose
+    sudo $REBUILD_CMD switch --flake .#$HOST --show-trace --verbose
   else
     echo "🏗️  Building $HOST with proxy mode: {{proxy_mode}}"
-    sudo darwin-rebuild switch --flake .#$HOST
+    sudo $REBUILD_CMD switch --flake .#$HOST
   fi
 
 ############################################################################
@@ -153,24 +161,32 @@ build-test host=hostname proxy_mode="auto": (smart-proxy proxy_mode) validate
   
   # Validate host parameter
   case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre")
+    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
       # Normalize host name to match flake configuration
       case "{{host}}" in
         "rorschach") HOST="Rorschach" ;;
         "nightowl") HOST="NightOwl" ;;
         "silkspectre") HOST="SilkSpectre" ;;
+        "nixos") HOST="nixos" ;;
         *) HOST="{{host}}" ;;
       esac
       ;;
     *)
       echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre"
+      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre, nixos"
       exit 1
       ;;
   esac
   
+  # Determine rebuild command based on host type
+  if [ "$HOST" = "nixos" ]; then
+    REBUILD_CMD="nixos-rebuild"
+  else
+    REBUILD_CMD="darwin-rebuild"
+  fi
+  
   echo "🏗️  Testing build without switching for $HOST (proxy: {{proxy_mode}})..."
-  darwin-rebuild build --flake .#$HOST
+  $REBUILD_CMD build --flake .#$HOST
 
 # Test multiple hosts with proxy mode
 [group('test')]
@@ -362,6 +378,87 @@ fmt:
 [group('nix')]
 gcroot:
   ls -al /nix/var/nix/gcroots/auto/
+
+############################################################################
+#
+#  NixOS System Management
+#
+############################################################################
+
+# Build and switch NixOS configuration with proxy support
+[group('nixos')]
+nixos-build proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Build with or without debug flags
+  if [ "{{debug}}" = "true" ]; then
+    echo "🔧 Debug building NixOS with proxy mode: {{proxy_mode}}"
+    sudo nixos-rebuild switch --flake .#nixos --show-trace --verbose
+  else
+    echo "🏗️  Building NixOS with proxy mode: {{proxy_mode}}"
+    sudo nixos-rebuild switch --flake .#nixos
+  fi
+
+# Build NixOS without switching (for testing)
+[group('nixos')]
+nixos-build-test proxy_mode="auto": (smart-proxy proxy_mode) nixos-validate
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  echo "🏗️  Testing NixOS build without switching (proxy: {{proxy_mode}})..."
+  sudo nixos-rebuild build --flake .#nixos
+
+# NixOS-specific validation
+[group('nixos')]
+nixos-validate:
+  @echo "🔍 Running NixOS pre-build validation..."
+  just fmt
+  nix flake check --no-build
+  @echo "🔍 Validating NixOS configuration..."
+  nix eval .#nixosConfigurations.nixos.config.system.build.toplevel --raw > /dev/null
+
+# Show current NixOS generation
+[group('nixos')]
+nixos-current-gen:
+  @echo "📋 Current NixOS generation:"
+  @sudo nix profile history --profile /nix/var/nix/profiles/system | head -n 5
+
+# Safe NixOS build: validate → build-test → switch
+[group('nixos')]
+nixos-safe-build proxy_mode="auto": nixos-current-gen (nixos-build-test proxy_mode)
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  echo "✅ NixOS build test passed! Proceeding with switch..."
+  sudo nixos-rebuild switch --flake .#nixos
+
+# Test NixOS configuration build
+[group('nixos')]
+nixos-test proxy_mode="auto":
+  @echo "🔍 Testing NixOS configuration with proxy mode: {{proxy_mode}}..."
+  just smart-proxy {{proxy_mode}}
+  @echo "Testing NixOS build..."
+  @sudo nixos-rebuild build --flake .#nixos >/dev/null 2>&1 && echo "✅ NixOS build: PASS" || echo "❌ NixOS build: FAIL"
+
+# Rollback NixOS to previous generation
+[group('nixos')]
+nixos-rollback:
+  @echo "⏪ Rolling back NixOS to previous generation..."
+  sudo nixos-rebuild rollback
+
+# List NixOS generations
+[group('nixos')]
+nixos-generations:
+  @echo "📜 Recent NixOS generations:"
+  @sudo nix profile history --profile /nix/var/nix/profiles/system | head -n 10
+
+# Emergency NixOS rollback
+[group('nixos')]
+nixos-emergency-rollback:
+  @echo "🚨 Emergency NixOS rollback to last known good generation..."
+  sudo nixos-rebuild rollback
+  @echo "✅ NixOS rollback complete. Check system status."
 
 ############################################################################
 #
