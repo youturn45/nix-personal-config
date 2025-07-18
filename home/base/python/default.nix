@@ -33,7 +33,7 @@
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # NixOS: System libraries needed for binary wheels
-      gcc-unwrapped.lib
+      stdenv.cc.cc.lib # Use this instead of gcc-unwrapped.lib to avoid collision
       glibc
       zlib
       libffi
@@ -51,10 +51,7 @@
       # Scientific computing libraries
       blas
       lapack
-      gfortran.cc.lib
-
-      # Additional C/C++ libraries commonly needed
-      stdenv.cc.cc.lib
+      # Note: gfortran.cc.lib removed to avoid collision with stdenv.cc.cc.lib
     ];
 
   # UV configuration
@@ -129,7 +126,7 @@
     // lib.optionalAttrs pkgs.stdenv.isLinux {
       # NixOS: Make system libraries available to UV-installed packages
       LD_LIBRARY_PATH = lib.makeLibraryPath [
-        pkgs.gcc-unwrapped.lib
+        pkgs.stdenv.cc.cc.lib # Use this instead of gcc-unwrapped.lib to avoid collision
         pkgs.glibc
         pkgs.zlib
         pkgs.libffi
@@ -145,8 +142,7 @@
         pkgs.libxslt
         pkgs.blas
         pkgs.lapack
-        pkgs.gfortran.cc.lib
-        pkgs.stdenv.cc.cc.lib
+        # Note: gfortran.cc.lib removed to avoid collision with stdenv.cc.cc.lib
       ];
 
       # Additional environment variables for binary compatibility
@@ -193,7 +189,7 @@
         # Ensure LD_LIBRARY_PATH is set for this UV session
         if [[ -z "$LD_LIBRARY_PATH" ]]; then
           export LD_LIBRARY_PATH="${lib.makeLibraryPath [
-        pkgs.gcc-unwrapped.lib
+        pkgs.stdenv.cc.cc.lib
         pkgs.glibc
         pkgs.zlib
         pkgs.libffi
@@ -209,8 +205,6 @@
         pkgs.libxslt
         pkgs.blas
         pkgs.lapack
-        pkgs.gfortran.cc.lib
-        pkgs.stdenv.cc.cc.lib
       ]}"
         fi
 
