@@ -25,6 +25,9 @@
   # Enable zsh system-wide
   programs.zsh.enable = true;
 
+  # Enable SSH agent system-wide
+  programs.ssh.startAgent = true;
+
   # Enable SSH daemon
   services.openssh = {
     enable = true;

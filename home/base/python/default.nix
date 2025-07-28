@@ -30,6 +30,10 @@
       # Keep essential system-level formatters that editors expect
       python312Packages.black
       python312Packages.ruff
+
+      # Jupyter and ipykernel for SSH/remote development
+      python312Packages.jupyter
+      python312Packages.ipykernel
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # NixOS: System libraries needed for binary wheels
