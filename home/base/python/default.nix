@@ -24,16 +24,19 @@
       # UV - fast Python package manager
       uv
 
-      # Python runtime (minimal - UV will manage versions)
-      python312
+      # Python environment with integrated packages for proper dependency resolution
+      (python312.withPackages (ps:
+        with ps; [
+          # Essential development tools
+          black
+          ruff
 
-      # Keep essential system-level formatters that editors expect
-      python312Packages.black
-      python312Packages.ruff
-
-      # Jupyter and ipykernel for SSH/remote development
-      python312Packages.jupyter
-      python312Packages.ipykernel
+          # Jupyter and ipykernel for SSH/remote development
+          jupyter
+          ipykernel
+          jupyter-client
+          jupyterlab
+        ]))
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # NixOS: System libraries needed for binary wheels

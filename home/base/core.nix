@@ -63,7 +63,7 @@
     glow # Markdown viewer
     alejandra # Nix formatter
     rustfmt # Rust formatter
-    black # Python formatter
+    # black - provided by Python environment in home/base/python/default.nix
     nodePackages.prettier # JS/TS/JSON/YAML/MD formatter
     stylua # Lua formatter
   ];
