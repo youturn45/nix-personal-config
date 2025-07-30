@@ -116,10 +116,10 @@ build host=hostname proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
   # Build with or without debug flags
   if [ "{{debug}}" = "true" ]; then
     echo "🔧 Debug building $HOST with proxy mode: {{proxy_mode}}"
-    sudo $REBUILD_CMD switch --flake .#$HOST --show-trace --verbose
+    sudo -E $REBUILD_CMD switch --flake .#$HOST --show-trace --verbose
   else
     echo "🏗️  Building $HOST with proxy mode: {{proxy_mode}}"
-    sudo $REBUILD_CMD switch --flake .#$HOST
+    sudo -E $REBUILD_CMD switch --flake .#$HOST
   fi
 
 ############################################################################
