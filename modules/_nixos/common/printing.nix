@@ -11,13 +11,15 @@
     browsing = true;
     defaultShared = true;
 
-    # Add HP drivers
     drivers = with pkgs; [
-      hplip # HP Linux Imaging and Printing
-      gutenprint # Additional drivers
-      cups-filters
-      ghostscript
+      hplip
+      gutenprint
     ];
+
+    # Ensure USB backend is available
+    extraConf = ''
+      DeviceURI usb
+    '';
   };
 
   # Add user to additional printer-related groups
