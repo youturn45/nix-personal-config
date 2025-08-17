@@ -6,17 +6,25 @@
   # Enable CUPS printing service
   services.printing = {
     enable = true;
-    listenAddresses = ["*:631"]; # Allow access from all network interfaces
-    allowFrom = ["all"]; # Allow access from all hosts
+    listenAddresses = ["*:631"];
+    allowFrom = ["all"];
     browsing = true;
-    defaultShared = true; # Share printers by default
+    defaultShared = true;
+
+    # Add HP drivers
     drivers = with pkgs; [
-      gutenprint
-      hplip
+      hplip # HP Linux Imaging and Printing
+      gutenprint # Additional drivers
       cups-filters
       ghostscript
     ];
   };
+
+  # HP printer specific services
+  services.hplip.enable = true;
+
+  # Add user to additional printer-related groups
+  users.users.${myvars.username}.extraGroups = ["lp" "scanner"];
 
   # Open firewall for CUPS
   networking.firewall = {
