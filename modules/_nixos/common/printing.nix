@@ -37,7 +37,4 @@
     nssmdns4 = true;
     openFirewall = true;
   };
-
-  # Add user to lp group for printer access
-  users.users.${myvars.username}.extraGroups = ["lp"];
 }
