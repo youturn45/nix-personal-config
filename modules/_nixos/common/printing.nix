@@ -20,9 +20,6 @@
     ];
   };
 
-  # HP printer specific services
-  services.hplip.enable = true;
-
   # Add user to additional printer-related groups
   users.users.${myvars.username}.extraGroups = ["lp" "scanner"];
 
