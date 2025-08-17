@@ -15,11 +15,18 @@
       hplip
       gutenprint
     ];
+  };
 
-    # Ensure USB backend is available
-    extraConf = ''
-      DeviceURI usb
-    '';
+  # Create the cups backend directory structure
+  environment.etc."cups/backend" = {
+    source = "${pkgs.cups}/lib/cups/backend";
+    mode = "0755";
+  };
+
+  # Alternatively, create symlinks to the specific backends
+  environment.etc."cups/backend/usb" = {
+    source = "${pkgs.cups}/lib/cups/backend/usb";
+    mode = "0755";
   };
 
   # Add user to additional printer-related groups
