@@ -228,6 +228,8 @@
       nerd-fonts.fira-code
       nerd-fonts.jetbrains-mono
       nerd-fonts.space-mono
+      maple-mono.NF-CN-unhinted
+
 
       # Source fonts with Chinese support
       source-sans

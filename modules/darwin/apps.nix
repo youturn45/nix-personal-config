@@ -108,7 +108,7 @@
     casks = [
       # browser
       "google-chrome"
-      "visual-studio-code"
+
 
       # IM & audio & remote desktop & meeting
       "discord"
@@ -125,6 +125,10 @@
       "Moonlight" # remote desktop
       "Spotify" # music app
       "tailscale-app" # VPN
+
+      # Editors
+      "visual-studio-code"
+      "cursor"
     ];
   };
 }
