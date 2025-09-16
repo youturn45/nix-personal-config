@@ -17,8 +17,8 @@
 
     # Font configuration
     font = {
-      name = "Fira Code";
-      size = 14;
+      name = "FiraCode Nerd Font Mono";
+      size = 16;
     };
 
     themeFile = "Catppuccin-Mocha";
@@ -75,6 +75,10 @@
       initial_window_height = 800;
       window_padding_width = 8;
       hide_window_decorations = "titlebar-only";
+      draw_minimal_borders = true;
+      window_border_width = "0pt";
+      window_margin_width = 0;
+      single_window_margin_width = 0;
 
       # Tab configuration
       tab_bar_edge = "top";
@@ -83,11 +87,15 @@
 
       # Cursor settings
       cursor_shape = "block";
-      cursor_blink_interval = "0.5";
-      cursor_stop_blinking_after = "15.0";
+      cursor_shape_unfocused = "hollow";
+      cursor_blink_interval = "0.75";
+      cursor_stop_blinking_after = "0";
 
       # Mouse settings
-      mouse_hide_wait = "3.0";
+      mouse_hide_wait = "0";
+      copy_on_select = true;
+      strip_trailing_spaces = "smart";
+      wheel_scroll_multiplier = 2;
       url_color = "#0087bd";
       url_style = "curly";
 
@@ -101,19 +109,20 @@
       shell = "zsh";
 
       # Scrollback
-      scrollback_lines = 10000;
+      scrollback_lines = 65536;
+      scrollback_indicator_opacity = "0.50";
       scrollback_pager = "less --chop-long-lines --RAW-CONTROL-CHARS +INPUT_LINE_NUMBER";
 
       # Bell
       enable_audio_bell = false;
-      visual_bell_duration = "0.0";
+      visual_bell = "0.25";
 
       # Advanced
       allow_remote_control = true;
       listen_on = "unix:/tmp/kitty";
       startup_session = "none";
       clipboard_control = "write-clipboard write-primary";
-      term = "xterm-kitty";
+      term = "xterm-256color";
       disable_ligatures = "never";
 
       # Catppuccin Mocha colors
@@ -187,7 +196,14 @@
     # Enable shell integration for zsh
     shellIntegration = {
       enableZshIntegration = true;
-      mode = "enabled";
+      enableBashIntegration = false;
+      enableFishIntegration = false;
     };
+
+    extraConfig = ''
+      cursor_trail 500
+      cursor_trail_decay 0.175 0.425
+      cursor_trail_start_threshold 2
+    '';
   };
 }
