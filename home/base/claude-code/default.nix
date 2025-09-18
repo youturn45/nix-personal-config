@@ -80,7 +80,7 @@
   # Install Claude Code on activation (requires Node.js from nodejs module)
   home.activation.installClaudeCode = lib.hm.dag.entryAfter ["writeBoundary"] ''
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    export PATH="$HOME/.npm-global/bin:$PATH"
+    export PATH="${pkgs.nodejs_22}/bin:$HOME/.npm-global/bin:$PATH"
 
     if ! command -v claude >/dev/null 2>&1; then
       echo "Installing Claude Code..."
