@@ -110,7 +110,6 @@
       # browser
       "google-chrome"
 
-
       # IM & audio & remote desktop & meeting
       "discord"
 
