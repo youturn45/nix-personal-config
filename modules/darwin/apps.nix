@@ -126,9 +126,11 @@
       "Spotify" # music app
       "tailscale-app" # VPN
 
-      # Editors
+      # Editors & Developer Tools
       "visual-studio-code"
       "cursor"
+      "codex"
+      
     ];
   };
 }
