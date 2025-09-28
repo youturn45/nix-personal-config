@@ -100,6 +100,7 @@
     brews = [
       "libomp"
       "batt"
+      "codex"
       #  "ffmpeg"
     ];
 
@@ -128,9 +129,7 @@
 
       # Editors & Developer Tools
       "visual-studio-code"
-      "cursor"
-      "codex"
-      
+      "cursor"      
     ];
   };
 }
