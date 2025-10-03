@@ -153,59 +153,34 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 ├── my-lib/                  # Custom helper functions
 ├── hosts/                   # Host configurations
 │   ├── darwin/             # macOS host configurations
-│   │   ├── NightOwl.nix    # NightOwl host configuration
-│   │   ├── SilkSpectre.nix # SilkSpectre host configuration
-│   │   ├── rorschach.nix   # Rorschach host configuration
-│   │   └── default.nix     # Darwin hosts entry point
-│   └── nixos/              # NixOS host configurations
-│       ├── default.nix     # NixOS hosts entry point
-│       └── nixos/          # NixOS VM configuration
-│           ├── boot.nix    # Boot configuration
-│           ├── hardware-configuration.nix # Hardware settings
-│           ├── proxy.nix   # Proxy configuration
-│           └── terminfo.nix # Terminal information
+│   │   ├── Rorschach.nix   # Primary macOS host
+│   │   ├── NightOwl.nix    # NightOwl host
+│   │   └── SilkSpectre.nix # SilkSpectre host
+│   └── nixos/              # NixOS host configuration
+│       ├── default.nix     # NixOS system entry point
+│       └── hardware-configuration.nix
 ├── modules/                 # System modules
 │   ├── common/             # Shared between platforms
 │   ├── darwin/             # macOS-specific modules
-│   │   ├── apps.nix        # Core system settings and Homebrew
-│   │   ├── system-settings.nix # macOS defaults and UI preferences
-│   │   ├── host-users.nix  # User account management
-│   │   └── nix-core.nix    # Core Nix configuration
+│   │   ├── apps.nix
+│   │   ├── system-settings.nix
+│   │   ├── host-users.nix
+│   │   └── nix-core.nix
 │   └── _nixos/             # NixOS-specific modules
-│       ├── common/         # Common NixOS modules
-│       └── vm/             # VM-specific modules
+│       └── common/
 ├── home/                   # Home Manager configurations
-│   ├── base/               # Base user configurations
-│   │   ├── core/           # Core packages and tools
-│   │   │   ├── dev/        # Development tools
-│   │   │   │   ├── git/    # Git configuration
-│   │   │   │   ├── npm/    # Node.js and npm setup
-│   │   │   │   ├── ssh/    # SSH configuration
-│   │   │   │   ├── starship/ # Shell prompt configuration
-│   │   │   │   ├── tex/    # LaTeX environment
-│   │   │   │   └── _container/ # Container tools
-│   │   │   ├── editors/    # Text editors
-│   │   │   │   └── neovim/ # NixVim configuration (fully featured)
-│   │   │   │       ├── default.nix # Complete NixVim setup with LSP, completion, plugins
-│   │   │   │       ├── _default.nix.bak # Backup of previous config
-│   │   │   │       ├── _nvim.bak/ # AstroNvim backup directory
-│   │   │   │       └── README.md # NixVim setup documentation
-│   │   │   ├── python/     # Python environment
-│   │   │   ├── shells/     # Shell configurations (zsh, nushell)
-│   │   │   └── core.nix    # Core packages and CLI tools
-│   │   ├── _tui/           # Terminal UI applications (disabled with _)
-│   │   │   ├── _gpg/       # GPG configuration
-│   │   │   ├── _password-store/ # Password store
-│   │   │   ├── editors/    # Terminal editors
-│   │   │   ├── encryption/ # Encryption tools
-│   │   │   └── zellij/     # Terminal multiplexer
-│   │   └── gui/            # GUI applications
-│   │       ├── media.nix   # Media applications
-│   │       └── terminal/   # Terminal applications
-│   │           └── ghostty.nix # Ghostty terminal emulator
-│   ├── darwin/             # macOS-specific user configurations
-│   │   └── default.nix     # Darwin user profile entry point
-│   └── server/             # Server-specific configurations
+│   ├── default.nix         # Home Manager entry point
+│   ├── base/
+│   │   ├── core.nix        # Core packages and CLI tools
+│   │   ├── claude-code/    # Claude Code integration
+│   │   ├── dev-tools/      # git, ssh, nodejs, tex, _pip
+│   │   ├── editors/        # neovim (NixVim)
+│   │   ├── gui/            # media.nix, terminal/{ghostty.nix, kitty.nix}
+│   │   ├── python/
+│   │   ├── system/         # btop, _zellij, _container
+│   │   └── terminal/       # starship, shells, yazi
+│   ├── darwin/default.nix
+│   └── nixos/default.nix
 └── scripts/                # Utility scripts
     ├── darwin_set_proxy.py # Darwin proxy setup
     └── vnc_paste.py        # VNC paste utility
@@ -233,12 +208,10 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 
 ## Development Environment
 
-The repository includes a development shell with:
-- Node.js 22 with npm configured for user-local packages
-- claude-code automatically installed
-- Minimal shell variant available for testing
+No `devShells` are currently defined in `flake.nix`.
 
-Access via: `nix develop`
+- Use system packages and Home Manager-provisioned tools for development.
+- If you want a `nix develop` workflow, add `devShells` to the flake and document the tools there.
 
 ## Important Notes
 
@@ -249,13 +222,13 @@ Access via: `nix develop`
   - `modules/darwin/host-users.nix`: User account management
   - `modules/darwin/nix-core.nix`: Core Nix configuration and settings
 - **Editor Configuration**: 
-  - `home/base/core/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
+  - `home/base/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
   - Supports 7+ LSP servers (Nix, Lua, Rust, Python, TypeScript, Bash, Markdown)
   - Auto-formatting with conform-nvim for multiple languages
   - Full key binding setup for productivity
 - **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
 - **Proxy Configuration**: Configurable proxy support with local (127.0.0.1) and network (10.0.0.5) modes for shell and nix-daemon
-- **Claude Code Integration**: Development shell automatically includes claude-code
+- **Claude Code Integration**: Available via `home/base/claude-code` hooks and settings; no devShell provisioning
 - **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
 - **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
 - **Build Testing**: Comprehensive testing infrastructure with validation, build-test, and rollback capabilities

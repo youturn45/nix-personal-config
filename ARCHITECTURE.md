@@ -28,47 +28,51 @@ This is a sophisticated personal Nix configuration repository that provides a re
 - 🎨 **Consistent Theming**: Catppuccin Mocha theme throughout the system
 - ⚡ **Modern Toolchain**: Contemporary CLI tools and development environment
 - 🔧 **Centralized Management**: Single source of truth for system variables
-- 🚀 **Developer Experience**: Integrated development shells and productivity tools
+- 🚀 **Developer Experience**: Productivity tools via Home Manager and Justfile
 
 ## Repository Structure
 
 ```
 nix-personal-config/
-├── 📁 Root Configuration
-│   ├── flake.nix              # Core flake definition and entry point
-│   ├── Justfile               # Build commands and workflows
-│   ├── CLAUDE.md              # Claude Code integration instructions
-│   └── README.md              # Project documentation
-├── 📁 vars/                   # Centralized variable management
-│   ├── default.nix            # System variables with validation
-│   └── _networking.nix        # Network topology and host definitions
-├── 📁 my-lib/                 # Custom helper functions
-│   ├── default.nix            # Core helper templates
-│   └── helpers.nix            # Module discovery utilities
-├── 📁 modules/                # System-level configurations
-│   ├── common/                # Cross-platform shared settings
-│   ├── darwin/                # macOS-specific modules
-│   └── _nixos/                # NixOS-specific modules
-├── 📁 home/                   # User-level Home Manager configurations
-│   └── base/                  # Base user configuration
-│       ├── core/              # Essential tools and development environment
-│       ├── _tui/              # Terminal UI applications
-│       └── gui/               # GUI applications
-├── 📁 hosts/                  # Host-specific configurations
-│   ├── default.nix            # Common host settings
-│   └── rorschach.nix          # Primary macOS host (MacBook Air M4)
-├── 📁 hosts/                  # Host configurations
-│   ├── darwin/                # macOS host configurations
-│   │   ├── NightOwl.nix       # NightOwl host configuration
-│   │   ├── SilkSpectre.nix    # SilkSpectre host configuration
-│   │   ├── rorschach.nix      # Rorschach host configuration
-│   │   └── default.nix        # Darwin hosts entry point
-│   └── nixos/                 # NixOS host configurations
-│       ├── default.nix        # NixOS host generator
-│       └── nixos/             # Development/testing VM
-└── 📁 scripts/                # Utility scripts
-    ├── darwin_set_proxy.py    # Configurable proxy setup (local/network modes)
-    └── vnc_paste.py           # VNC clipboard utility
+├── flake.nix            # Flake entry point
+├── Justfile             # Build/test/workflow commands
+├── CLAUDE.md            # Claude Code integration notes
+├── ARCHITECTURE.md      # This document
+├── README.md            # Project overview
+├── vars/                # Centralized variables and networking
+│   ├── default.nix
+│   └── _networking.nix
+├── my-lib/              # Helper library
+│   ├── default.nix
+│   └── helpers.nix      # collectModulesRecursively
+├── modules/
+│   ├── common/          # Shared across Darwin and NixOS
+│   ├── darwin/          # macOS-specific modules
+│   └── _nixos/          # NixOS-specific modules (common)
+├── home/                # Home Manager configuration
+│   ├── default.nix      # Entry for Home Manager
+│   ├── base/
+│   │   ├── core.nix
+│   │   ├── claude-code/
+│   │   ├── dev-tools/
+│   │   ├── editors/
+│   │   ├── gui/
+│   │   ├── python/
+│   │   ├── system/
+│   │   └── terminal/
+│   ├── darwin/default.nix
+│   └── nixos/default.nix
+├── hosts/
+│   ├── darwin/
+│   │   ├── Rorschach.nix
+│   │   ├── NightOwl.nix
+│   │   └── SilkSpectre.nix
+│   └── nixos/
+│       ├── default.nix
+│       └── hardware-configuration.nix
+└── scripts/
+    ├── darwin_set_proxy.py
+    └── vnc_paste.py
 ```
 
 ## Root Configuration
@@ -82,15 +86,58 @@ The heart of the configuration, defining inputs, outputs, and system architectur
 #### Flake Inputs
 ```nix
 inputs = {
-  nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05";
-  nix-darwin.url = "github:LnL7/nix-darwin";
-  home-manager.url = "github:nix-community/home-manager";
-  nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
-  haumea.url = "github:nix-community/haumea/v0.2.2";
-  ghostty.url = "github:ghostty-org/ghostty";
+  # official nix pkgs sources
+  nixpkgs = {
+    url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+  nixpkgs-unstable = {
+    url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+  nixpkgs-stable = {
+    url = "github:NixOS/nixpkgs/nixos-24.11";
+  };
+  nix-darwin = {
+    url = "github:lnl7/nix-darwin";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # home-manager, used for managing user configuration
+  home-manager = {
+    url = "github:nix-community/home-manager/master";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # nix-homebrew, used for managing homebrew packages
+  nix-homebrew = {
+    url = "github:zhaofengli/nix-homebrew";
+  };
+
+  # haumea, used for managing flake imports
+  haumea = {
+    url = "github:nix-community/haumea/v0.2.2";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # ghostty, used for managing ghostty packages
+  ghostty = {
+    url = "github:ghostty-org/ghostty";
+  };
+
+  # agenix, used for managing secrets
+  agenix = {
+    url = "github:ryantm/agenix";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # nixvim, used for managing neovim configuration
+  nixvim = {
+    url = "github:nix-community/nixvim";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # nur-ryan4yin, custom packages used from ryan4yin
   nur-ryan4yin.url = "github:ryan4yin/nur-packages";
-}
+};
 ```
 
 #### Package Set Creation
@@ -104,15 +151,11 @@ mkPkgs = nixpkgs: system: import nixpkgs {
 ```
 
 #### Development Shells
-- **Default Shell**: Node.js 22 with npm, claude-code auto-installation
-- **Minimal Shell**: Lightweight variant for testing
-- **Proxy Support**: Chinese network proxy configuration
+Currently, no `devShells` are defined in `flake.nix`.
 
-**Features:**
-- Multi-channel nixpkgs support (stable, unstable)
-- Automatic dependency resolution
-- Cross-platform package compatibility
-- Development environment isolation
+Notes:
+- Use system packages and Home Manager-provisioned tools for development.
+- If desired, add `devShells` to `flake.nix` to enable `nix develop`.
 
 ### Justfile - Build Automation
 
@@ -323,14 +366,12 @@ dock = {
 
 ### modules/_nixos/ - NixOS-Specific Configuration
 
-#### vm/default.nix - Virtual Machine Configuration
-**Purpose**: NixOS VM-specific settings and optimizations
+#### common/ - Shared NixOS Modules
+**Purpose**: Shared NixOS settings used by all NixOS hosts
 
-**Features:**
-- Automatic root login for development VMs
-- VM-specific service configurations
-- Resource optimization for virtualized environments
-- Integration with host system
+**Included:**
+- Printing and other common services
+- Cross-cutting configuration shared by bare-metal and VMs
 
 ## Home Manager Configuration
 
@@ -342,7 +383,7 @@ dock = {
 - PATH configuration for Nix profiles
 - Module discovery integration
 
-### home/base/core/ - Essential User Tools
+### home/base/core.nix - Essential User Tools
 
 #### core.nix - Modern CLI Toolchain
 **Purpose**: Contemporary replacements for traditional Unix tools
@@ -378,7 +419,7 @@ dock = {
 - Coordinated color schemes and styling
 - Custom configuration for each tool
 
-#### shells/default.nix - Advanced Shell Configuration
+#### terminal/shells/default.nix - Advanced Shell Configuration
 **Purpose**: Enhanced Zsh experience with modern features
 
 **Plugin System (zplug):**
@@ -450,9 +491,7 @@ defaultBranch = "main";
 - Directory-first sorting
 - Keyboard-driven interface
 
-### home/base/_tui/ - Terminal UI Applications
-
-#### zellij/default.nix - Terminal Multiplexer
+### home/base/system/_zellij/default.nix - Terminal Multiplexer
 **Purpose**: Modern alternative to tmux with better UX
 
 **Features:**
@@ -467,28 +506,8 @@ defaultBranch = "main";
 - Automatic session attachment
 - Exit handling configuration
 
-#### _password-store/default.nix - Password Management
-**Purpose**: Command-line password management with GPG encryption
-
-**Components:**
-- Pass with extensions (import, update)
-- GPG integration for encryption and signing
-- Browser integration via browserpass
-- Multi-browser support (Chrome, Chromium, Firefox)
-
-**Security Features:**
-- GPG key configuration
-- Secure password generation
-- Git integration for password history
-- Browser autofill support
-
-#### encryption/default.nix - Modern Encryption Tools
-**Purpose**: Contemporary encryption and secrets management
-
-**Tools:**
-- **Age**: Modern file encryption
-- **SOPS**: Secrets OPerationS for GitOps workflows
-- **Rclone**: Cloud storage with encryption
+### home/base/system/_container/default.nix - Container Tooling
+Container-related helper configuration for development workflows.
 
 ### home/base/gui/ - GUI Applications
 
@@ -513,71 +532,18 @@ background-blur-radius = 20;
 
 ## Host Configurations
 
-### hosts/default.nix - Common Host Settings
-**Purpose**: Shared configuration template for all hosts
+### hosts/darwin/*.nix - macOS Hosts
+macOS host configurations using nix-darwin:
+- `Rorschach.nix` — primary development machine (MacBook Air M4)
+- `NightOwl.nix` — secondary macOS host
+- `SilkSpectre.nix` — tertiary macOS host
 
-**Features:**
-- Common module imports (darwin, common)
-- User account setup with shell assignment
-- Home Manager integration
-- Backup file handling
-
-### hosts/rorschach.nix - Primary macOS Host
-**Purpose**: MacBook Air M4 specific configuration
-
-**Specifications:**
-- Apple Silicon M4 optimization
-- macOS-specific performance tuning
-- Host-specific application preferences
-- Network and hardware configuration
-
-## hosts/ - Host Configuration
-
-### hosts/darwin/ - macOS Host Configurations
-
-**Purpose**: macOS-specific host configurations using nix-darwin
-
-**Host Files:**
-- **rorschach.nix**: Primary development machine (MacBook Air M4)
-- **NightOwl.nix**: Secondary macOS host
-- **SilkSpectre.nix**: Tertiary macOS host
-- **default.nix**: Common Darwin configuration entry point
-
-### hosts/nixos/ - NixOS VM Configuration
-
-### default.nix - NixOS Host Generator
-**Purpose**: Factory function for creating NixOS configurations
-
-**mkNixosHost Function:**
-```nix
-mkNixosHost = { hostname, system, modules ? [] }: 
-  lib.nixosSystem {
-    inherit specialArgs system;
-    modules = modules ++ [
-      ../modules/common
-      ../modules/_nixos/common
-      { networking.hostName = hostname; }
-      (lib.path.append ./. hostname)
-    ];
-  };
-```
-
-### myVm/ - Development VM
-**Purpose**: Testing and development environment
-
-**Configuration:**
-- x86_64-linux architecture for compatibility testing
-- VM-specific hardware settings
-- Development package selection
-- QEMU build instructions
-
-**Usage:**
-```bash
-# Build VM
-nix build .#nixosConfigurations.myVm.config.system.build.vm
-# Run VM
-NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
-```
+### hosts/nixos/default.nix - NixOS Host
+Defines the `nixos` system by composing:
+- Hardware configuration (`hardware-configuration.nix`)
+- Shared modules (`modules/common`, `modules/_nixos/common`)
+- Home Manager user configuration (`home/`)
+Sets `networking.hostName = "nixos"` for the NixOS target.
 
 ## Utility Scripts
 
@@ -677,7 +643,7 @@ python3 scripts/darwin_set_proxy.py network
 ## Development Workflow
 
 ### Local Development
-1. **Environment Setup**: `nix develop` for development shell
+1. **Environment Setup**: Use system/Home Manager tools (no `nix develop` devShells defined)
 2. **Make Changes**: Edit configurations in modular structure
 3. **Test Build**: `just darwin-debug` for verbose testing
 4. **Deploy**: `just darwin` for production deployment
