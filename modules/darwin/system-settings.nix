@@ -42,9 +42,9 @@
       # Persistent apps in dock
       persistent-apps = [
         "/Applications/Google Chrome.app"
-        "/Applications/WeChat.app"
+        # "/Applications/WeChat.app"
         "/Applications/Obsidian.app"
-        "/Applications/Spotify.app"
+        # "/Applications/Spotify.app"
       ];
     };
 
