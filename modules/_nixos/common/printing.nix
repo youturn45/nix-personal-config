@@ -17,12 +17,6 @@
     ];
   };
 
-  # Create the cups backend directory structure
-  environment.etc."cups/backend" = {
-    source = "${pkgs.cups}/lib/cups/backend";
-    mode = "0755";
-  };
-
   # Add user to additional printer-related groups
   users.users.${myvars.username}.extraGroups = ["lp" "scanner"];
 
