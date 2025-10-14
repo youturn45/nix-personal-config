@@ -23,12 +23,6 @@
     mode = "0755";
   };
 
-  # Alternatively, create symlinks to the specific backends
-  environment.etc."cups/backend/usb" = {
-    source = "${pkgs.cups}/lib/cups/backend/usb";
-    mode = "0755";
-  };
-
   # Add user to additional printer-related groups
   users.users.${myvars.username}.extraGroups = ["lp" "scanner"];
 
