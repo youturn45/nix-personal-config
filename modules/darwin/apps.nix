@@ -100,7 +100,6 @@
     brews = [
       "libomp"
       "batt"
-      "codex"
       #  "ffmpeg"
     ];
 
