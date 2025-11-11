@@ -43,29 +43,6 @@
     mtr
   ];
 
-  /*
-    programs = {
-    # modern vim
-    neovim = {
-      enable = true;
-      defaultEditor = true;
-      vimAlias = true;
-    };
-
-    # terminal file manager
-    yazi = {
-      enable = true;
-      enableZshIntegration = true;
-      settings = {
-        manager = {
-          show_hidden = true;
-          sort_dir_first = true;
-        };
-      };
-    };
-  };
-  */
-
   environment.variables.EDITOR = "nvim";
 
   # To make this work, homebrew needs to be installed manually, see https://brew.sh
@@ -124,10 +101,14 @@
       "Moonlight" # remote desktop
       "Spotify" # music app
       "tailscale-app" # VPN
+      "netbirdio/tap/netbird-ui" # VPN
+
+      # Gaming
+      "steam"
 
       # Editors & Developer Tools
       "visual-studio-code"
-      "cursor"      
+      "cursor"
     ];
   };
 }
