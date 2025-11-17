@@ -96,6 +96,7 @@
       "linearmouse" # invert roll
       "hiddenbar" # hidden dock alternative
       "maccy" # clipboard manager
+      "homerow" # keyboard-based UI navigation
       "iterm2" # terminal
       "ghostty" # terminal
       "Moonlight" # remote desktop
