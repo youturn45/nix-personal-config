@@ -144,7 +144,7 @@
       };
   in {
     darwinConfigurations = {
-      Rorschach = mkDarwinHost "rorschach";
+      Rorschach = mkDarwinHost "Rorschach";
       NightOwl = mkDarwinHost "NightOwl";
       SilkSpectre = mkDarwinHost "SilkSpectre";
     };

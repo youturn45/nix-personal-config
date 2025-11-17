@@ -166,8 +166,8 @@ Streamlined command interface for system management and development workflows.
 |---------|-------------|--------|
 | `just darwin` | Build and switch to current host | Production deployment |
 | `just darwin-debug` | Debug build with verbose output | Troubleshooting |
-| `just rorschach` | Build Rorschach configuration | Host-specific build |
-| `just ror-switch` | Switch to Rorschach config | Quick deployment |
+| `just build Rorschach` | Build Rorschach configuration | Host-specific build |
+| `just ror` | Quick build for Rorschach | Host-specific alias |
 
 #### Maintenance Commands
 | Command | Description | Purpose |

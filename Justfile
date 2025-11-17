@@ -89,15 +89,8 @@ build host=hostname proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
   
   # Validate host parameter
   case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        "nixos") HOST="nixos" ;;
-        *) HOST="{{host}}" ;;
-      esac
+    "Rorschach"|"NightOwl"|"SilkSpectre"|"nixos")
+      HOST="{{host}}"
       ;;
     *)
       echo "❌ Invalid host: {{host}}"
@@ -173,15 +166,8 @@ build-test host=hostname proxy_mode="auto": (smart-proxy proxy_mode) validate
   
   # Validate host parameter
   case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        "nixos") HOST="nixos" ;;
-        *) HOST="{{host}}" ;;
-      esac
+    "Rorschach"|"NightOwl"|"SilkSpectre"|"nixos")
+      HOST="{{host}}"
       ;;
     *)
       echo "❌ Invalid host: {{host}}"
@@ -242,14 +228,8 @@ safe-build host=hostname proxy_mode="auto": current-gen (build-test host proxy_m
   
   # Validate host parameter
   case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        *) HOST="{{host}}" ;;
-      esac
+    "Rorschach"|"NightOwl"|"SilkSpectre")
+      HOST="{{host}}"
       ;;
     *)
       echo "❌ Invalid host: {{host}}"
