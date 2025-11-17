@@ -22,6 +22,7 @@
 - [x] **Removed duplicate Starship configuration files** - Deleted `_disable.nix` and `_original.nix` backup files
 - [x] **Removed outdated req_doc.md** - Deleted completed shared fonts configuration task file
 - [x] **Fixed host file naming inconsistency** - Renamed `rorschach.nix` to `Rorschach.nix` for consistency
+- [x] **Refactored Justfile** - Removed 169 lines (32% reduction), eliminated all code duplication, added helper functions
 
 ### Build System & Testing
 - [x] **Implemented comprehensive build testing** - Added `safe-build`, `build-test`, validation pipeline
@@ -72,7 +73,8 @@
 
 ### 📈 **Metrics**
 - **Files Cleaned**: 18+ redundant/empty files removed (including starship backups)
-- **Structure Simplified**: Flattened nested directories
+- **Code Reduced**: Justfile refactored from 524 to 355 lines (-169 lines, -32%)
+- **Structure Simplified**: Flattened nested directories, eliminated all code duplication
 - **Documentation**: Up-to-date and comprehensive
 - **Build Success Rate**: 100% with current configuration
 
