@@ -102,6 +102,7 @@
       "Spotify" # music app
       "tailscale-app" # VPN
       "netbirdio/tap/netbird-ui" # VPN
+      "superwhisper" # voice-to-text tool
 
       # Gaming
       "steam"
