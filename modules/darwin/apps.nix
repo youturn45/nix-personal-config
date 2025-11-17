@@ -95,6 +95,7 @@
       "obsidian" # markdown note app
       "linearmouse" # invert roll
       "hiddenbar" # hidden dock alternative
+      "jordanbaird-ice" # menu bar management tool
       "maccy" # clipboard manager
       "iterm2" # terminal
       "ghostty" # terminal
