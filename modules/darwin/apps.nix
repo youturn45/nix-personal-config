@@ -97,6 +97,7 @@
       "hiddenbar" # hidden dock alternative
       "jordanbaird-ice" # menu bar management tool
       "maccy" # clipboard manager
+      "homerow" # keyboard-based UI navigation
       "iterm2" # terminal
       "ghostty" # terminal
       "Moonlight" # remote desktop
