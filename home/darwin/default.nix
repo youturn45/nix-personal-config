@@ -5,10 +5,10 @@
 }: {
   # Darwin-specific home manager configuration
   # This module is imported at build-level in flake.nix
-  # It imports the base home configuration and adds Darwin-specific settings
+  # It imports the common home configuration and adds Darwin-specific settings
 
   imports = [
-    ../default.nix # Import base home configuration
+    ../default.nix # Import common home configuration
   ];
 
   # Darwin-specific packages
