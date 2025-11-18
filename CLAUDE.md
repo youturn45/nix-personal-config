@@ -153,7 +153,7 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 ├── my-lib/                  # Custom helper functions
 ├── hosts/                   # Host configurations
 │   ├── darwin/             # macOS host configurations
-│   │   ├── Rorschach.nix   # Primary macOS host
+│   │   ├── rorschach.nix   # Primary macOS host
 │   │   ├── NightOwl.nix    # NightOwl host
 │   │   └── SilkSpectre.nix # SilkSpectre host
 │   └── nixos/              # NixOS host configuration
@@ -178,7 +178,8 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   │   ├── gui/            # media.nix, terminal/{ghostty.nix, kitty.nix}
 │   │   ├── python/
 │   │   ├── system/         # btop, _zellij, _container
-│   │   └── terminal/       # starship, shells, yazi
+│   │   ├── terminal/       # starship, shells, yazi
+│   │   └── codex/          # Code search tool configuration
 │   ├── darwin/default.nix
 │   └── nixos/default.nix
 └── scripts/                # Utility scripts

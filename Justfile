@@ -1,65 +1,129 @@
 # just is a command runner, Justfile is very similar to Makefile, but simpler.
 
+############################################################################
+#
+#  Variables
+#
+############################################################################
+
+# Default hostname for builds
 hostname := "Rorschach"
 
-# List all the just commands
+# Available Darwin hosts
+darwin_hosts := "Rorschach NightOwl SilkSpectre"
+
+# All hosts including NixOS
+all_hosts := darwin_hosts + " nixos"
+
+# Proxy configuration
+proxy_local := "127.0.0.1:7890"
+proxy_network := "10.0.0.5:7890"
+
+############################################################################
+#
+#  Helper Recipes (Internal)
+#
+############################################################################
+
+# Validate host parameter (internal helper)
+[private]
+_validate-host host:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  case "{{host}}" in
+    Rorschach|NightOwl|SilkSpectre|nixos)
+      exit 0
+      ;;
+    *)
+      echo "❌ Invalid host: {{host}}"
+      echo "Valid hosts: {{all_hosts}}"
+      exit 1
+      ;;
+  esac
+
+# Get rebuild command for host (internal helper)
+[private]
+_rebuild-cmd host:
+  #!/usr/bin/env bash
+  if [ "{{host}}" = "nixos" ]; then
+    echo "nixos-rebuild"
+  else
+    echo "darwin-rebuild"
+  fi
+
+# Validate Darwin-only host (internal helper)
+[private]
+_validate-darwin-host host:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  case "{{host}}" in
+    Rorschach|NightOwl|SilkSpectre)
+      exit 0
+      ;;
+    *)
+      echo "❌ Invalid Darwin host: {{host}}"
+      echo "Valid Darwin hosts: {{darwin_hosts}}"
+      exit 1
+      ;;
+  esac
+
+############################################################################
+#
+#  Main Commands
+#
+############################################################################
+
+# List all available commands
 default:
   @just --list
 
 ############################################################################
 #
-#  Smart Proxy System
+#  Proxy Management
 #
 ############################################################################
 
 # Smart proxy detection and configuration
-# Modes: auto (detect terminal proxy), local (127.0.0.1:7890), network (10.0.0.5:7890), off (no proxy)
-[group('build')]
+# Modes: auto (detect), local ({{proxy_local}}), network ({{proxy_network}}), off (disabled)
+[group('proxy')]
 smart-proxy mode="auto":
   #!/usr/bin/env bash
   set -euo pipefail
-  
-  # Detect platform
-  platform=$(uname -s)
-  
-  # Skip proxy configuration on non-Darwin systems
-  if [ "$platform" != "Darwin" ]; then
-    echo "📡 Non-Darwin platform detected ($platform), skipping nix-daemon proxy configuration"
-    if [ -n "${http_proxy:-}" ]; then
-      echo "🔍 Terminal proxy detected: $http_proxy (shell-only)"
-    fi
+
+  # Skip on non-Darwin platforms
+  if [ "$(uname -s)" != "Darwin" ]; then
+    echo "📡 Non-Darwin platform, skipping nix-daemon proxy configuration"
+    [ -n "${http_proxy:-}" ] && echo "🔍 Terminal proxy detected: $http_proxy (shell-only)"
     exit 0
   fi
-  
+
   case "{{mode}}" in
-    "auto")
+    auto)
       if [ -n "${http_proxy:-}" ]; then
         echo "🔍 Terminal proxy detected: $http_proxy"
         if [[ "$http_proxy" == *"127.0.0.1"* ]]; then
-          echo "📡 Using terminal proxy (local mode)"
           sudo python3 scripts/darwin_set_proxy.py local
         elif [[ "$http_proxy" == *"10.0.0.5"* ]]; then
-          echo "📡 Using terminal proxy (network mode)"
           sudo python3 scripts/darwin_set_proxy.py network
         else
-          echo "📡 Unknown terminal proxy, defaulting to local mode"
+          echo "📡 Unknown proxy, defaulting to local mode"
           sudo python3 scripts/darwin_set_proxy.py local
         fi
       else
-        echo "📡 No terminal proxy detected, using local mode"
+        echo "📡 No proxy detected, using local mode"
         sudo python3 scripts/darwin_set_proxy.py local
       fi
       ;;
-    "local")
-      echo "📡 Forcing local proxy mode (127.0.0.1:7890)"
+    local)
+      echo "📡 Using local proxy ({{proxy_local}})"
       sudo python3 scripts/darwin_set_proxy.py local
       ;;
-    "network")
-      echo "📡 Forcing network proxy mode (10.0.0.5:7890)"
+    network)
+      echo "📡 Using network proxy ({{proxy_network}})"
       sudo python3 scripts/darwin_set_proxy.py network
       ;;
-    "off")
-      echo "📡 Skipping proxy configuration"
+    off)
+      echo "📡 Proxy configuration skipped"
       ;;
     *)
       echo "❌ Invalid proxy mode: {{mode}}"
@@ -68,241 +132,15 @@ smart-proxy mode="auto":
       ;;
   esac
 
-############################################################################
-#
-#  Unified Build Command
-#
-############################################################################
-
-# Unified build command with host selection, debug mode, and proxy configuration
-# Usage: just build [HOST] [--debug] [--proxy MODE]
-# Examples:
-#   just build                    # Build current host (Rorschach)
-#   just build NightOwl           # Build specific host
-#   just build --debug            # Build current host with debug
-#   just build SilkSpectre --debug # Build specific host with debug
-#   just build --proxy network    # Build with specific proxy mode
-[group('build')]
-build host=hostname proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Validate host parameter
-  case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        "nixos") HOST="nixos" ;;
-        *) HOST="{{host}}" ;;
-      esac
-      ;;
-    *)
-      echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre, nixos"
-      exit 1
-      ;;
-  esac
-  
-  # Determine rebuild command based on host type
-  if [ "$HOST" = "nixos" ]; then
-    REBUILD_CMD="nixos-rebuild"
-  else
-    REBUILD_CMD="darwin-rebuild"
-  fi
-  
-  # Build with or without debug flags
-  if [ "{{debug}}" = "true" ]; then
-    echo "🔧 Debug building $HOST with proxy mode: {{proxy_mode}}"
-    sudo -E $REBUILD_CMD switch --flake .#$HOST --show-trace --verbose
-  else
-    echo "🏗️  Building $HOST with proxy mode: {{proxy_mode}}"
-    sudo -E $REBUILD_CMD switch --flake .#$HOST
-  fi
-
-############################################################################
-#
-#  Quick Host Aliases (Optional - for convenience)
-#
-############################################################################
-
-# Quick build aliases for each host
-[group('build')]
-ror proxy_mode="auto": (build "Rorschach" proxy_mode)
-
-[group('build')]
-silk proxy_mode="auto": (build "SilkSpectre" proxy_mode)
-
-[group('build')]
-owl proxy_mode="auto": (build "NightOwl" proxy_mode)
-
-############################################################################
-#
-#  Enhanced Testing Commands
-#
-############################################################################
-
-# Pre-build validation (format and flake check)
-[group('test')]
-validate:
-  @echo "🔍 Running pre-build validation..."
-  just fmt
-  nix flake check --no-build
-
-# Comprehensive validation with extended checks
-[group('test')]
-validate-comprehensive:
-  @echo "🔍 Running comprehensive validation..."
-  just fmt
-  nix flake check --no-build
-  @echo "🔍 Checking flake inputs..."
-  nix flake metadata
-  @echo "🔍 Validating all configurations..."
-  nix eval .#darwinConfigurations.Rorschach.config.system.build.toplevel --raw > /dev/null
-  nix eval .#darwinConfigurations.SilkSpectre.config.system.build.toplevel --raw > /dev/null
-  nix eval .#darwinConfigurations.NightOwl.config.system.build.toplevel --raw > /dev/null
-  nix eval .#nixosConfigurations.nixos.config.system.build.toplevel --raw > /dev/null
-
-# Build test without switching for specified host
-[group('test')]
-build-test host=hostname proxy_mode="auto": (smart-proxy proxy_mode) validate
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Validate host parameter
-  case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre"|"nixos")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        "nixos") HOST="nixos" ;;
-        *) HOST="{{host}}" ;;
-      esac
-      ;;
-    *)
-      echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre, nixos"
-      exit 1
-      ;;
-  esac
-  
-  # Determine rebuild command based on host type
-  if [ "$HOST" = "nixos" ]; then
-    REBUILD_CMD="nixos-rebuild"
-  else
-    REBUILD_CMD="darwin-rebuild"
-  fi
-  
-  echo "🏗️  Testing build without switching for $HOST (proxy: {{proxy_mode}})..."
-  $REBUILD_CMD build --flake .#$HOST
-
-# Test multiple hosts with proxy mode
-[group('test')]
-test-hosts proxy_mode="auto":
-  @echo "🔍 Testing all Darwin hosts with proxy mode: {{proxy_mode}}..."
-  just smart-proxy {{proxy_mode}}
-  @echo "Testing Rorschach..."
-  @darwin-rebuild build --flake .#Rorschach >/dev/null 2>&1 && echo "✅ Rorschach build: PASS" || echo "❌ Rorschach build: FAIL"
-  @echo "Testing SilkSpectre..."
-  @darwin-rebuild build --flake .#SilkSpectre >/dev/null 2>&1 && echo "✅ SilkSpectre build: PASS" || echo "❌ SilkSpectre build: FAIL"
-  @echo "Testing NightOwl..."
-  @darwin-rebuild build --flake .#NightOwl >/dev/null 2>&1 && echo "✅ NightOwl build: PASS" || echo "❌ NightOwl build: FAIL"
-
-# Test NixOS configurations
-[group('test')]
-test-nixos:
-  @echo "🔍 Testing NixOS configurations..."
-  @echo "Testing nixos configuration..."
-  @nix build .#nixosConfigurations.nixos.config.system.build.toplevel >/dev/null 2>&1 && echo "✅ NixOS build: PASS" || echo "❌ NixOS build: FAIL"
-
-# Comprehensive test suite with proxy mode
-[group('test')]
-test-all proxy_mode="auto":
-  @echo "🚀 Running comprehensive test suite with proxy mode: {{proxy_mode}}..."
-  just validate-comprehensive
-  just test-hosts {{proxy_mode}}
-  just test-nixos
-  @echo "✅ All tests completed!"
-
-# Show current generation for backup reference
-[group('test')]
-current-gen:
-  @echo "📋 Current system generation:"
-  @nix profile history --profile /nix/var/nix/profiles/system | head -n 5
-
-# Safe build process: validate → build-test → switch (streamlined)
-[group('test')]
-safe-build host=hostname proxy_mode="auto": current-gen (build-test host proxy_mode)
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Validate host parameter
-  case "{{host}}" in
-    "Rorschach"|"NightOwl"|"SilkSpectre"|"rorschach"|"nightowl"|"silkspectre")
-      # Normalize host name to match flake configuration
-      case "{{host}}" in
-        "rorschach") HOST="Rorschach" ;;
-        "nightowl") HOST="NightOwl" ;;
-        "silkspectre") HOST="SilkSpectre" ;;
-        *) HOST="{{host}}" ;;
-      esac
-      ;;
-    *)
-      echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: Rorschach, NightOwl, SilkSpectre"
-      exit 1
-      ;;
-  esac
-  
-  echo "✅ Build test passed! Proceeding with switch..."
-  sudo darwin-rebuild switch --flake .#$HOST
-
-# Build matrix testing with proxy modes
-[group('test')]
-build-matrix:
-  @echo "🔍 Testing build matrix with different proxy modes..."
-  @echo "Testing with auto proxy mode:"
-  @just test-hosts auto
-  @echo "Testing with local proxy mode:"
-  @just test-hosts local
-  @echo "Testing with network proxy mode:"
-  @just test-hosts network
-  @echo "Testing NixOS configurations:"
-  @just test-nixos
-  @echo "Validation tests:"
-  @just validate-comprehensive
-
-# Integration testing with proxy validation
-[group('test')]
-test-integration proxy_mode="auto":
-  @echo "🔍 Running integration tests with proxy mode: {{proxy_mode}}..."
-  @echo "Testing proxy configuration..."
-  @just smart-proxy {{proxy_mode}}
-  @echo "Testing flake operations..."
-  @nix flake check --no-build
-  @echo "Testing build process..."
-  @just build-test {{hostname}} {{proxy_mode}}
-  @echo "✅ Integration tests completed!"
-
-############################################################################
-#
-#  Proxy Management Commands
-#
-############################################################################
-
 # Show current proxy status
 [group('proxy')]
 proxy-status:
   @echo "🔍 Current proxy status:"
   @if [ -n "${http_proxy:-}" ]; then \
     echo "📡 Terminal proxy: ACTIVE"; \
-    echo "  HTTP proxy: $http_proxy"; \
-    echo "  HTTPS proxy: ${https_proxy:-}"; \
-    echo "  SOCKS proxy: ${all_proxy:-}"; \
+    echo "  HTTP: $http_proxy"; \
+    echo "  HTTPS: ${https_proxy:-}"; \
+    echo "  SOCKS: ${all_proxy:-}"; \
   else \
     echo "📡 Terminal proxy: INACTIVE"; \
   fi
@@ -310,10 +148,91 @@ proxy-status:
 # Test proxy connectivity
 [group('proxy')]
 test-proxy mode="auto":
-  @echo "🔍 Testing proxy connectivity for mode: {{mode}}..."
+  @echo "🔍 Testing proxy connectivity..."
   @just smart-proxy {{mode}}
-  @echo "Testing HTTP connectivity..."
-  @curl -s --connect-timeout 5 --proxy "${http_proxy:-}" https://httpbin.org/ip > /dev/null && echo "✅ HTTP proxy: WORKING" || echo "❌ HTTP proxy: FAILED"
+  @curl -s --connect-timeout 5 --proxy "${http_proxy:-}" https://httpbin.org/ip > /dev/null && \
+    echo "✅ HTTP proxy: WORKING" || echo "❌ HTTP proxy: FAILED"
+
+############################################################################
+#
+#  Build Commands
+#
+############################################################################
+
+# Build and switch to configuration
+# Usage: just build [HOST] [PROXY_MODE] [DEBUG]
+[group('build')]
+build host=hostname proxy_mode="auto" debug="false": (_validate-host host) (smart-proxy proxy_mode)
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  REBUILD_CMD=$(just _rebuild-cmd {{host}})
+
+  if [ "{{debug}}" = "true" ]; then
+    echo "🔧 Debug building {{host}} (proxy: {{proxy_mode}})"
+    sudo -E $REBUILD_CMD switch --flake .#{{host}} --show-trace --verbose
+  else
+    echo "🏗️  Building {{host}} (proxy: {{proxy_mode}})"
+    sudo -E $REBUILD_CMD switch --flake .#{{host}}
+  fi
+
+# Quick build aliases for Darwin hosts
+[group('build')]
+ror proxy_mode="auto": (build "Rorschach" proxy_mode)
+
+[group('build')]
+owl proxy_mode="auto": (build "NightOwl" proxy_mode)
+
+[group('build')]
+silk proxy_mode="auto": (build "SilkSpectre" proxy_mode)
+
+############################################################################
+#
+#  Testing & Validation
+#
+############################################################################
+
+# Format Nix files and validate flake
+[group('test')]
+validate:
+  @echo "🔍 Running validation..."
+  @just fmt
+  @nix flake check --no-build
+
+# Build test without switching
+[group('test')]
+build-test host=hostname proxy_mode="auto": (_validate-host host) (smart-proxy proxy_mode) validate
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  REBUILD_CMD=$(just _rebuild-cmd {{host}})
+  echo "🏗️  Testing build for {{host}} (proxy: {{proxy_mode}})..."
+  $REBUILD_CMD build --flake .#{{host}}
+
+# Show current generation before building
+[group('test')]
+current-gen:
+  @echo "📋 Current system generation:"
+  @nix profile history --profile /nix/var/nix/profiles/system | head -n 5
+
+# Safe build: validate → build-test → switch
+[group('test')]
+safe-build host=hostname proxy_mode="auto": (_validate-darwin-host host) current-gen (build-test host proxy_mode)
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo "✅ Build test passed! Proceeding with switch..."
+  sudo darwin-rebuild switch --flake .#{{host}}
+
+# Test all Darwin hosts
+[group('test')]
+test-all proxy_mode="auto":
+  @echo "🚀 Testing all Darwin hosts..."
+  @just smart-proxy {{proxy_mode}}
+  @for host in {{darwin_hosts}}; do \
+    echo "Testing $host..."; \
+    darwin-rebuild build --flake .#$host >/dev/null 2>&1 && \
+      echo "✅ $host: PASS" || echo "❌ $host: FAIL"; \
+  done
 
 ############################################################################
 #
@@ -324,20 +243,26 @@ test-proxy mode="auto":
 # Rollback to previous generation
 [group('rollback')]
 rollback:
-  @echo "⏪ Rolling back to previous generation..."
-  sudo darwin-rebuild rollback
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo "⏪ Rolling back to previous generation..."
+  if [ "$(uname -s)" = "Darwin" ]; then
+    sudo darwin-rebuild rollback
+  else
+    sudo nixos-rebuild rollback
+  fi
 
-# List recent generations with details
+# List recent generations
 [group('rollback')]
 generations:
   @echo "📜 Recent system generations:"
   @nix profile history --profile /nix/var/nix/profiles/system | head -n 10
 
-# Quick fix: rollback if current system has issues
+# Emergency rollback
 [group('rollback')]
 emergency-rollback:
   @echo "🚨 Emergency rollback to last known good generation..."
-  sudo darwin-rebuild rollback
+  @just rollback
   @echo "✅ Rollback complete. Check system status."
 
 ############################################################################
@@ -346,179 +271,66 @@ emergency-rollback:
 #
 ############################################################################
 
-# Update all the flake inputs
+# Update all flake inputs
 [group('nix')]
 up:
   nix flake update
 
 # Update specific input
-# Usage: just upp nixpkgs
 [group('nix')]
 upp input:
   nix flake update {{input}}
 
-# List all generations of the system profile
+# List all generations
 [group('nix')]
 history:
   nix profile history --profile /nix/var/nix/profiles/system
 
-# Open a nix shell with the flake
+# Open nix repl
 [group('nix')]
 repl:
   nix repl -f flake:nixpkgs
 
-# Remove all generations older than 7 days (requires sudo for system profile)
+# Remove generations older than 7 days
 [group('nix')]
 clean:
   sudo nix profile wipe-history --profile /nix/var/nix/profiles/system --older-than 7d
 
-# Garbage collect all unused nix store entries (optimized sudo usage)
+# Garbage collect unused store entries
 [group('nix')]
 gc:
   @echo "🗑️  Running garbage collection..."
-  # System-wide garbage collection (requires sudo)
-  sudo nix-collect-garbage --delete-older-than 7d
-  # User-specific garbage collection (home-manager)
-  nix-collect-garbage --delete-older-than 7d
+  @sudo nix-collect-garbage --delete-older-than 7d
+  @nix-collect-garbage --delete-older-than 7d
 
-# Format the nix files in this repo
+# Format Nix files
 [group('nix')]
 fmt:
   nix-shell -p alejandra --run "alejandra ."
 
-# Show all the auto gc roots in the nix store
+# Show GC roots
 [group('nix')]
 gcroot:
   ls -al /nix/var/nix/gcroots/auto/
 
 ############################################################################
 #
-#  NixOS System Management
+#  Initial Setup (for new Mac)
 #
 ############################################################################
 
-# Build and switch NixOS configuration with proxy support
-[group('nixos')]
-nixos-build proxy_mode="auto" debug="false": (smart-proxy proxy_mode)
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Build with or without debug flags
-  if [ "{{debug}}" = "true" ]; then
-    echo "🔧 Debug building NixOS with proxy mode: {{proxy_mode}}"
-    sudo nixos-rebuild switch --flake .#nixos --show-trace --verbose
-  else
-    echo "🏗️  Building NixOS with proxy mode: {{proxy_mode}}"
-    sudo nixos-rebuild switch --flake .#nixos
-  fi
-
-# Build NixOS without switching (for testing)
-[group('nixos')]
-nixos-build-test proxy_mode="auto": (smart-proxy proxy_mode) nixos-validate
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  echo "🏗️  Testing NixOS build without switching (proxy: {{proxy_mode}})..."
-  sudo nixos-rebuild build --flake .#nixos
-
-# NixOS-specific validation
-[group('nixos')]
-nixos-validate:
-  @echo "🔍 Running NixOS pre-build validation..."
-  just fmt
-  nix flake check --no-build
-  @echo "🔍 Validating NixOS configuration..."
-  nix eval .#nixosConfigurations.nixos.config.system.build.toplevel --raw > /dev/null
-
-# Show current NixOS generation
-[group('nixos')]
-nixos-current-gen:
-  @echo "📋 Current NixOS generation:"
-  @sudo nix profile history --profile /nix/var/nix/profiles/system | head -n 5
-
-# Safe NixOS build: validate → build-test → switch
-[group('nixos')]
-nixos-safe-build proxy_mode="auto": nixos-current-gen (nixos-build-test proxy_mode)
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
-  echo "✅ NixOS build test passed! Proceeding with switch..."
-  sudo nixos-rebuild switch --flake .#nixos
-
-# Test NixOS configuration build
-[group('nixos')]
-nixos-test proxy_mode="auto":
-  @echo "🔍 Testing NixOS configuration with proxy mode: {{proxy_mode}}..."
-  just smart-proxy {{proxy_mode}}
-  @echo "Testing NixOS build..."
-  @sudo nixos-rebuild build --flake .#nixos >/dev/null 2>&1 && echo "✅ NixOS build: PASS" || echo "❌ NixOS build: FAIL"
-
-# Rollback NixOS to previous generation
-[group('nixos')]
-nixos-rollback:
-  @echo "⏪ Rolling back NixOS to previous generation..."
-  sudo nixos-rebuild rollback
-
-# List NixOS generations
-[group('nixos')]
-nixos-generations:
-  @echo "📜 Recent NixOS generations:"
-  @sudo nix profile history --profile /nix/var/nix/profiles/system | head -n 10
-
-# Emergency NixOS rollback
-[group('nixos')]
-nixos-emergency-rollback:
-  @echo "🚨 Emergency NixOS rollback to last known good generation..."
-  sudo nixos-rebuild rollback
-  @echo "✅ NixOS rollback complete. Check system status."
-
-############################################################################
-#
-#  NixOS VM Management
-#
-############################################################################
-
-# Build and run NixOS VM
-[group('nixos')]
-nixos-vm:
-  nix build .#nixosConfigurations.myVm.config.system.build.vm
-  NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
-
-# Build NixOS VM with debug output
-[group('nixos')]
-nixos-vm-debug:
-  nix build .#nixosConfigurations.myVm.config.system.build.vm --show-trace --verbose
-  NIX_DISK_IMAGE=~/myVm.qcow2 ./result/bin/run-myVm-vm
-
-# Quick alias for VM
-[group('nixos')]
-vm: nixos-vm
-
-# Generate ISO image for Proxmox VM installation
-[group('nixos')]
-iso:
-  NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix run github:nix-community/nixos-generators --impure -- --format iso --flake .#myVm --system x86_64-linux
-
-# Generate VMA image for Proxmox VM installation
-[group('nixos')]
-vma:
-  NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nix run github:nix-community/nixos-generators --impure -- --format proxmox --flake .#myVm --system x86_64-linux
-
-############################################################################
-#
-#  Initial Setup Commands (for new Mac)
-#
-############################################################################
-
+# Install Homebrew and just
 [group('setup')]
 brew:
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   brew install just
 
+# Install Lix (Nix alternative)
 [group('setup')]
 lix:
   curl -sSf -L https://install.lix.systems/lix | sh -s -- install
 
+# Setup Darwin channels
 [group('setup')]
 darwin-channel:
   nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
@@ -526,18 +338,18 @@ darwin-channel:
   nix-build '<darwin>' -A darwin-rebuild
   nix flake update
 
+# Build and switch to configuration
 [group('setup')]
 dot:
   ~/result/bin/darwin-rebuild switch --flake .
 
 ############################################################################
 #
-#  Utility Commands
+#  Utilities
 #
 ############################################################################
 
-# Type clipboard content into VNC console (useful when paste doesn't work)
+# Type clipboard into VNC console
 [group('utility')]
 vnc-paste *ARGS='':
   python3 scripts/vnc_paste.py {{ARGS}}
-

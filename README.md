@@ -38,7 +38,7 @@ nix-personal-config/
 │   └── helpers.nix            # Module discovery system
 ├── 📁 hosts/                  # Host-specific configurations
 │   ├── darwin/                # macOS host definitions
-│   │   ├── rorschach.nix      # Primary MacBook Air M4
+│   │   ├── Rorschach.nix      # Primary MacBook Air M4
 │   │   ├── NightOwl.nix       # Desktop configuration
 │   │   └── SilkSpectre.nix    # Laptop configuration
 │   └── nixos/                 # NixOS host definitions
@@ -104,10 +104,10 @@ nix-personal-config/
 
 ```bash
 # macOS (Darwin) builds
-just darwin           # Build and switch to current host
-just darwin-debug      # Debug build with verbose output
-just rorschach         # Build Rorschach configuration
-just safe-build        # Safe build with validation and testing
+just build            # Build and switch to current host (Rorschach)
+just build Rorschach  # Build specific host
+just ror              # Quick alias for Rorschach
+just safe-build       # Safe build with validation and testing
 
 # NixOS builds
 sudo nixos-rebuild switch --flake .#nixos
