@@ -25,9 +25,7 @@
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
   environment.systemPackages = with pkgs; [
     # Core system tools - available system-wide
-    zip
-    p7zip
-    zstd
+    # Note: zip, p7zip, zstd moved to modules/common/zip-tools.nix
     coreutils
     nano # Simple editor for system-level editing
 
