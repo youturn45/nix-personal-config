@@ -13,8 +13,7 @@ in
       ./hardware-configuration.nix
 
       # System modules
-      ../../modules/common # NOTE shared by nixos and nix-darwin
-      ../../modules/nixos/common # NixOS-specific system modules
+      ../../modules/nixos # NixOS modules (imports common)
 
       # Hostname
       {
@@ -27,12 +26,7 @@ in
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.extraSpecialArgs = specialArgs;
-        home-manager.users.${myvars.username} = {
-          imports = [
-            ../../home # Base home configuration
-            ../../home/nixos # NixOS-specific home configuration
-          ];
-        };
+        home-manager.users.${myvars.username} = import ../../home/nixos;
         home-manager.backupFileExtension = "backup";
         home-manager.sharedModules = [
           specialArgs.nixvim.homeManagerModules.nixvim

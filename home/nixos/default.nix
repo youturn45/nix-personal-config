@@ -5,12 +5,17 @@
 }: {
   # NixOS-specific home manager configuration
   # This module is imported at build-level in hosts/nixos/default.nix
+  # It imports the base home configuration and adds NixOS-specific settings
 
-  # Example NixOS-specific packages
+  imports = [
+    ../default.nix # Import base home configuration
+  ];
+
+  # NixOS-specific packages
   # home.packages = with pkgs; [
   #   # Linux-specific tools
   # ];
 
-  # Example NixOS-specific settings
+  # NixOS-specific settings
   # programs.foo.enable = lib.mkForce true;
 }
