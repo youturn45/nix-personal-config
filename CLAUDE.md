@@ -166,11 +166,11 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   │   ├── system-settings.nix
 │   │   ├── host-users.nix
 │   │   └── nix-core.nix
-│   └── _nixos/             # NixOS-specific modules
+│   └── nixos/              # NixOS-specific modules
 │       └── common/
 ├── home/                   # Home Manager configurations
 │   ├── default.nix         # Home Manager entry point
-│   ├── base/
+│   ├── common/
 │   │   ├── core.nix        # Core packages and CLI tools
 │   │   ├── claude-code/    # Claude Code integration
 │   │   ├── dev-tools/      # git, ssh, nodejs, tex, _pip
@@ -193,7 +193,7 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 
 2. **Modular Design**: Clear separation between system configuration (`modules/`), user configuration (`home/`), and host-specific settings (`hosts/`).
 
-3. **Cross-Platform Support**: Shared modules in `modules/common/` with platform-specific overrides in `modules/darwin/` and `modules/_nixos/`.
+3. **Cross-Platform Support**: Shared modules in `modules/common/` with platform-specific overrides in `modules/darwin/` and `modules/nixos/`.
 
 4. **Centralized Variables**: All system variables (hostname, username, timezone) defined in `vars/default.nix`.
 
@@ -222,14 +222,14 @@ No `devShells` are currently defined in `flake.nix`.
   - `modules/darwin/system-settings.nix`: macOS defaults and UI preferences
   - `modules/darwin/host-users.nix`: User account management
   - `modules/darwin/nix-core.nix`: Core Nix configuration and settings
-- **Editor Configuration**: 
-  - `home/base/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
+- **Editor Configuration**:
+  - `home/common/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
   - Supports 7+ LSP servers (Nix, Lua, Rust, Python, TypeScript, Bash, Markdown)
   - Auto-formatting with conform-nvim for multiple languages
   - Full key binding setup for productivity
 - **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
 - **Proxy Configuration**: Configurable proxy support with local (127.0.0.1) and network (10.0.0.5) modes for shell and nix-daemon
-- **Claude Code Integration**: Available via `home/base/claude-code` hooks and settings; no devShell provisioning
+- **Claude Code Integration**: Available via `home/common/claude-code` hooks and settings; no devShell provisioning
 - **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
 - **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
 - **Build Testing**: Comprehensive testing infrastructure with validation, build-test, and rollback capabilities

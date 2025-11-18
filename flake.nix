@@ -125,8 +125,7 @@
         system = "${myvars.system}";
         modules = [
           ./hosts/darwin/${hostname}.nix
-          ./modules/common # NOTE shared by nixos and nix-darwin
-          ./modules/darwin
+          ./modules/darwin # Darwin modules (imports common)
           # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
           agenix.darwinModules.default
           home-manager.darwinModules.home-manager
@@ -134,7 +133,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = darwinSpecialArgs;
-            home-manager.users.${myvars.username} = import ./home;
+            home-manager.users.${myvars.username} = import ./home/darwin;
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
               nixvim.homeManagerModules.nixvim

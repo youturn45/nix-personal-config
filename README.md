@@ -10,7 +10,7 @@
 
 </div>
 
-This repository contains a comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configuration supporting both macOS (nix-darwin) and NixOS systems. Built with modularity, reproducibility, and cross-platform compatibility in mind.
+A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configuration supporting both macOS (nix-darwin) and NixOS systems. Built with modularity, reproducibility, and cross-platform compatibility in mind.
 
 ## 🏠 Managed Systems
 
@@ -21,204 +21,104 @@ This repository contains a comprehensive [Nix Flake](https://zero-to-nix.com/con
 | `SilkSpectre`| Darwin Host      | -             | Laptop  | 🚧 Ready  |
 | `nixos`      | NixOS VM         | x86_64-linux  | Testing | ✅ Ready  |
 
-## 🏗️ Architecture
+## ✨ Features
 
-### Repository Structure
-
-```
-nix-personal-config/
-├── 📁 Configuration Entry Points
-│   ├── flake.nix              # Core flake definition
-│   ├── Justfile               # Build commands and workflows
-│   └── CLAUDE.md              # Claude Code integration guide
-├── 📁 vars/                   # Centralized variable management
-│   └── default.nix            # System variables with validation
-├── 📁 my-lib/                 # Custom helper functions
-│   ├── default.nix            # Core helper utilities
-│   └── helpers.nix            # Module discovery system
-├── 📁 hosts/                  # Host-specific configurations
-│   ├── darwin/                # macOS host definitions
-│   │   ├── Rorschach.nix      # Primary MacBook Air M4
-│   │   ├── NightOwl.nix       # Desktop configuration
-│   │   └── SilkSpectre.nix    # Laptop configuration
-│   └── nixos/                 # NixOS host definitions
-│       ├── default.nix        # NixOS system configuration
-│       └── hardware-configuration.nix # Auto-generated hardware config
-├── 📁 modules/                # System-level configurations
-│   ├── common/                # Cross-platform shared settings
-│   ├── darwin/                # macOS-specific modules
-│   │   ├── apps.nix           # Application management (Nix + Homebrew)
-│   │   ├── system-settings.nix # macOS defaults and preferences
-│   │   ├── host-users.nix     # User account management
-│   │   ├── nix-core.nix       # Core Nix configuration
-│   │   └── _secrets.nix       # Secret management (agenix)
-│   └── _nixos/common/         # NixOS-specific modules
-├── 📁 home/                   # Home Manager configurations
-│   ├── base/                  # Cross-platform user configurations
-│   │   ├── dev-tools/         # Development tooling
-│   │   │   ├── git/           # Git configuration
-│   │   │   ├── npm/           # Node.js and npm setup
-│   │   │   ├── pip/           # Python package management
-│   │   │   ├── ssh/           # SSH configuration
-│   │   │   └── tex/           # LaTeX environment
-│   │   ├── editors/           # Text editors
-│   │   │   └── neovim/        # Complete NixVim configuration
-│   │   ├── gui/               # GUI applications
-│   │   │   ├── media.nix      # Media applications
-│   │   │   └── terminal/      # Terminal emulators
-│   │   │       └── ghostty.nix # Cross-platform terminal config
-│   │   ├── python/            # Python development environment
-│   │   ├── system/            # System utilities
-│   │   │   ├── btop/          # System monitor
-│   │   │   └── _container/    # Container tools
-│   │   └── terminal/          # Terminal environment
-│   │       ├── shells/        # Shell configurations (zsh)
-│   │       ├── starship/      # Prompt configuration
-│   │       └── yazi/          # File manager
-│   ├── darwin/                # macOS-specific user configurations
-│   └── nixos/                 # NixOS-specific user configurations
-└── 📁 scripts/                # Utility scripts
-    ├── darwin_set_proxy.py    # Configurable proxy setup
-    └── vnc_paste.py           # VNC clipboard utility
-```
-
-### Key Features
-
-- 🔧 **Automatic Module Discovery**: Uses custom `collectModulesRecursively` function
-- 🌐 **Cross-Platform Support**: Shared configurations between macOS and NixOS
-- 📝 **Centralized Variables**: Single source of truth in `vars/default.nix`
-- 🎨 **Consistent Theming**: Catppuccin Mocha throughout the system
-- 🛡️ **Safe Build System**: Validation, testing, and rollback capabilities
-- 🔌 **Configurable Proxy**: Local and network proxy modes
-- ⚡ **Modern Development Environment**: Complete toolchain with LSP, formatters, and more
+- 🔧 **Modular Architecture** - Automatic module discovery with clean separation of concerns
+- 🌐 **Cross-Platform** - Shared configuration between macOS and NixOS
+- 🛡️ **Safe Build System** - Validation, testing, and rollback capabilities
+- 🎨 **Consistent Theming** - Catppuccin Mocha throughout the system
+- ⚡ **Modern Toolchain** - NixVim, Starship, modern CLI tools, and more
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - [Nix](https://nixos.org/download.html) with flakes enabled
-- [just](https://github.com/casey/just) command runner
-- Git for repository management
+- [just](https://github.com/casey/just) command runner (optional, for convenient builds)
 
 ### Build Commands
 
 ```bash
-# macOS (Darwin) builds
-just build            # Build and switch to current host (Rorschach)
-just build Rorschach  # Build specific host
-just ror              # Quick alias for Rorschach
-just safe-build       # Safe build with validation and testing
+# macOS (Darwin)
+just build              # Build and switch (current host)
+just build Rorschach    # Build specific host
+just safe-build         # Safe build with validation
 
-# NixOS builds
+# NixOS
 sudo nixos-rebuild switch --flake .#nixos
 
 # Maintenance
-just up                # Update all flake inputs
-just fmt               # Format all Nix files
-just gc                # Garbage collect unused store entries
-just clean             # Remove old generations
+just up     # Update flake inputs
+just fmt    # Format Nix files
+just gc     # Garbage collect
+just clean  # Remove old generations
 ```
 
 ### Safe Development Workflow
 
 ```bash
 # 1. Make configuration changes
-# 2. Validate changes
+# 2. Validate and test
 just validate
-
-# 3. Test build without applying
 just build-test
 
-# 4. Apply changes if tests pass
+# 3. Apply if tests pass
 just safe-build
 
-# 5. Rollback if needed
+# 4. Rollback if needed
 just rollback
 ```
 
-## 🛠️ Development Environment
+## 📁 Project Structure
 
-### Editor Configuration
-
-- **NixVim**: Complete Neovim configuration with LSP support
-- **Supported Languages**: Nix, Lua, Rust, Python, TypeScript, Bash, Markdown
-- **Features**: Auto-completion, syntax highlighting, formatting, debugging
-- **Plugins**: Treesitter, telescope, neo-tree, which-key, and more
-
-### Development Tools
-
-- **Git**: Comprehensive configuration with aliases and delta pager
-- **Shell**: Zsh with modern CLI replacements and starship prompt  
-- **Terminal**: Cross-platform Ghostty configuration
-- **Python**: Complete development environment with pip management
-- **Node.js**: Version 22 with npm user-local configuration
-- **Container Tools**: Docker and container development support
-
-## 🌐 Network Configuration
-
-### Proxy Support
-
-The configuration includes flexible proxy support for different network environments:
-
-```bash
-# Shell proxy functions
-proxy_on              # Enable local proxy (127.0.0.1:7890)
-proxy_on local         # Explicit local proxy
-proxy_on network       # Network proxy (10.0.0.5:7890)
-proxy_off             # Disable proxy
-proxy_status          # Check current proxy status
-
-# System-level proxy (nix-daemon)
-python3 scripts/darwin_set_proxy.py          # Local proxy
-python3 scripts/darwin_set_proxy.py network  # Network proxy
+```
+nix-personal-config/
+├── flake.nix           # Flake entry point
+├── Justfile            # Build commands
+├── hosts/              # Host-specific configurations
+├── modules/            # System-level modules
+│   ├── common/         # Shared (Darwin + NixOS)
+│   ├── darwin/         # macOS-specific
+│   └── nixos/          # NixOS-specific
+├── home/               # Home Manager configurations
+│   ├── common/         # Shared user configs
+│   ├── darwin/         # macOS user configs
+│   └── nixos/          # NixOS user configs
+└── vars/               # Centralized variables
 ```
 
-## 📋 System Requirements
+> **📖 For detailed architecture documentation**, see [**ARCHITECTURE.md**](./ARCHITECTURE.md)
 
-### macOS (Darwin)
-- **Supported**: Apple Silicon (M1, M2, M3, M4) and Intel Macs
-- **OS Version**: macOS 12.0+ (Monterey and later)
-- **Dependencies**: Homebrew for GUI applications
+## 🛠️ What's Included
 
-### NixOS
-- **Architecture**: x86_64-linux, aarch64-linux
-- **VM Support**: QEMU guest utilities included
-- **Hardware**: Automatic hardware detection
+### System-Level (modules/)
+- Cross-platform shared packages (compression, monitoring, networking)
+- macOS: Homebrew integration, system settings, user management
+- NixOS: System services, hardware configuration
 
-## 🎯 Design Philosophy
-
-### Modular Architecture
-- **Separation of Concerns**: Clear boundaries between system, user, and host configurations
-- **Reusability**: Shared modules across platforms with platform-specific overrides
-- **Maintainability**: Automatic module discovery reduces manual configuration
-
-### Safe-First Approach
-- **Validation**: Pre-build checks for syntax and configuration validity
-- **Testing**: Build configurations without switching to catch errors early
-- **Recovery**: Easy rollback to previous working generations
-
-### Developer Experience
-- **Incremental Development**: Step-by-step approach for complex configurations
-- **Documentation**: Comprehensive guides and inline documentation
-- **Automation**: Justfile commands for common operations
+### User-Level (home/)
+- **Editors**: NixVim with LSP, Treesitter, autocompletion
+- **Development**: Git, SSH, Node.js, Python, LaTeX, formatters
+- **Shell**: Zsh, Starship prompt, modern CLI tools
+- **Terminal**: Ghostty, btop, yazi file manager
+- **Theming**: Catppuccin Mocha everywhere
 
 ## 📚 Documentation
 
-- [**CLAUDE.md**](./CLAUDE.md): Claude Code integration and usage instructions
-- [**ARCHITECTURE.md**](./ARCHITECTURE.md): Detailed technical architecture documentation
-- [**todo.md**](./todo.md): Current status and completed improvements
+- [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Detailed technical architecture and patterns
+- [**CLAUDE.md**](./CLAUDE.md) - Claude Code integration guide
+- [**todo.md**](./todo.md) - Development roadmap and completed tasks
 
 ## 🤝 Contributing
 
-This is a personal configuration repository, but feel free to:
-
+This is a personal configuration, but you're welcome to:
 - Use it as inspiration for your own Nix configuration
 - Submit issues for bugs or suggestions
 - Propose improvements via pull requests
 
 ## 📄 License
 
-This configuration is provided as-is for educational and reference purposes. Individual components may have their own licenses.
+Provided as-is for educational and reference purposes.
 
 ---
 

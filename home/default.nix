@@ -4,11 +4,11 @@
   pkgs,
   ...
 }: let
-  # Define base modules for all platforms
-  baseModules = myLib.collectModulesRecursively ./base;
+  # Define common modules for all platforms
+  commonModules = myLib.collectModulesRecursively ./common;
 in {
-  # Import base modules for all platforms
-  imports = baseModules;
+  # Import common modules for all platforms
+  imports = commonModules;
 
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -21,8 +21,8 @@ in {
     stateVersion = myvars.homeStateVersion;
 
     # Essential packages for NixOS systems (Darwin gets packages from modules)
-    # Note: All common CLI tools are now provided via home/base/core.nix
-    # Git via home/base/dev-tools/git, SSH via home/base/dev-tools/ssh
+    # Note: All common CLI tools are now provided via home/common/core.nix
+    # Git via home/common/dev-tools/git, SSH via home/common/dev-tools/ssh
     packages = [];
   };
 
