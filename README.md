@@ -52,9 +52,10 @@ nix-personal-config/
 │   │   ├── host-users.nix     # User account management
 │   │   ├── nix-core.nix       # Core Nix configuration
 │   │   └── _secrets.nix       # Secret management (agenix)
-│   └── _nixos/common/         # NixOS-specific modules
+│   └── nixos/                 # NixOS-specific modules
+│       └── common/            # NixOS common system modules
 ├── 📁 home/                   # Home Manager configurations
-│   ├── base/                  # Cross-platform user configurations
+│   ├── common/                # Cross-platform user configurations
 │   │   ├── dev-tools/         # Development tooling
 │   │   │   ├── git/           # Git configuration
 │   │   │   ├── npm/           # Node.js and npm setup

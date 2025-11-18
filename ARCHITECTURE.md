@@ -47,11 +47,16 @@ nix-personal-config/
 │   └── helpers.nix      # collectModulesRecursively
 ├── modules/
 │   ├── common/          # Shared across Darwin and NixOS
+│   │   ├── default.nix  # Common module entry point
+│   │   └── fonts.nix    # Shared font configuration
 │   ├── darwin/          # macOS-specific modules
-│   └── _nixos/          # NixOS-specific modules (common)
+│   │   └── default.nix  # Imports common + Darwin modules
+│   └── nixos/           # NixOS-specific modules
+│       ├── default.nix  # Imports common + NixOS modules
+│       └── common/      # NixOS common system modules
 ├── home/                # Home Manager configuration
 │   ├── default.nix      # Entry for Home Manager
-│   ├── base/
+│   ├── common/          # Cross-platform user configurations
 │   │   ├── core.nix
 │   │   ├── claude-code/
 │   │   ├── dev-tools/
@@ -60,8 +65,8 @@ nix-personal-config/
 │   │   ├── python/
 │   │   ├── system/
 │   │   └── terminal/
-│   ├── darwin/default.nix
-│   └── nixos/default.nix
+│   ├── darwin/default.nix  # Imports ../default.nix (common)
+│   └── nixos/default.nix   # Imports ../default.nix (common)
 ├── hosts/
 │   ├── darwin/
 │   │   ├── Rorschach.nix
@@ -610,15 +615,71 @@ python3 scripts/darwin_set_proxy.py network
 **Strategy**: Shared modules with platform-specific overrides
 
 **Structure:**
-- `modules/common/` - Universal settings
-- `modules/darwin/` - macOS-specific configuration
-- `modules/_nixos/` - Linux-specific configuration
+- `modules/common/` - Universal settings (shared by both platforms)
+- `modules/darwin/` - macOS-specific configuration (imports common)
+- `modules/nixos/` - Linux-specific configuration (imports common)
+
+**Import Hierarchy:**
+```
+Build (flake.nix/hosts/)
+  ↓
+OS-Specific (modules/darwin or modules/nixos)
+  ↓
+Common (modules/common)
+```
 
 **Benefits:**
 - Code reuse across platforms
 - Consistent experience
 - Easy platform migration
 - Reduced maintenance overhead
+- Clear dependency flow
+
+### Hierarchical Import Pattern
+
+**Pattern**: Build → OS-Specific → Common
+
+**System Modules:**
+```nix
+# flake.nix (Darwin)
+./modules/darwin  # Imports ../common internally
+
+# hosts/nixos/default.nix
+../../modules/nixos  # Imports ../common internally
+```
+
+**Home Manager:**
+```nix
+# flake.nix (Darwin)
+import ./home/darwin;  # Imports ../default.nix (common) internally
+
+# hosts/nixos/default.nix
+import ../../home/nixos;  # Imports ../default.nix (common) internally
+```
+
+**Benefits:**
+- Single import point at build level
+- OS-specific configs control what gets imported
+- Clear dependency hierarchy
+- No circular dependencies
+- Consistent pattern across modules and home
+
+### System-Level Packages
+
+**Pattern**: Shared system packages in `modules/common/default.nix`
+
+**Included Tools:**
+- Compression: zip, p7zip, zstd
+- Monitoring: htop, fastfetch
+- Terminal: tmux
+- Networking: curl, wget
+- Development: gnumake, jq, just
+
+**Benefits:**
+- Available system-wide to all users
+- Consistent across Darwin and NixOS
+- Essential tools always present
+- Reduced per-user package management
 
 ### Consistent Theming
 
