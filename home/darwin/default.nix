@@ -1,12 +1,16 @@
 {
-  myvars,
-  myLib,
   pkgs,
+  lib,
   ...
 }: {
   # Darwin-specific home manager configuration
-  imports = myLib.collectModulesRecursively ./.;
+  # This module is imported at build-level in flake.nix
 
-  # Darwin-specific settings can be added here
-  # For example: Darwin-specific packages, settings, etc.
+  # Example Darwin-specific packages
+  # home.packages = with pkgs; [
+  #   # macOS-specific tools
+  # ];
+
+  # Example Darwin-specific settings
+  # programs.foo.enable = lib.mkForce true;
 }

@@ -134,7 +134,12 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = darwinSpecialArgs;
-            home-manager.users.${myvars.username} = import ./home;
+            home-manager.users.${myvars.username} = {
+              imports = [
+                ./home # Base home configuration
+                ./home/darwin # Darwin-specific home configuration
+              ];
+            };
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
               nixvim.homeManagerModules.nixvim

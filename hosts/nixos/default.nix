@@ -27,7 +27,12 @@ in
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.extraSpecialArgs = specialArgs;
-        home-manager.users.${myvars.username} = import ../../home;
+        home-manager.users.${myvars.username} = {
+          imports = [
+            ../../home # Base home configuration
+            ../../home/nixos # NixOS-specific home configuration
+          ];
+        };
         home-manager.backupFileExtension = "backup";
         home-manager.sharedModules = [
           specialArgs.nixvim.homeManagerModules.nixvim

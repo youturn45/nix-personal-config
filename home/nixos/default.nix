@@ -1,12 +1,16 @@
 {
-  myvars,
-  myLib,
   pkgs,
+  lib,
   ...
 }: {
-  # Darwin-specific home manager configuration
-  imports = myLib.collectModulesRecursively ./.;
+  # NixOS-specific home manager configuration
+  # This module is imported at build-level in hosts/nixos/default.nix
 
-  # Darwin-specific settings can be added here
-  # For example: Darwin-specific packages, settings, etc.
+  # Example NixOS-specific packages
+  # home.packages = with pkgs; [
+  #   # Linux-specific tools
+  # ];
+
+  # Example NixOS-specific settings
+  # programs.foo.enable = lib.mkForce true;
 }
