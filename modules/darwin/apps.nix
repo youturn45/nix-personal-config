@@ -92,18 +92,17 @@
       # Tools
       "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
       "stats" # beautiful system monitor
+      
       "obsidian" # markdown note app
       "linearmouse" # invert roll
-      "hiddenbar" # hidden dock alternative
+
       "jordanbaird-ice" # menu bar management tool
-      "maccy" # clipboard manager
       "homerow" # keyboard-based UI navigation
-      "iterm2" # terminal
+
       "ghostty" # terminal
       "Moonlight" # remote desktop
       "Spotify" # music app
       "tailscale-app" # VPN
-      "netbirdio/tap/netbird-ui" # VPN
       "superwhisper" # voice-to-text tool
 
       # Gaming
