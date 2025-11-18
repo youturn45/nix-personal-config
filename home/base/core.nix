@@ -7,17 +7,13 @@
   ...
 }: {
   home.packages = with pkgs; [
-    # Core utilities
-    curl
-    wget
-    tmux
-    htop
+    # Core utilities moved to system-level (modules/common/default.nix):
+    # curl, wget, tmux, htop, gnumake, jq, just
 
     # Misc
     tldr
     cowsay
     gnupg
-    gnumake
 
     # Modern cli tools, replacement of grep/sed/...
     # Interactively filter its input using fuzzy searching, not limit to filenames.
@@ -32,9 +28,7 @@
     ast-grep
 
     sad # CLI search and replace, just like sed, but with diff preview.
-    jq # JSON processor - required for claude hooks
     yq-go # yaml processor https://github.com/mikefarah/yq
-    just # a command runner like make, but simpler
     delta # A viewer for git and diff output
     lazygit # Git terminal UI.
     hyperfine # command-line benchmarking tool
