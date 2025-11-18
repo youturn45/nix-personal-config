@@ -61,15 +61,19 @@ for cmd in (
     print(cmd)
     subprocess.run(shlex.split(cmd), capture_output=False)
 
-# Wait for the daemon to start
-print("Waiting for nix-daemon to start...")
-time.sleep(5)
-
-# Verify the daemon is running
+# Check if daemon is already running
+print("Checking nix-daemon status...")
 try:
     subprocess.run(["nix", "daemon", "--version"], check=True, capture_output=True)
     print("nix-daemon is running")
 except subprocess.CalledProcessError:
-    print("Error: nix-daemon failed to start")
-    exit(1)
+    # Daemon not ready yet, wait and try again
+    print("nix-daemon not ready, waiting 3 seconds...")
+    time.sleep(3)
+    try:
+        subprocess.run(["nix", "daemon", "--version"], check=True, capture_output=True)
+        print("nix-daemon is running")
+    except subprocess.CalledProcessError:
+        print("Error: nix-daemon failed to start")
+        exit(1)
 
