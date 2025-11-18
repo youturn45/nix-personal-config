@@ -7,6 +7,12 @@
   ...
 }: {
   home.packages = with pkgs; [
+    # Core utilities
+    curl
+    wget
+    tmux
+    htop
+
     # Misc
     tldr
     cowsay
