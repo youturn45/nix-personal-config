@@ -25,18 +25,11 @@
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
   environment.systemPackages = with pkgs; [
     # Core system tools - available system-wide
-    curl
-    wget
-    git # Keep at system level for system-wide availability
-    just # Keep for build commands
     zip
     p7zip
     zstd
     coreutils
     nano # Simple editor for system-level editing
-
-    # Basic system utilities
-    jq # Keep for system scripts
 
     # Network tools
     httpie

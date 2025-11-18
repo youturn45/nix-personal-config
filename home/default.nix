@@ -21,20 +21,9 @@ in {
     stateVersion = myvars.homeStateVersion;
 
     # Essential packages for NixOS systems (Darwin gets packages from modules)
-    # Note: vim is provided by NixVim configuration, not as standalone package
-    packages =
-      if pkgs.stdenv.isLinux
-      then
-        with pkgs; [
-          git
-          curl
-          wget
-          htop
-          tmux
-          openssh
-          starship
-        ]
-      else [];
+    # Note: All common CLI tools are now provided via home/base/core.nix
+    # Git via home/base/dev-tools/git, SSH via home/base/dev-tools/ssh
+    packages = [];
   };
 
   # Let Home Manager install and manage itself.
