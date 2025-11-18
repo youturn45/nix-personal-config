@@ -83,32 +83,63 @@
     # `brew install --cask`
     # Feel free to add your favorite apps here.
     casks = [
-      # browser
+      # ============================================
+      # Browsers
+      # ============================================
       "google-chrome"
 
-      # IM & audio & remote desktop & meeting
+      # ============================================
+      # Communication & Social
+      # ============================================
       "discord"
 
-      # Tools
-      "raycast" # (HotKey: alt/option + space)search, caculate and run scripts(with many plugins)
-      "stats" # beautiful system monitor
-      
+      # ============================================
+      # Productivity & Workflow
+      # ============================================
+      "raycast" # (HotKey: alt/option + space) search, calculate and run scripts (with many plugins)
       "obsidian" # markdown note app
-      "linearmouse" # invert roll
-
-      "jordanbaird-ice" # menu bar management tool
       "homerow" # keyboard-based UI navigation
 
-      "ghostty" # terminal
-      "Moonlight" # remote desktop
-      "Spotify" # music app
-      "tailscale-app" # VPN
+      # ============================================
+      # System Utilities & Management
+      # ============================================
+      "stats" # beautiful system monitor
+      "linearmouse" # invert scroll direction
+      "jordanbaird-ice" # menu bar management tool
+
+      # ============================================
+      # Terminal Applications
+      # ============================================
+      "ghostty"
+
+      # ============================================
+      # Networking & VPN
+      # ============================================
+      "tailscale-app"
+
+      # ============================================
+      # Entertainment & Media
+      # ============================================
+      "spotify" # music streaming
+
+      # ============================================
+      # Remote Desktop & Streaming
+      # ============================================
+      "moonlight" # remote desktop gaming
+
+      # ============================================
+      # Voice & Audio Tools
+      # ============================================
       "superwhisper" # voice-to-text tool
 
+      # ============================================
       # Gaming
+      # ============================================
       "steam"
 
-      # Editors & Developer Tools
+      # ============================================
+      # Development Tools & Editors
+      # ============================================
       "visual-studio-code"
       "cursor"
     ];
