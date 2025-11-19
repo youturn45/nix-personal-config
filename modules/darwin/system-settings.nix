@@ -71,8 +71,8 @@
       Clicking = true;
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
-      TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=App Exposé (show all windows)
-      TrackpadFourFingerHorizSwipeGesture = 2; # Switch between desktops/Spaces
+      TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=Mission Control (show all windows from all apps)
+      TrackpadThreeFingerHorizSwipeGesture = 2; # Switch between desktops/Spaces (swipe left/right)
     };
 
     # Activity Monitor
@@ -161,6 +161,8 @@
 
       "com.apple.dock" = {
         mru-spaces = false; # Don't automatically rearrange Spaces based on recent use
+        showMissionControlGestureEnabled = true; # Enable Mission Control gesture (three-finger swipe up)
+        showAppExposeGestureEnabled = false; # Disable App Exposé gesture in favor of Mission Control
       };
 
       "com.apple.menuextra.clock" = {
@@ -202,6 +204,37 @@
             enabled = true;
             value = {
               parameters = [65535 33 0];
+              type = "standard";
+            };
+          };
+          # Mission Control
+          "32" = {
+            enabled = true;
+            value = {
+              parameters = [65535 126 8650752];
+              type = "standard";
+            };
+          };
+          "34" = {
+            enabled = true;
+            value = {
+              parameters = [65535 125 8650752];
+              type = "standard";
+            };
+          };
+          # Move left a space (Ctrl+Left)
+          "79" = {
+            enabled = true;
+            value = {
+              parameters = [65535 123 8388864];
+              type = "standard";
+            };
+          };
+          # Move right a space (Ctrl+Right)
+          "81" = {
+            enabled = true;
+            value = {
+              parameters = [65535 124 8388864];
               type = "standard";
             };
           };
