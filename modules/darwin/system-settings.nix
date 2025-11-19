@@ -72,7 +72,7 @@
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
       TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=Mission Control (show all windows from all apps)
-      # Note: Horizontal swipe for space switching is configured via symbolic hotkeys (lines 211-225)
+      TrackpadThreeFingerHorizSwipeGesture = 2; # 0=off, 1=swipe between pages, 2=swipe between full-screen apps/spaces
     };
 
     # Activity Monitor
