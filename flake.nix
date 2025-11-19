@@ -136,7 +136,7 @@
             home-manager.users.${myvars.username} = import ./home/darwin;
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
-              nixvim.homeManagerModules.nixvim
+              nixvim.homeModules.nixvim
             ];
           }
         ];
