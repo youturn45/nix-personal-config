@@ -70,9 +70,14 @@
     trackpad = {
       Clicking = true;
       TrackpadRightClick = true;
-      TrackpadThreeFingerHorizSwipeGesture = 2;
-      TrackpadThreeFingerVertSwipeGesture = 2;
+      # Three-finger gestures
+      TrackpadThreeFingerHorizSwipeGesture = 2; # Swipe between full-screen apps
+      TrackpadThreeFingerVertSwipeGesture = 2; # Mission Control (down) & App Exposé (up)
       TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
+      # Disable four-finger gestures to avoid conflicts
+      TrackpadFourFingerHorizSwipeGesture = 0; # Disabled
+      TrackpadFourFingerVertSwipeGesture = 0; # Disabled
+      TrackpadFourFingerPinchGesture = 0; # Disabled
     };
 
     # Activity Monitor
