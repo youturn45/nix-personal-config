@@ -72,7 +72,7 @@
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
       TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=Mission Control (show all windows from all apps)
-      TrackpadThreeFingerHorizSwipeGesture = 2; # Switch between desktops/Spaces (swipe left/right)
+      TrackpadThreeFingerHorizSwipeGesture = 2; # 0=off, 1=swipe between pages, 2=swipe between full-screen apps/spaces
     };
 
     # Activity Monitor
