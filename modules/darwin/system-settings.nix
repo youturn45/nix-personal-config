@@ -37,7 +37,7 @@
       wvous-tl-corner = 1; # top-left - nothing
       wvous-tr-corner = 1; # top-right - nothing
       wvous-bl-corner = 1; # bottom-left - nothing
-      wvous-br-corner = 1; # bottom-right - nothing (was Desktop in system.nix)
+      wvous-br-corner = 4; # bottom-right - Desktop (show desktop)
 
       # Persistent apps in dock
       persistent-apps = [
