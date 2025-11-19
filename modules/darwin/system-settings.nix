@@ -71,6 +71,7 @@
       Clicking = true;
       TrackpadRightClick = true;
       # Three-finger gestures
+      TrackpadThreeFingerDrag = false;
       TrackpadThreeFingerHorizSwipeGesture = 2; # Swipe between full-screen apps
       TrackpadThreeFingerVertSwipeGesture = 2; # Mission Control (down) & App Exposé (up)
       TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
@@ -90,7 +91,7 @@
       AppleShowAllExtensions = true;
       ApplePressAndHoldEnabled = false; # Disabled for vim users
       "com.apple.sound.beep.feedback" = 0; # No beep sound
-      "com.apple.swipescrolldirection" = false; # Traditional scrolling
+      "com.apple.swipescrolldirection" = true; # Inverse scrolling
       AppleInterfaceStyle = "Dark";
       AppleKeyboardUIMode = 3;
       AppleSpacesSwitchOnActivate = true;
@@ -125,7 +126,7 @@
     # Login Window
     loginwindow = {
       GuestEnabled = false;
-      SHOWFULLNAME = true;
+      SHOWFULLNAME = false;
     };
 
     # Custom User Preferences
@@ -203,14 +204,6 @@
           # Enable Finder search (Cmd+Alt+Space)
           "65" = {
             enabled = true;
-          };
-          # Custom hotkey from system-defaults.nix
-          "60" = {
-            enabled = true;
-            value = {
-              parameters = [65535 33 0];
-              type = "standard";
-            };
           };
           # Move left a space (Ctrl+Left)
           "79" = {
