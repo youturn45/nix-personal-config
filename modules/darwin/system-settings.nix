@@ -71,6 +71,7 @@
       Clicking = true;
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
+      TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=App Exposé (show all windows)
     };
 
     # Activity Monitor
