@@ -207,21 +207,6 @@
               type = "standard";
             };
           };
-          # Mission Control
-          "32" = {
-            enabled = true;
-            value = {
-              parameters = [65535 126 8650752];
-              type = "standard";
-            };
-          };
-          "34" = {
-            enabled = true;
-            value = {
-              parameters = [65535 125 8650752];
-              type = "standard";
-            };
-          };
           # Move left a space (Ctrl+Left)
           "79" = {
             enabled = true;
