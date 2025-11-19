@@ -221,6 +221,86 @@
               type = "standard";
             };
           };
+          # Switch to Desktop 1 (Ctrl+1)
+          "118" = {
+            enabled = true;
+            value = {
+              parameters = [49 18 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 2 (Ctrl+2)
+          "119" = {
+            enabled = true;
+            value = {
+              parameters = [50 19 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 3 (Ctrl+3)
+          "120" = {
+            enabled = true;
+            value = {
+              parameters = [51 20 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 4 (Ctrl+4)
+          "121" = {
+            enabled = true;
+            value = {
+              parameters = [52 21 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 5 (Ctrl+5)
+          "122" = {
+            enabled = true;
+            value = {
+              parameters = [53 23 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 6 (Ctrl+6)
+          "123" = {
+            enabled = true;
+            value = {
+              parameters = [54 22 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 7 (Ctrl+7)
+          "124" = {
+            enabled = true;
+            value = {
+              parameters = [55 26 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 8 (Ctrl+8)
+          "125" = {
+            enabled = true;
+            value = {
+              parameters = [56 28 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 9 (Ctrl+9)
+          "126" = {
+            enabled = true;
+            value = {
+              parameters = [57 25 262144];
+              type = "standard";
+            };
+          };
+          # Switch to Desktop 10 (Ctrl+0)
+          "127" = {
+            enabled = true;
+            value = {
+              parameters = [48 29 262144];
+              type = "standard";
+            };
+          };
         };
       };
 
