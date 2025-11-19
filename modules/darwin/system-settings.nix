@@ -39,7 +39,7 @@
       wvous-bl-corner = 1; # bottom-left - nothing
       wvous-br-corner = 4; # bottom-right - Desktop (show desktop)
 
-      # Persistent apps in dock
+      # PersistentShowMountedServersOnDesktop apps in dock
       persistent-apps = [
         "/Applications/Google Chrome.app"
         # "/Applications/WeChat.app"
@@ -70,9 +70,9 @@
     trackpad = {
       Clicking = true;
       TrackpadRightClick = true;
-      TrackpadThreeFingerDrag = true;
-      TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=Mission Control (show all windows from all apps)
-      TrackpadThreeFingerHorizSwipeGesture = 2; # 0=off, 1=swipe between pages, 2=swipe between full-screen apps/spaces
+      TrackpadThreeFingerHorizSwipeGesture = 2;
+      TrackpadThreeFingerVertSwipeGesture = 2;
+      TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
     };
 
     # Activity Monitor
