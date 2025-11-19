@@ -72,6 +72,7 @@
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
       TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=App Exposé (show all windows)
+      TrackpadFourFingerHorizSwipeGesture = 2; # Switch between desktops/Spaces
     };
 
     # Activity Monitor
@@ -152,6 +153,14 @@
       "com.apple.desktopservices" = {
         DSDontWriteNetworkStores = true;
         DSDontWriteUSBStores = true;
+      };
+
+      "com.apple.LaunchServices" = {
+        LSQuarantine = false; # Disable "Are you sure you want to open" dialogs for downloaded files
+      };
+
+      "com.apple.dock" = {
+        mru-spaces = false; # Don't automatically rearrange Spaces based on recent use
       };
 
       "com.apple.menuextra.clock" = {
