@@ -404,7 +404,7 @@ dock = {
 **System Monitoring:**
 - `btop` → Modern `htop` with better visualization
 - `gdu` → Disk usage analyzer with ncurses interface
-- `du-dust` → Intuitive `du` replacement
+- `dust` → Intuitive `du` replacement
 - `duf` → Better `df` with colored output
 
 **Development Tools:**
