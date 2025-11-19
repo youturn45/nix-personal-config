@@ -12,11 +12,14 @@
 
   programs.ssh = {
     enable = true;
-
-    # Automatically add keys to SSH agent
-    addKeysToAgent = "yes";
+    enableDefaultConfig = false;
 
     matchBlocks = {
+      "*" = {
+        # Automatically add keys to SSH agent
+        addKeysToAgent = "yes";
+      };
+
       github = {
         host = "github.com";
         hostname = "ssh.github.com";
@@ -30,9 +33,6 @@
 
     # SSH client configuration
     extraConfig = ''
-      # Add keys to agent automatically when used
-      AddKeysToAgent yes
-
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         # Use macOS keychain for storing passphrases (Darwin only)
         UseKeychain yes
