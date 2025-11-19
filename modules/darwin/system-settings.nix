@@ -37,7 +37,7 @@
       wvous-tl-corner = 1; # top-left - nothing
       wvous-tr-corner = 1; # top-right - nothing
       wvous-bl-corner = 1; # bottom-left - nothing
-      wvous-br-corner = 1; # bottom-right - nothing (was Desktop in system.nix)
+      wvous-br-corner = 4; # bottom-right - Desktop (show desktop)
 
       # Persistent apps in dock
       persistent-apps = [
@@ -71,6 +71,8 @@
       Clicking = true;
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
+      TrackpadThreeFingerVertSwipeGesture = 2; # 0=off, 2=Mission Control (show all windows from all apps)
+      TrackpadThreeFingerHorizSwipeGesture = 2; # Switch between desktops/Spaces (swipe left/right)
     };
 
     # Activity Monitor
@@ -153,6 +155,16 @@
         DSDontWriteUSBStores = true;
       };
 
+      "com.apple.LaunchServices" = {
+        LSQuarantine = false; # Disable "Are you sure you want to open" dialogs for downloaded files
+      };
+
+      "com.apple.dock" = {
+        mru-spaces = false; # Don't automatically rearrange Spaces based on recent use
+        showMissionControlGestureEnabled = true; # Enable Mission Control gesture (three-finger swipe up)
+        showAppExposeGestureEnabled = false; # Disable App Exposé gesture in favor of Mission Control
+      };
+
       "com.apple.menuextra.clock" = {
         Show24Hour = true;
         ShowAMPM = false;
@@ -192,6 +204,22 @@
             enabled = true;
             value = {
               parameters = [65535 33 0];
+              type = "standard";
+            };
+          };
+          # Move left a space (Ctrl+Left)
+          "79" = {
+            enabled = true;
+            value = {
+              parameters = [65535 123 8388864];
+              type = "standard";
+            };
+          };
+          # Move right a space (Ctrl+Right)
+          "81" = {
+            enabled = true;
+            value = {
+              parameters = [65535 124 8388864];
               type = "standard";
             };
           };
