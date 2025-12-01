@@ -82,11 +82,7 @@
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
     export PATH="${pkgs.nodejs_22}/bin:$HOME/.npm-global/bin:$PATH"
 
-    if ! command -v claude >/dev/null 2>&1; then
-      echo "Installing Claude Code..."
-      npm install -g @anthropic-ai/claude-code
-    else
-      echo "Claude Code is already installed at $(command -v claude)"
-    fi
+    echo "Installing or updating Claude Code..."
+    npm install -g @anthropic-ai/claude-code@latest
   '';
 }
