@@ -25,9 +25,9 @@
         hostname = "ssh.github.com";
         user = "git";
         port = 443;
-        # Use standard ed25519 key, with fallback to other keys if not available
-        identityFile = "~/.ssh/id_ed25519";
-        identitiesOnly = false; # Allow SSH to try other keys if id_ed25519 is not available
+        # Use Youturn key, with fallback to other keys if not available
+        identityFile = "~/.ssh/Youturn";
+        identitiesOnly = false; # Allow SSH to try other keys if Youturn is not available
       };
     };
 
@@ -49,9 +49,14 @@
   # Add a shell init script to load SSH key if it's not already loaded
   programs.zsh.initContent = lib.mkAfter ''
     # Auto-load SSH key if agent is running but key isn't loaded
-    if [ -n "$SSH_AUTH_SOCK" ] && [ -f ~/.ssh/id_ed25519 ]; then
-      if ! ssh-add -l | grep -q "$(ssh-keygen -lf ~/.ssh/id_ed25519.pub | awk '{print $2}')"; then
-        ssh-add ~/.ssh/id_ed25519 2>/dev/null
+    if [ -n "$SSH_AUTH_SOCK" ]; then
+      if [ -f ~/.ssh/Youturn ]; then
+        if ! ssh-add -l | grep -q "$(ssh-keygen -lf ~/.ssh/Youturn.pub 2>/dev/null | awk '{print $2}')"; then
+          ssh-add ~/.ssh/Youturn 2>/dev/null
+        fi
+      else
+        echo "Warning: SSH key '~/.ssh/Youturn' not found."
+        echo "Please add your SSH key to ~/.ssh/Youturn to enable automatic SSH authentication."
       fi
     fi
   '';
