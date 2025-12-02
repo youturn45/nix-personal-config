@@ -25,6 +25,7 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 
 - 🔧 **Modular Architecture** - Automatic module discovery with clean separation of concerns
 - 🌐 **Cross-Platform** - Shared configuration between macOS and NixOS
+- 🔐 **Secrets Management** - Encrypted secrets with agenix (SSH key-based encryption)
 - 🛡️ **Safe Build System** - Validation, testing, and rollback capabilities
 - 🎨 **Consistent Theming** - Catppuccin Mocha throughout the system
 - ⚡ **Modern Toolchain** - NixVim, Starship, modern CLI tools, and more
@@ -36,37 +37,95 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 - [Nix](https://nixos.org/download.html) with flakes enabled
 - [just](https://github.com/casey/just) command runner (optional, for convenient builds)
 
-### Build Commands
+### Initial Setup (New Mac)
 
 ```bash
-# macOS (Darwin)
-just build              # Build and switch (current host)
-just build Rorschach    # Build specific host
-just safe-build         # Safe build with validation
+# Install Homebrew and just
+just brew
 
-# NixOS
-sudo nixos-rebuild switch --flake .#nixos
+# Install Nix (or Lix variant)
+just lix
 
-# Maintenance
-just up     # Update flake inputs
-just fmt    # Format Nix files
-just gc     # Garbage collect
-just clean  # Remove old generations
+# Setup Darwin channels
+just darwin-channel
+
+# Build and switch to configuration
+just dot
+```
+
+**Important**: Update the `hostname` variable in the Justfile before building.
+
+### Regular Build Commands
+
+```bash
+# Unified build command - all-in-one with options
+just build                    # Build current host (Rorschach)
+just build NightOwl           # Build specific host
+just build --debug            # Build with debug output
+just build --proxy network    # Build with specific proxy mode
+
+# Quick host aliases
+just ror                      # Quick build for Rorschach
+just silk                     # Quick build for SilkSpectre
+just owl                      # Quick build for NightOwl
+
+# Available hosts: Rorschach, NightOwl, SilkSpectre
+# Available proxy modes: auto, local, network, off
 ```
 
 ### Safe Development Workflow
 
 ```bash
-# 1. Make configuration changes
-# 2. Validate and test
-just validate
-just build-test
+# Full safe build (validates, tests, then switches)
+just safe-build              # For current host
+just safe-build NightOwl     # For specific host
 
-# 3. Apply if tests pass
-just safe-build
+# Individual testing steps
+just validate                # Pre-build validation (format + flake check)
+just build-test              # Test build without switching
+just build-test SilkSpectre  # Test build for specific host
+just current-gen             # Show current generation
 
-# 4. Rollback if needed
-just rollback
+# Generation management
+just generations             # List recent system generations
+just rollback               # Rollback to previous generation
+just emergency-rollback      # Quick emergency rollback
+```
+
+### Recommended Workflow
+
+1. Make changes to configuration
+2. `just validate` - Check format and validate flake
+3. `just build-test` - Test build without applying
+4. `just safe-build` - Apply changes if build test passes
+5. `just rollback` - Rollback if issues occur
+
+### NixOS Build Commands
+
+```bash
+# Build and switch NixOS configuration
+sudo nixos-rebuild switch --flake .
+
+# Build specific NixOS host
+sudo nixos-rebuild switch --flake .#nixos
+
+# Test NixOS configuration without switching
+sudo nixos-rebuild test --flake .
+
+# Build NixOS configuration without switching
+sudo nixos-rebuild build --flake .
+```
+
+### Maintenance Commands
+
+```bash
+just up               # Update all flake inputs
+just upp <input>      # Update specific input (e.g., just upp nixpkgs)
+just history          # List system generations
+just clean            # Remove generations older than 7 days
+just gc               # Garbage collect unused store entries
+just fmt              # Format nix files in repository
+just repl             # Open nix repl
 ```
 
 ## 📁 Project Structure
@@ -75,39 +134,78 @@ just rollback
 nix-personal-config/
 ├── flake.nix           # Flake entry point
 ├── Justfile            # Build commands
+├── secrets.nix         # Authorized SSH keys for secrets
 ├── hosts/              # Host-specific configurations
+│   ├── darwin/         # macOS hosts (Rorschach, NightOwl, SilkSpectre)
+│   └── nixos/          # NixOS hosts
 ├── modules/            # System-level modules
-│   ├── common/         # Shared (Darwin + NixOS)
-│   ├── darwin/         # macOS-specific
-│   └── nixos/          # NixOS-specific
+│   ├── common/         # Shared (packages, fonts, secrets)
+│   ├── darwin/         # macOS-specific (Homebrew, defaults)
+│   └── nixos/          # NixOS-specific (systemd, services)
 ├── home/               # Home Manager configurations
 │   ├── common/         # Shared user configs
 │   ├── darwin/         # macOS user configs
 │   └── nixos/          # NixOS user configs
-└── vars/               # Centralized variables
+├── secrets/            # Encrypted secrets (agenix)
+│   ├── README.md       # Secrets management guide
+│   └── *.age           # Encrypted files (safe to commit)
+├── vars/               # Centralized variables
+└── my-lib/             # Custom helper functions
 ```
 
-> **📖 For detailed architecture documentation**, see [**ARCHITECTURE.md**](./ARCHITECTURE.md)
+> **📖 For architecture and development guide**, see [**CLAUDE.md**](./CLAUDE.md)
 
 ## 🛠️ What's Included
 
 ### System-Level (modules/)
-- Cross-platform shared packages (compression, monitoring, networking)
-- macOS: Homebrew integration, system settings, user management
-- NixOS: System services, hardware configuration
+- **Common**: Shared packages, fonts, secrets (agenix), timezone
+- **macOS**: Homebrew integration, system defaults, user management, Nix daemon config
+- **NixOS**: System services, hardware configuration
 
 ### User-Level (home/)
-- **Editors**: NixVim with LSP, Treesitter, autocompletion
-- **Development**: Git, SSH, Node.js, Python, LaTeX, formatters
+- **Editors**: NixVim with 7+ LSP servers, Treesitter, autocompletion, formatting
+- **Development**: Git, SSH, Node.js, Python, LaTeX, formatters, linters
 - **Shell**: Zsh, Starship prompt, modern CLI tools
-- **Terminal**: Ghostty, btop, yazi file manager
+- **Terminal**: Ghostty, Kitty, btop, yazi file manager
 - **Theming**: Catppuccin Mocha everywhere
+
+### Secrets Management
+- **agenix**: SSH key-based encryption for secrets
+- **GitHub Token**: Available at `~/.config/github/token`
+- **Cross-platform**: Automatic path handling for Darwin/NixOS
+- See [secrets/README.md](secrets/README.md) for setup guide
+
+## 🔐 Secrets Management
+
+This configuration uses [agenix](https://github.com/ryantm/agenix) for encrypted secrets management.
+
+### Quick Start
+
+```bash
+# 1. Generate SSH key (if you don't have one)
+ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
+
+# 2. Update secrets.nix with your public key
+cat ~/.ssh/id_ed25519.pub
+# Copy and update the key in secrets.nix
+
+# 3. Create and encrypt your GitHub token
+agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+
+# 4. Build and apply
+just safe-build
+
+# 5. Verify
+cat ~/.config/github/token
+```
+
+See [**secrets/README.md**](secrets/README.md) for comprehensive setup and usage guide.
 
 ## 📚 Documentation
 
-- [**ARCHITECTURE.md**](./ARCHITECTURE.md) - Detailed technical architecture and patterns
-- [**CLAUDE.md**](./CLAUDE.md) - Claude Code integration guide
-- [**todo.md**](./todo.md) - Development roadmap and completed tasks
+- [**CLAUDE.md**](./CLAUDE.md) - Architecture guide and development workflows
+- [**secrets/README.md**](secrets/README.md) - Secrets management with agenix
+- [**Justfile**](./Justfile) - Available build commands and automation
 
 ## 🤝 Contributing
 
