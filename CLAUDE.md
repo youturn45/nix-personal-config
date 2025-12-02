@@ -1,364 +1,289 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this Nix configuration repository.
 
 ## Repository Overview
 
-This is a personal Nix configuration repository supporting both macOS (nix-darwin) and NixOS systems. The repository uses Nix Flakes and follows a modular architecture pattern with automatic module discovery.
+Personal Nix configuration supporting both macOS (nix-darwin) and NixOS systems. Uses Nix Flakes with automatic module discovery and a modular architecture pattern.
 
-## Build and Development Commands
+**Important**: Claude cannot run Nix build commands. For build instructions, refer to README.md. This document focuses on code architecture and organization.
 
-### Primary Build Commands
+## Quick Reference
+
 ```bash
-# Unified build command - all-in-one with options
-just build                    # Build current host (Rorschach)
-just build NightOwl           # Build specific host
-just build --debug            # Build current host with debug output
-just build SilkSpectre --debug # Build specific host with debug output
-just build --proxy network    # Build with specific proxy mode
+# Format Nix files (always do this before committing)
+just fmt
 
-# Quick host aliases (for convenience)
-just ror                      # Quick build for Rorschach
-just silk                     # Quick build for SilkSpectre
-just owl                      # Quick build for NightOwl
-
-# Available hosts: Rorschach, NightOwl, SilkSpectre
-# Available proxy modes: auto, local, network, off
+# User can run builds with:
+# just build [hostname]     # Build specific or current host
+# just safe-build           # Validate, test, then build
 ```
-
-### Nix Management
-```bash
-just up               # Update all flake inputs
-just upp <input>      # Update specific input (e.g., just upp nixpkgs)
-just history          # List system generations
-just clean            # Remove generations older than 7 days
-just gc               # Garbage collect unused store entries
-just fmt              # Format nix files in repository
-just repl             # Open nix repl
-```
-
-### NixOS Build Commands
-```bash
-# Build and switch NixOS configuration
-sudo nixos-rebuild switch --flake .
-
-# Build specific NixOS host
-sudo nixos-rebuild switch --flake .#nixos
-
-# Test NixOS configuration without switching
-sudo nixos-rebuild test --flake .
-
-# Build NixOS configuration without switching
-sudo nixos-rebuild build --flake .
-```
-
-### New Mac Setup (Initial Installation)
-```bash
-just brew             # Install Homebrew and just
-just lix              # Install Lix (Nix alternative)
-just darwin-channel   # Setup Darwin channels
-just dot              # Build and switch to configuration
-```
-
-**Important**: Update the `hostname` variable in the Justfile before building (currently set to "Rorschach").
-
-### Build Testing Commands (Recommended for Development)
-```bash
-# Safe build process - validates, tests, then switches
-just safe-build              # Full safe build for current host
-just safe-build NightOwl     # Safe build for specific host
-
-# Individual testing steps
-just validate                # Pre-build validation (format + flake check)
-just build-test              # Test build without switching (current host)
-just build-test SilkSpectre  # Test build for specific host
-just current-gen             # Show current generation for reference
-
-# Generation management
-just generations             # List recent system generations
-just rollback               # Rollback to previous generation
-just emergency-rollback      # Quick emergency rollback
-
-# Development workflow example:
-# 1. Make changes to configuration
-# 2. just validate            # Check format and validate flake
-# 3. just build-test          # Test build without applying
-# 4. just safe-build          # Apply changes if build test passes
-# 5. just rollback            # Rollback if issues occur
-```
-
-### Build Testing Philosophy
-
-This repository implements a safe-first approach to system configuration changes:
-
-1. **Validation First**: Always check formatting and flake validity before building
-2. **Test Before Apply**: Build configurations without switching to catch errors early  
-3. **Generation Tracking**: Record current generation before changes for easy rollback
-4. **Atomic Operations**: Either the entire build succeeds or fails cleanly
-5. **Easy Recovery**: Simple rollback commands for quick recovery
-
-**Recommended Development Workflow:**
-- **Development**: Use `just safe-build` for normal development work
-- **Experimentation**: Use `just build-test` to test risky changes without applying
-- **Emergency**: Use `just emergency-rollback` if system becomes unstable
-- **CI/CD**: Use `just validate` in automated pipelines
-
-**Key Benefits:**
-- **Prevents broken systems**: Build testing catches errors before they affect your system
-- **Fast iteration**: Quick validation feedback loop for development
-- **Easy recovery**: One-command rollback to working state
-- **Documentation**: Generation history provides audit trail of changes
-
-### Incremental Configuration Development (NixVim Case Study)
-
-When implementing complex configurations like NixVim, use this proven stepwise approach:
-
-#### **The 7-Step Method:**
-1. **Basic Options** - Start with fundamental vim settings (numbers, indentation, search)
-2. **Colorscheme** - Add theme/appearance (ensures visual feedback works)
-3. **Core Plugins** - Add essential functionality (treesitter for syntax highlighting)
-4. **Language Support** - Add LSP servers and language-specific features
-5. **Completion & Snippets** - Add autocompletion and snippet support
-6. **File Management** - Add file explorer and fuzzy finder (neo-tree, telescope)
-7. **Additional Plugins** - Add remaining plugins, UI enhancements, and keymaps
-
-#### **Methodology:**
-- **Test each step**: Run `just build-test` after each addition
-- **Fix issues immediately**: Address deprecation warnings and errors before proceeding
-- **Commit frequently**: Save working states to enable easy rollback
-- **Document issues**: Record solutions for deprecated options and compatibility problems
-
-#### **Common NixVim Issues & Solutions:**
-- **Module Loading**: Use `home-manager.sharedModules = [nixvim.homeManagerModules.nixvim]`
-- **Deprecated Options**: 
-  - `tsserver` → `ts_ls`
-  - `nvim-cmp` → `cmp` 
-  - `lualine.theme` → `lualine.settings.options.theme`
-- **Rust Analyzer**: Set `installCargo = false` and `installRustc = false`
-- **Web Icons**: Explicitly enable `web-devicons.enable = true`
-- **Unfree Packages**: Remove or configure `allowUnfree` for copilot-vim
-
-#### **Benefits of Stepwise Approach:**
-- **Pinpoint Issues**: Isolate problems to specific components
-- **Maintain Progress**: Never lose working configurations
-- **Learn Incrementally**: Understand each plugin's impact
-- **Reduce Complexity**: Handle one concern at a time
-- **Build Confidence**: See immediate results from each step
 
 ## Architecture
 
+### Module Organization Rules
+
+The repository follows a strict module organization pattern:
+
+#### `modules/common/` - Cross-Platform Modules
+**Purpose**: Configuration shared between macOS and NixOS
+
+**Rules**:
+- ✅ **Include**: System packages, fonts, secrets, time zones, core utilities
+- ✅ **Platform-agnostic**: Use conditional logic when paths/groups differ
+- ❌ **Exclude**: Platform-specific settings (Homebrew, systemd, macOS defaults)
+
+**Pattern for Platform Detection**:
+```nix
+let
+  homeDir = if pkgs.stdenv.isDarwin
+    then "/Users/${username}"
+    else "/home/${username}";
+
+  userGroup = if pkgs.stdenv.isDarwin
+    then "staff"
+    else "users";
+in
+```
+
+**Current Common Modules**:
+- `default.nix` - Shared system packages (compression, monitoring, networking)
+- `fonts.nix` - Font packages (Nerd Fonts, Source fonts, icons)
+- `secrets.nix` - Agenix secrets management (cross-platform)
+
+#### `modules/darwin/` - macOS-Specific Modules
+**Purpose**: Configuration exclusive to macOS/nix-darwin
+
+**Rules**:
+- ✅ **Include**: Homebrew, macOS system defaults, Aqua settings, Darwin-only services
+- ✅ **Darwin APIs**: `system.defaults.*`, `homebrew.*`, Darwin-specific services
+- ❌ **Exclude**: Anything that could work on Linux
+
+**Current Darwin Modules**:
+- `apps.nix` - Homebrew packages and casks
+- `system-settings.nix` - macOS defaults (dock, finder, keyboard, trackpad)
+- `host-users.nix` - User account management
+- `nix-core.nix` - Nix daemon configuration
+
+#### `modules/nixos/` - NixOS-Specific Modules
+**Purpose**: Configuration exclusive to NixOS/Linux
+
+**Rules**:
+- ✅ **Include**: systemd services, NixOS system settings, Linux-only services
+- ✅ **NixOS APIs**: `systemd.*`, `services.*`, NixOS-specific options
+- ❌ **Exclude**: Anything that could work on Darwin
+
+#### `home/` - Home Manager Configurations
+**Purpose**: User-level configuration (dotfiles, user packages, user services)
+
+**Organization**:
+- `home/common/` - Shared user configs (shell, editors, dev tools)
+- `home/darwin/` - macOS-specific user configs
+- `home/nixos/` - NixOS-specific user configs
+
+**Decision Tree - Where Does Configuration Go?**:
+1. **System-level** (requires root/admin)? → `modules/`
+   - Works on both platforms? → `modules/common/`
+   - macOS only? → `modules/darwin/`
+   - NixOS only? → `modules/nixos/`
+
+2. **User-level** (dotfiles, user packages)? → `home/`
+   - Works on both platforms? → `home/common/`
+   - Platform-specific? → `home/darwin/` or `home/nixos/`
+
 ### Directory Structure
 ```
-├── vars/                    # Global variables (hostname, username, system)
-├── my-lib/                  # Custom helper functions
-├── hosts/                   # Host configurations
-│   ├── darwin/             # macOS host configurations
-│   │   ├── Rorschach.nix   # Primary macOS host
-│   │   ├── NightOwl.nix    # NightOwl host
-│   │   └── SilkSpectre.nix # SilkSpectre host
-│   └── nixos/              # NixOS host configuration
-│       ├── default.nix     # NixOS system entry point
+├── vars/default.nix        # Global variables (username, system, timezone)
+├── my-lib/                 # Custom helper functions
+│   ├── default.nix
+│   └── helpers.nix         # collectModulesRecursively function
+├── hosts/                  # Host-specific configurations
+│   ├── darwin/
+│   │   ├── Rorschach.nix   # MacBook Air M4
+│   │   ├── NightOwl.nix
+│   │   └── SilkSpectre.nix
+│   └── nixos/
+│       ├── default.nix
 │       └── hardware-configuration.nix
-├── modules/                 # System modules
-│   ├── common/             # Shared between platforms
-│   │   ├── default.nix
-│   │   ├── fonts.nix
-│   │   └── secrets.nix     # Agenix secrets configuration (cross-platform)
-│   ├── darwin/             # macOS-specific modules
-│   │   ├── apps.nix
-│   │   ├── system-settings.nix
-│   │   ├── host-users.nix
-│   │   └── nix-core.nix
-│   └── nixos/              # NixOS-specific modules
-│       └── common/
-├── home/                   # Home Manager configurations
-│   ├── default.nix         # Home Manager entry point
-│   ├── common/
-│   │   ├── core.nix        # Core packages and CLI tools
-│   │   ├── claude-code/    # Claude Code integration
-│   │   ├── dev-tools/      # git, ssh, nodejs, tex, _pip
+├── modules/                # System configuration
+│   ├── common/             # Cross-platform (packages, fonts, secrets)
+│   ├── darwin/             # macOS-specific (Homebrew, defaults)
+│   └── nixos/              # NixOS-specific (systemd, services)
+├── home/                   # Home Manager (user config)
+│   ├── common/             # Cross-platform user config
+│   │   ├── core.nix
+│   │   ├── dev-tools/      # git, ssh, nodejs
 │   │   ├── editors/        # neovim (NixVim)
-│   │   ├── gui/            # media.nix, terminal/{ghostty.nix, kitty.nix}
-│   │   ├── python/
-│   │   ├── system/         # btop, _zellij, _container
-│   │   ├── terminal/       # starship, shells, yazi
-│   │   └── codex/          # Code search tool configuration
-│   ├── darwin/default.nix
-│   └── nixos/default.nix
+│   │   ├── terminal/       # shells, starship, yazi
+│   │   └── gui/            # terminal emulators
+│   ├── darwin/
+│   └── nixos/
 ├── secrets/                # Encrypted secrets (agenix)
-│   ├── README.md           # Secrets management documentation
-│   ├── .gitignore          # Prevent committing unencrypted secrets
-│   ├── github-token.age    # Encrypted GitHub token
-│   └── ssh-key-rorschach.age # Encrypted SSH key
-├── secrets.nix             # Defines authorized keys for secrets
-└── scripts/                # Utility scripts
-    ├── darwin_set_proxy.py # Darwin proxy setup
-    └── vnc_paste.py        # VNC paste utility
+│   ├── README.md
+│   ├── .gitignore
+│   └── *.age               # Encrypted files
+└── secrets.nix             # Authorized SSH keys for secrets
 ```
 
-### Key Architecture Patterns
+### Key Patterns
 
-1. **Automatic Module Discovery**: Uses custom `collectModulesRecursively` function from `my-lib/helpers.nix` to automatically import modules. Files/directories starting with `_` are ignored.
+1. **Automatic Module Discovery**
+   - Uses `collectModulesRecursively` from `my-lib/helpers.nix`
+   - Files/directories starting with `_` are ignored
+   - Each directory's `default.nix` is excluded from recursive import
 
-2. **Modular Design**: Clear separation between system configuration (`modules/`), user configuration (`home/`), and host-specific settings (`hosts/`).
+2. **Centralized Variables**
+   - All system variables in `vars/default.nix`
+   - Access via `myvars` or `vars` in modules
+   - Includes: username, system arch, timezone, state versions
 
-3. **Cross-Platform Support**: Shared modules in `modules/common/` with platform-specific overrides in `modules/darwin/` and `modules/nixos/`.
+3. **Module Imports Pattern**
+   ```nix
+   # In modules/darwin/default.nix or modules/nixos/default.nix
+   imports = [
+     ../common  # Import common modules first
+   ] ++ (myLib.collectModulesRecursively ./.);
+   ```
 
-4. **Centralized Variables**: All system variables (hostname, username, timezone) defined in `vars/default.nix`.
+4. **Flake Structure**
+   - Darwin hosts: `darwinConfigurations.<hostname>`
+   - NixOS hosts: `nixosConfigurations.<hostname>`
+   - Agenix module included via `agenix.darwinModules.default` or `agenix.nixosModules.default`
+   - NixVim loaded via `home-manager.sharedModules`
 
-5. **NixVim Integration**: Uses `home-manager.sharedModules` approach for proper module loading of NixVim within the Home Manager context.
+## Secrets Management (Agenix)
 
-6. **Incremental Development**: Configuration supports stepwise development with build testing at each stage.
+### Architecture
+- **secrets.nix** (root) - Defines authorized SSH keys per secret
+- **modules/common/secrets.nix** - Cross-platform secret configuration
+- **secrets/** - Encrypted `.age` files (safe to commit)
 
-### Current Hosts
-- **Rorschach**: MacBook Air M4 (primary Darwin host)
-- **NightOwl**: Darwin host configuration
-- **SilkSpectre**: Darwin host configuration
-- **nixos**: NixOS VM for testing
+### Platform-Agnostic Design
+The secrets module automatically handles platform differences:
+```nix
+let
+  homeDir = if pkgs.stdenv.isDarwin
+    then "/Users/${myvars.username}"
+    else "/home/${myvars.username}";
+  userGroup = if pkgs.stdenv.isDarwin
+    then "staff"  # macOS
+    else "users"; # NixOS
+in
+```
 
-## Development Environment
+### Current Secrets
+- `github-token.age` → `~/.config/github/token` (mode: 0400)
+  - Environment variable: `$GITHUB_TOKEN_FILE`
+  - Helper command: `github-token`
+- `ssh-key-rorschach.age` → `~/.ssh/rorschach_agenix` (mode: 0600)
 
-No `devShells` are currently defined in `flake.nix`.
+### Adding New Secrets
+1. Define in `secrets.nix` with authorized keys
+2. Create encrypted file: `agenix -e secrets/name.age -i ~/.ssh/id_ed25519`
+3. Add to `modules/common/secrets.nix` with path and permissions
+4. Build system to decrypt
 
-- Use system packages and Home Manager-provisioned tools for development.
-- If you want a `nix develop` workflow, add `devShells` to the flake and document the tools there.
+See `secrets/README.md` for detailed instructions.
+
+## Code Review Guidelines
+
+Since Nix builds cannot be tested by Claude, follow these review practices:
+
+### 1. Syntax and Structure Review
+- **Check Nix syntax**: Proper use of `let...in`, attribute sets, lists
+- **Validate imports**: Ensure paths are correct and modules exist
+- **Review conditionals**: Platform detection logic is sound
+- **Check for typos**: Variable names, paths, package names
+
+### 2. Architecture Compliance
+- **Module placement**: Verify code is in correct directory (common vs platform-specific)
+- **No duplication**: Check if functionality already exists elsewhere
+- **Platform conditionals**: Cross-platform modules use `if pkgs.stdenv.isDarwin`
+- **Variable usage**: Use `myvars.*` for centralized variables
+
+### 3. Security Review
+- **Secrets**: Never commit unencrypted secrets
+- **Permissions**: File modes are appropriate (0400, 0600, 0644)
+- **Paths**: No hardcoded usernames or absolute paths (use variables)
+- **Groups**: Use platform-specific group variables
+
+### 4. Common Issues to Check
+- **Path separators**: Use `/` not backslashes
+- **Home directory**: Use `${homeDir}` not hardcoded `/Users/` or `/home/`
+- **Package names**: Verify against nixpkgs (common mistakes: `nodejs` vs `node`)
+- **Deprecated options**: Check for NixOS/nix-darwin deprecated options
+- **Missing dependencies**: Ensure required packages are installed
+
+### 5. Linting Checklist
+```bash
+# User runs these before committing
+just fmt               # Format all Nix files (nixpkgs-fmt)
+just validate          # Run flake check (if available)
+```
+
+**Your Role**: Before suggesting changes, mentally verify:
+1. ✅ Nix syntax is valid
+2. ✅ File is in the correct module directory
+3. ✅ Platform conditionals are used where needed
+4. ✅ No hardcoded paths or usernames
+5. ✅ No security issues (exposed secrets, wrong permissions)
+
+## Development Workflow for Claude
+
+### When Making Changes:
+
+1. **Read First**: Always read files before editing
+2. **Check Architecture**: Verify correct module location (common vs platform)
+3. **Review Pattern**: Follow existing patterns in similar modules
+4. **Use Variables**: Reference `myvars.*` instead of hardcoding
+5. **Format Aware**: Maintain consistent Nix formatting
+6. **Document**: Add comments for complex logic or platform conditionals
+
+### Common Tasks:
+
+**Adding System Package** (available to all users):
+- ✅ Cross-platform? → `modules/common/default.nix`
+- ✅ macOS only? → `modules/darwin/apps.nix`
+- ✅ NixOS only? → Add to appropriate NixOS module
+
+**Adding User Package** (per-user):
+- ✅ Goes in `home/common/` if cross-platform
+- ✅ Goes in `home/darwin/` or `home/nixos/` if platform-specific
+
+**Adding Configuration**:
+1. Determine: System-level or user-level?
+2. Determine: Cross-platform or platform-specific?
+3. Place in appropriate module directory
+4. Use platform conditionals if needed
+
+**Modifying Secrets**:
+- Only edit `modules/common/secrets.nix` for configuration
+- Never commit `.txt`, `.key`, `.token` files
+- Use `${homeDir}` and `${userGroup}` variables
 
 ## Important Notes
 
-- **Centralized Variables**: All system settings (versions, user info) are centralized in `vars/default.nix`
-- **System Configuration**: 
-  - `modules/darwin/apps.nix`: Core system settings and Homebrew packages
-  - `modules/darwin/system-settings.nix`: macOS defaults and UI preferences
-  - `modules/darwin/host-users.nix`: User account management
-  - `modules/darwin/nix-core.nix`: Core Nix configuration and settings
-- **Editor Configuration**:
-  - `home/common/editors/neovim/default.nix`: Complete NixVim setup with LSP, completion, treesitter, and essential plugins
-  - Supports 7+ LSP servers (Nix, Lua, Rust, Python, TypeScript, Bash, Markdown)
-  - Auto-formatting with conform-nvim for multiple languages
-  - Full key binding setup for productivity
-- **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
-- **Proxy Configuration**: Configurable proxy support with local (127.0.0.1) and network (10.0.0.5) modes for shell and nix-daemon
-- **Claude Code Integration**: Available via `home/common/claude-code` hooks and settings; no devShell provisioning
-- **Secrets Management**:
-  - Uses agenix for encrypted secrets with SSH key encryption
-  - Configuration: `modules/common/secrets.nix` (cross-platform module)
-  - Platform-agnostic: automatically handles Darwin (/Users) vs NixOS (/home) paths
-  - Keys: `secrets.nix` defines authorized SSH keys for decryption
-  - Secrets directory: `secrets/` contains encrypted `.age` files
-  - GitHub token available at `~/.config/github/token` after build
-  - See `secrets/README.md` for detailed usage instructions
-- **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
-- **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
-- **Build Testing**: Comprehensive testing infrastructure with validation, build-test, and rollback capabilities
+- **No Build Testing**: Claude cannot run Nix builds - rely on code review
+- **Formatting Required**: Always format before committing (`just fmt`)
+- **Centralized Variables**: Use `vars/default.nix` for system settings
+- **Automatic Discovery**: Files starting with `_` are ignored by module loader
+- **State Versions**: Defined in `vars/default.nix` (don't change without reason)
+- **NixVim**: Uses `home-manager.sharedModules` pattern
+- **Proxy Config**: Available but not for Claude to modify
+- **Theme**: Catppuccin Mocha (terminal, editor, UI)
 
-## Network Configuration
+## File Naming Conventions
 
-### Proxy Configuration
+- `default.nix` - Module entry point (auto-imported by parent)
+- `_filename.nix` - Ignored by automatic module discovery
+- `secrets.nix` (root) - Authorized keys for agenix
+- `*.age` - Encrypted secrets (safe to commit)
 
-The repository supports configurable proxy settings with two modes:
+## Reference Documentation
 
-#### Shell Proxy Functions (in .zshrc)
-```bash
-# Local proxy (default) - 127.0.0.1:7890
-proxy_on
-proxy_on local
-
-# Network proxy - 10.0.0.5:7890  
-proxy_on network
-
-# Turn off proxy
-proxy_off
-
-# Check proxy status
-proxy_status
-```
-
-#### Nix-daemon Proxy (for build acceleration)
-```bash
-# Local proxy (default)
-python3 scripts/darwin_set_proxy.py
-python3 scripts/darwin_set_proxy.py local
-
-# Network proxy
-python3 scripts/darwin_set_proxy.py network
-```
-
-**Proxy Presets:**
-- **Local**: `127.0.0.1:7890` (HTTP/HTTPS), `127.0.0.1:7891` (SOCKS)
-- **Network**: `10.0.0.5:7890` (HTTP/HTTPS), `10.0.0.5:7891` (SOCKS)
-
-## Secrets Management
-
-The repository uses [agenix](https://github.com/ryantm/agenix) for secure secrets management with SSH key encryption.
-
-### Quick Start
-
-```bash
-# 1. Generate SSH key (if you don't have one)
-ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
-
-# 2. Update secrets.nix with your public key
-cat ~/.ssh/id_ed25519.pub
-# Copy the output and update the 'youturn-rorschach' variable in secrets.nix
-
-# 3. Create and encrypt your GitHub token
-echo "ghp_YourTokenHere" > /tmp/token.txt
-agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-# Paste your token in the editor, save, and exit
-
-# 4. Securely delete the temporary file
-rm -P /tmp/token.txt
-
-# 5. Build and apply
-just safe-build
-
-# 6. Verify the secret is available
-cat ~/.config/github/token
-```
-
-### Available Secrets
-
-- **GitHub Token**: `~/.config/github/token` (mode: 0400, read-only)
-  - Environment variable: `$GITHUB_TOKEN_FILE`
-  - Helper command: `github-token`
-- **SSH Key (Rorschach)**: `~/.ssh/rorschach_agenix` (mode: 0600)
-
-### Common Operations
-
-```bash
-# Edit an existing secret
-agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-
-# Add a new secret (after defining it in secrets.nix and modules/common/secrets.nix)
-agenix -e secrets/new-secret.age -i ~/.ssh/id_ed25519
-
-# Re-encrypt all secrets (after adding new authorized keys)
-cd secrets && for file in *.age; do agenix -r -e "$file" -i ~/.ssh/id_ed25519; done
-
-# Use the GitHub token in scripts
-GITHUB_TOKEN=$(cat "$GITHUB_TOKEN_FILE")
-curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user
-```
-
-### Architecture
-
-- **secrets.nix**: Defines which SSH keys can decrypt which secrets
-- **modules/common/secrets.nix**: Cross-platform system module that configures secret locations and permissions
-  - Platform-agnostic: uses conditional logic for Darwin vs NixOS paths
-  - Automatically handles home directory (`/Users` vs `/home`) and group (`staff` vs `users`)
-- **secrets/**: Directory containing encrypted `.age` files (safe to commit)
-- **secrets/README.md**: Comprehensive documentation and troubleshooting guide
-
-### Security Notes
-
-- Only `.age` encrypted files are committed to git
-- Secrets are decrypted at system activation time
-- Decrypted secrets have strict file permissions (0400 or 0600)
-- Each secret can have different authorized keys
-- SSH key passphrases protect the encryption keys
-
-For detailed instructions, see [secrets/README.md](secrets/README.md).
-
-## Testing and Validation
-
-Always run `just fmt` before committing to ensure proper Nix file formatting. The repository uses standard nixpkgs formatting conventions.
+- Build commands and user workflows → `README.md` (to be created)
+- Secrets setup and troubleshooting → `secrets/README.md`
+- Nix language → https://nix.dev/
+- nix-darwin options → https://daiderd.com/nix-darwin/manual/
+- NixOS options → https://search.nixos.org/options
+- Home Manager options → https://nix-community.github.io/home-manager/options.html
