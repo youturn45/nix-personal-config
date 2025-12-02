@@ -153,7 +153,7 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 ├── my-lib/                  # Custom helper functions
 ├── hosts/                   # Host configurations
 │   ├── darwin/             # macOS host configurations
-│   │   ├── rorschach.nix   # Primary macOS host
+│   │   ├── Rorschach.nix   # Primary macOS host
 │   │   ├── NightOwl.nix    # NightOwl host
 │   │   └── SilkSpectre.nix # SilkSpectre host
 │   └── nixos/              # NixOS host configuration
@@ -165,7 +165,8 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   │   ├── apps.nix
 │   │   ├── system-settings.nix
 │   │   ├── host-users.nix
-│   │   └── nix-core.nix
+│   │   ├── nix-core.nix
+│   │   └── secrets.nix     # Agenix secrets configuration
 │   └── nixos/              # NixOS-specific modules
 │       └── common/
 ├── home/                   # Home Manager configurations
@@ -182,6 +183,12 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │   │   └── codex/          # Code search tool configuration
 │   ├── darwin/default.nix
 │   └── nixos/default.nix
+├── secrets/                # Encrypted secrets (agenix)
+│   ├── README.md           # Secrets management documentation
+│   ├── .gitignore          # Prevent committing unencrypted secrets
+│   ├── github-token.age    # Encrypted GitHub token
+│   └── ssh-key-rorschach.age # Encrypted SSH key
+├── secrets.nix             # Defines authorized keys for secrets
 └── scripts/                # Utility scripts
     ├── darwin_set_proxy.py # Darwin proxy setup
     └── vnc_paste.py        # VNC paste utility
@@ -230,6 +237,13 @@ No `devShells` are currently defined in `flake.nix`.
 - **Development Tools**: Comprehensive development environment with formatters, linters, and language servers
 - **Proxy Configuration**: Configurable proxy support with local (127.0.0.1) and network (10.0.0.5) modes for shell and nix-daemon
 - **Claude Code Integration**: Available via `home/common/claude-code` hooks and settings; no devShell provisioning
+- **Secrets Management**:
+  - Uses agenix for encrypted secrets with SSH key encryption
+  - Configuration: `modules/darwin/secrets.nix` defines secrets
+  - Keys: `secrets.nix` defines authorized SSH keys
+  - Secrets directory: `secrets/` contains encrypted `.age` files
+  - GitHub token available at `~/.config/github/token` after build
+  - See `secrets/README.md` for detailed usage instructions
 - **Theme**: Uses Catppuccin Mocha theme throughout the system (terminal, editor, UI)
 - **File Naming**: Files/directories starting with `_` are excluded from automatic module discovery
 - **Build Testing**: Comprehensive testing infrastructure with validation, build-test, and rollback capabilities
@@ -269,6 +283,76 @@ python3 scripts/darwin_set_proxy.py network
 **Proxy Presets:**
 - **Local**: `127.0.0.1:7890` (HTTP/HTTPS), `127.0.0.1:7891` (SOCKS)
 - **Network**: `10.0.0.5:7890` (HTTP/HTTPS), `10.0.0.5:7891` (SOCKS)
+
+## Secrets Management
+
+The repository uses [agenix](https://github.com/ryantm/agenix) for secure secrets management with SSH key encryption.
+
+### Quick Start
+
+```bash
+# 1. Generate SSH key (if you don't have one)
+ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
+
+# 2. Update secrets.nix with your public key
+cat ~/.ssh/id_ed25519.pub
+# Copy the output and update the 'youturn-rorschach' variable in secrets.nix
+
+# 3. Create and encrypt your GitHub token
+echo "ghp_YourTokenHere" > /tmp/token.txt
+agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+# Paste your token in the editor, save, and exit
+
+# 4. Securely delete the temporary file
+rm -P /tmp/token.txt
+
+# 5. Build and apply
+just safe-build
+
+# 6. Verify the secret is available
+cat ~/.config/github/token
+```
+
+### Available Secrets
+
+- **GitHub Token**: `~/.config/github/token` (mode: 0400, read-only)
+  - Environment variable: `$GITHUB_TOKEN_FILE`
+  - Helper command: `github-token`
+- **SSH Key (Rorschach)**: `~/.ssh/rorschach_agenix` (mode: 0600)
+
+### Common Operations
+
+```bash
+# Edit an existing secret
+agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+
+# Add a new secret (after defining it in secrets.nix and modules/darwin/secrets.nix)
+agenix -e secrets/new-secret.age -i ~/.ssh/id_ed25519
+
+# Re-encrypt all secrets (after adding new authorized keys)
+cd secrets && for file in *.age; do agenix -r -e "$file" -i ~/.ssh/id_ed25519; done
+
+# Use the GitHub token in scripts
+GITHUB_TOKEN=$(cat "$GITHUB_TOKEN_FILE")
+curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user
+```
+
+### Architecture
+
+- **secrets.nix**: Defines which SSH keys can decrypt which secrets
+- **modules/darwin/secrets.nix**: System module that configures secret locations and permissions
+- **secrets/**: Directory containing encrypted `.age` files (safe to commit)
+- **secrets/README.md**: Comprehensive documentation and troubleshooting guide
+
+### Security Notes
+
+- Only `.age` encrypted files are committed to git
+- Secrets are decrypted at system activation time
+- Decrypted secrets have strict file permissions (0400 or 0600)
+- Each secret can have different authorized keys
+- SSH key passphrases protect the encryption keys
+
+For detailed instructions, see [secrets/README.md](secrets/README.md).
 
 ## Testing and Validation
 
