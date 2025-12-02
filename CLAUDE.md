@@ -161,12 +161,14 @@ When implementing complex configurations like NixVim, use this proven stepwise a
 │       └── hardware-configuration.nix
 ├── modules/                 # System modules
 │   ├── common/             # Shared between platforms
+│   │   ├── default.nix
+│   │   ├── fonts.nix
+│   │   └── secrets.nix     # Agenix secrets configuration (cross-platform)
 │   ├── darwin/             # macOS-specific modules
 │   │   ├── apps.nix
 │   │   ├── system-settings.nix
 │   │   ├── host-users.nix
-│   │   ├── nix-core.nix
-│   │   └── secrets.nix     # Agenix secrets configuration
+│   │   └── nix-core.nix
 │   └── nixos/              # NixOS-specific modules
 │       └── common/
 ├── home/                   # Home Manager configurations
@@ -239,8 +241,9 @@ No `devShells` are currently defined in `flake.nix`.
 - **Claude Code Integration**: Available via `home/common/claude-code` hooks and settings; no devShell provisioning
 - **Secrets Management**:
   - Uses agenix for encrypted secrets with SSH key encryption
-  - Configuration: `modules/darwin/secrets.nix` defines secrets
-  - Keys: `secrets.nix` defines authorized SSH keys
+  - Configuration: `modules/common/secrets.nix` (cross-platform module)
+  - Platform-agnostic: automatically handles Darwin (/Users) vs NixOS (/home) paths
+  - Keys: `secrets.nix` defines authorized SSH keys for decryption
   - Secrets directory: `secrets/` contains encrypted `.age` files
   - GitHub token available at `~/.config/github/token` after build
   - See `secrets/README.md` for detailed usage instructions
@@ -326,7 +329,7 @@ cat ~/.config/github/token
 # Edit an existing secret
 agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
 
-# Add a new secret (after defining it in secrets.nix and modules/darwin/secrets.nix)
+# Add a new secret (after defining it in secrets.nix and modules/common/secrets.nix)
 agenix -e secrets/new-secret.age -i ~/.ssh/id_ed25519
 
 # Re-encrypt all secrets (after adding new authorized keys)
@@ -340,7 +343,9 @@ curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user
 ### Architecture
 
 - **secrets.nix**: Defines which SSH keys can decrypt which secrets
-- **modules/darwin/secrets.nix**: System module that configures secret locations and permissions
+- **modules/common/secrets.nix**: Cross-platform system module that configures secret locations and permissions
+  - Platform-agnostic: uses conditional logic for Darwin vs NixOS paths
+  - Automatically handles home directory (`/Users` vs `/home`) and group (`staff` vs `users`)
 - **secrets/**: Directory containing encrypted `.age` files (safe to commit)
 - **secrets/README.md**: Comprehensive documentation and troubleshooting guide
 

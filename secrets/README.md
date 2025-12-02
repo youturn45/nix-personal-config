@@ -168,7 +168,7 @@ echo "https://$(cat ~/.config/github/token)@github.com" >> ~/.git-credentials
 agenix -e secrets/my-new-secret.age -i ~/.ssh/id_ed25519
 ```
 
-3. Add the secret to `modules/darwin/secrets.nix`:
+3. Add the secret to `modules/common/secrets.nix`:
 
 ```nix
 age.secrets.my-new-secret = {
@@ -256,8 +256,8 @@ agenix -r -e secrets/github-token.age -i ~/.ssh/id_ed25519
 ### Secret file not found after rebuild
 
 ```bash
-# Check the secret is defined in modules/darwin/secrets.nix
-grep "github-token" modules/darwin/secrets.nix
+# Check the secret is defined in modules/common/secrets.nix
+grep "github-token" modules/common/secrets.nix
 
 # Verify the .age file exists
 ls -la secrets/github-token.age
