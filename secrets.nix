@@ -13,7 +13,7 @@ let
 
   # User SSH keys for encryption/decryption
   # These should be your personal SSH keys that you use for managing secrets
-  youturn-rorschach = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN5i/9yJ7CBDqGYYQvDFXlAPfxvLoVn5YCc1pQCuEDth youturn@Rorschach.local";
+  Youturn = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPzV1VGMASpQBUI1/N9db4k8wyVnO4sb0xOthUPK1g6g youturn45@gmail.com";
 
   # You can add more user keys here:
   # youturn-nightowl = "ssh-ed25519 AAAA... youturn@NightOwl";
@@ -26,15 +26,12 @@ let
   # Define which keys can access which secrets
   # For simplicity, we'll use the same keys for all hosts
   allKeys = [
-    youturn-rorschach
+    Youturn
     # Add more keys as needed
   ];
 in {
   # GitHub token - accessible by all defined keys
   "secrets/github-token.age".publicKeys = allKeys;
-
-  # SSH key for Rorschach (already defined)
-  "secrets/ssh-key-rorschach.age".publicKeys = allKeys;
 
   # Add more secrets here as needed:
   # "secrets/another-secret.age".publicKeys = allKeys;

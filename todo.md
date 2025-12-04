@@ -6,15 +6,14 @@
 ## 🎯 Active Tasks
 
 ### Hardware Integration
-- [ ] **Battery Management Script Integration**
-  - Integrate `sudo batt activate` into build scripts or system activation
-  - Priority: Low (hardware-specific)
-  - Action: Evaluate if needed for current setup
+- [ ] Implement third party cache sources for faster downloads
+https://seekstar.github.io/2023/02/04/%E4%BD%BF%E7%94%A8%E5%9B%BD%E5%86%85%E6%BA%90%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8nix%E5%8C%85%E7%AE%A1%E7%90%86%E5%99%A8/
+- [ ] WIP implement agenix to add github tokens to speed up process
+
 
 ## 🔮 Future Enhancements
 
 ### Security
-- [ ] Add timeout controls to TouchID sudo configuration
 - [ ] Evaluate personal data exposure in version control
 
 ### Performance
