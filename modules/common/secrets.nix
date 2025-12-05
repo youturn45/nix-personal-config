@@ -39,14 +39,6 @@ in {
 
   # Define secrets
   age.secrets = {
-    # SSH key for Rorschach
-    ssh-key-rorschach = {
-      file = ../../secrets/ssh-key-rorschach.age;
-      path = "${homeDir}/.ssh/rorschach_agenix";
-      owner = myvars.username;
-      group = userGroup;
-      mode = "0600";
-    };
 
     # GitHub Personal Access Token
     # After decryption, the token will be available at the specified path
