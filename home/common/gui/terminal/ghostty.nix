@@ -14,7 +14,7 @@
 {
   # Install Ghostty on Linux/NixOS only (macOS/Darwin uses Homebrew installation)
   home.packages = lib.optionals pkgs.stdenv.isLinux [
-    ghostty.packages.${pkgs.system}.default
+    ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   # Create Ghostty config file for both platforms

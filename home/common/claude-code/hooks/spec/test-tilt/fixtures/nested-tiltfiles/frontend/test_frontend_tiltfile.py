@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for frontend Tiltfile."""
 
-import pytest
 
 
 def test_frontend_docker_build():

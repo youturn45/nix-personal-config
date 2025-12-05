@@ -3,7 +3,85 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  # Define fonts to make available in TEXMF
+  # These match the fonts defined in modules/common/fonts.nix
+  texFonts = with pkgs; [
+    # Nerd Fonts for coding
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.space-mono
+    maple-mono.NF-CN-unhinted
+
+    # Source fonts with Chinese support
+    source-sans
+    source-serif
+    source-han-sans
+    source-han-serif
+
+    # Icon fonts
+    material-design-icons
+    font-awesome
+  ];
+
+  # Script to symlink fonts from Nix store to TEXMF
+  linkFontsScript = let
+    homeDir = config.home.homeDirectory;
+    texmfFonts = "${homeDir}/.texmf/fonts";
+  in ''
+    # Remove old font symlinks to prevent stale links
+    if [ -d "${texmfFonts}/truetype" ]; then
+      $DRY_RUN_CMD rm -rf ${texmfFonts}/truetype/*
+    fi
+    if [ -d "${texmfFonts}/opentype" ]; then
+      $DRY_RUN_CMD rm -rf ${texmfFonts}/opentype/*
+    fi
+
+    # Create font directories
+    $DRY_RUN_CMD mkdir -p ${texmfFonts}/truetype
+    $DRY_RUN_CMD mkdir -p ${texmfFonts}/opentype
+
+    # Symlink each font package to TEXMF
+    ${lib.concatMapStringsSep "\n" (font: ''
+        # Look for TrueType fonts (handle nested directories)
+        if [ -d "${font}/share/fonts/truetype" ]; then
+          find "${font}/share/fonts/truetype" -mindepth 1 -type d | while read -r fontdir; do
+            # Get relative path from truetype directory
+            relpath="''${fontdir#${font}/share/fonts/truetype/}"
+            targetdir="${texmfFonts}/truetype/''${relpath}"
+
+            # Create parent directory if needed
+            $DRY_RUN_CMD mkdir -p "$(dirname "$targetdir")"
+
+            # Symlink the directory
+            if [ ! -e "$targetdir" ]; then
+              $DRY_RUN_CMD ln -sf "$fontdir" "$targetdir" 2>/dev/null || true
+            fi
+          done
+        fi
+
+        # Look for OpenType fonts (handle nested directories)
+        if [ -d "${font}/share/fonts/opentype" ]; then
+          find "${font}/share/fonts/opentype" -mindepth 1 -type d | while read -r fontdir; do
+            # Get relative path from opentype directory
+            relpath="''${fontdir#${font}/share/fonts/opentype/}"
+            targetdir="${texmfFonts}/opentype/''${relpath}"
+
+            # Create parent directory if needed
+            $DRY_RUN_CMD mkdir -p "$(dirname "$targetdir")"
+
+            # Symlink the directory
+            if [ ! -e "$targetdir" ]; then
+              $DRY_RUN_CMD ln -sf "$fontdir" "$targetdir" 2>/dev/null || true
+            fi
+          done
+        fi
+      '')
+      texFonts}
+
+    echo "TeX fonts synced to ${texmfFonts}"
+  '';
+in {
   # TeX Live with comprehensive package set
   home.packages = with pkgs; [
     # Full TeX Live distribution with most packages
@@ -33,11 +111,14 @@
     PDFVIEWER = "zathura";
   };
 
-  # Create TeX directories
+  # Create TeX directories and symlink fonts
   home.activation.setupTex = lib.hm.dag.entryAfter ["writeBoundary"] ''
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.texmf/tex/latex
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.texmf/bibtex/bib
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.texmf/fonts
+
+    # Symlink Nix fonts to TEXMF for reproducible LaTeX builds
+    ${linkFontsScript}
   '';
 
   # Configure Zathura for PDF viewing

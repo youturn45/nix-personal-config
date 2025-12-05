@@ -22,7 +22,7 @@
 in {
   # Install agenix CLI tool
   environment.systemPackages = with pkgs; [
-    agenix.packages.${pkgs.system}.default
+    agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
 
     # Helper script to read the GitHub token
     (pkgs.writeShellScriptBin "github-token" ''
@@ -39,7 +39,6 @@ in {
 
   # Define secrets
   age.secrets = {
-
     # GitHub Personal Access Token
     # After decryption, the token will be available at the specified path
     # You can use it in scripts or environment variables

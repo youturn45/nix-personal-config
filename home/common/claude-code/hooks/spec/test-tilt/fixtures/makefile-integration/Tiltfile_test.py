@@ -2,7 +2,6 @@
 """Tests for Tiltfile with Makefile integration."""
 
 import unittest
-from unittest.mock import patch, MagicMock
 
 
 class TestTiltfileMakefileIntegration(unittest.TestCase):

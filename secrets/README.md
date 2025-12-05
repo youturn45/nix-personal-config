@@ -4,7 +4,7 @@ This directory contains encrypted secrets managed by [agenix](https://github.com
 
 ## Overview
 
-Secrets are encrypted using age encryption with SSH keys. Only authorized SSH keys (defined in `../secrets.nix`) can decrypt these secrets.
+Secrets are encrypted using age encryption with SSH keys. Only authorized SSH keys (defined in `secrets.nix` in this directory) can decrypt these secrets.
 
 ## Current Secrets
 
@@ -33,17 +33,17 @@ Copy your public key:
 cat ~/.ssh/id_ed25519.pub
 ```
 
-Then update the `youturn-rorschach` variable in `/secrets.nix` with your actual public key.
+Then update the `Youturn` variable in `secrets/secrets.nix` with your actual public key.
 
 If you have multiple machines, add their keys too:
 
 ```nix
-# In secrets.nix
+# In secrets/secrets.nix
 youturn-nightowl = "ssh-ed25519 AAAA... youturn@NightOwl";
 youturn-silkspectre = "ssh-ed25519 AAAA... youturn@SilkSpectre";
 
 allKeys = [
-  youturn-rorschach
+  Youturn
   youturn-nightowl
   youturn-silkspectre
 ];
@@ -63,12 +63,13 @@ echo "ghp_YourGitHubTokenHere" > /tmp/github-token.txt
 
 # Encrypt the token using agenix
 # The -i flag specifies your SSH private key
-agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+# The --rules flag specifies the location of secrets.nix
+RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
 
 # This will open your $EDITOR (vim/nano/etc)
 # Paste your token, save, and exit
 # Alternatively, you can pipe it directly:
-cat /tmp/github-token.txt | agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+cat /tmp/github-token.txt | RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
 
 # Securely delete the temporary file
 rm -P /tmp/github-token.txt  # macOS
@@ -154,7 +155,7 @@ echo "https://$(cat ~/.config/github/token)@github.com" >> ~/.git-credentials
 
 ### Adding a New Secret
 
-1. Add the secret definition to `secrets.nix`:
+1. Add the secret definition to `secrets/secrets.nix`:
 
 ```nix
 {
@@ -165,7 +166,7 @@ echo "https://$(cat ~/.config/github/token)@github.com" >> ~/.git-credentials
 2. Create and encrypt the secret:
 
 ```bash
-agenix -e secrets/my-new-secret.age -i ~/.ssh/id_ed25519
+RULES=secrets/secrets.nix agenix -e secrets/my-new-secret.age -i ~/.ssh/id_ed25519
 ```
 
 3. Add the secret to `modules/common/secrets.nix`:
@@ -190,7 +191,7 @@ just safe-build
 
 ```bash
 # Edit the GitHub token
-agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
 
 # Save and rebuild
 just safe-build
@@ -198,13 +199,13 @@ just safe-build
 
 ### Re-encrypting Secrets (After Adding New Keys)
 
-When you add a new authorized key to `secrets.nix`, you need to re-encrypt all secrets:
+When you add a new authorized key to `secrets/secrets.nix`, you need to re-encrypt all secrets:
 
 ```bash
 # Re-encrypt all secrets
 cd secrets
 for file in *.age; do
-  agenix -r -e "$file" -i ~/.ssh/id_ed25519
+  RULES=secrets/secrets.nix agenix -r -e "$file" -i ~/.ssh/id_ed25519
 done
 ```
 
@@ -226,7 +227,7 @@ darwin-rebuild build --flake .#Rorschach --show-trace 2>&1 | grep "age.secrets"
 4. **Limit token scopes** - Only grant necessary permissions to GitHub tokens
 5. **Use different tokens for different purposes** - Don't reuse tokens across services
 6. **Backup your SSH keys** - Store encrypted backups of your SSH private keys
-7. **Review authorized keys** - Regularly audit `secrets.nix` for unauthorized keys
+7. **Review authorized keys** - Regularly audit `secrets/secrets.nix` for unauthorized keys
 8. **Use read-only permissions** - Set mode to `0400` for sensitive secrets
 
 ## Troubleshooting
@@ -245,12 +246,12 @@ just safe-build
 ### "Cannot decrypt" error
 
 ```bash
-# Verify your public key is in secrets.nix
+# Verify your public key is in secrets/secrets.nix
 cat ~/.ssh/id_ed25519.pub
-grep "$(cat ~/.ssh/id_ed25519.pub)" secrets.nix
+grep "$(cat ~/.ssh/id_ed25519.pub)" secrets/secrets.nix
 
 # If not found, add it and re-encrypt
-agenix -r -e secrets/github-token.age -i ~/.ssh/id_ed25519
+RULES=secrets/secrets.nix agenix -r -e secrets/github-token.age -i ~/.ssh/id_ed25519
 ```
 
 ### Secret file not found after rebuild
@@ -270,7 +271,7 @@ just build-test 2>&1 | grep -i age
 
 ```bash
 # Specify the key explicitly with -i flag
-agenix -e secrets/github-token.age -i ~/.ssh/other_key_ed25519
+RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/other_key_ed25519
 ```
 
 ## Additional Resources

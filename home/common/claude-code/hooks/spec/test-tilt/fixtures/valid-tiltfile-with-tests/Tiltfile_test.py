@@ -2,7 +2,6 @@
 """Tests for Tiltfile"""
 
 import pytest
-import subprocess
 
 
 def test_tiltfile_loads():

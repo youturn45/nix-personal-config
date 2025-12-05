@@ -134,7 +134,6 @@ just repl             # Open nix repl
 nix-personal-config/
 ├── flake.nix           # Flake entry point
 ├── Justfile            # Build commands
-├── secrets.nix         # Authorized SSH keys for secrets
 ├── hosts/              # Host-specific configurations
 │   ├── darwin/         # macOS hosts (Rorschach, NightOwl, SilkSpectre)
 │   └── nixos/          # NixOS hosts
@@ -147,6 +146,7 @@ nix-personal-config/
 │   ├── darwin/         # macOS user configs
 │   └── nixos/          # NixOS user configs
 ├── secrets/            # Encrypted secrets (agenix)
+│   ├── secrets.nix     # Authorized SSH keys (agenix rules)
 │   ├── README.md       # Secrets management guide
 │   └── *.age           # Encrypted files (safe to commit)
 ├── vars/               # Centralized variables
@@ -185,12 +185,12 @@ This configuration uses [agenix](https://github.com/ryantm/agenix) for encrypted
 # 1. Generate SSH key (if you don't have one)
 ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
 
-# 2. Update secrets.nix with your public key
+# 2. Update secrets/secrets.nix with your public key
 cat ~/.ssh/id_ed25519.pub
-# Copy and update the key in secrets.nix
+# Copy and update the key in secrets/secrets.nix
 
 # 3. Create and encrypt your GitHub token
-agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
+RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
 
 # 4. Build and apply
 just safe-build

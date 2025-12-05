@@ -3,7 +3,6 @@
 """Tests for Tiltfile with edge cases - unicode, spaces, special chars."""
 
 import unittest
-import os
 import sys
 
 # Ensure UTF-8 encoding

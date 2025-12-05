@@ -49,7 +49,7 @@ in
 **Current Common Modules**:
 - `default.nix` - Shared system packages (compression, monitoring, networking)
 - `fonts.nix` - Font packages (Nerd Fonts, Source fonts, icons)
-- `secrets.nix` - Agenix secrets management (cross-platform)
+- `secrets.nix` - Agenix secrets configuration (cross-platform)
 
 #### `modules/darwin/` - macOS-Specific Modules
 **Purpose**: Configuration exclusive to macOS/nix-darwin
@@ -118,11 +118,11 @@ in
 │   │   └── gui/            # terminal emulators
 │   ├── darwin/
 │   └── nixos/
-├── secrets/                # Encrypted secrets (agenix)
-│   ├── README.md
-│   ├── .gitignore
-│   └── *.age               # Encrypted files
-└── secrets.nix             # Authorized SSH keys for secrets
+└── secrets/                # Encrypted secrets (agenix)
+    ├── secrets.nix         # Authorized SSH keys for secrets
+    ├── README.md
+    ├── .gitignore
+    └── *.age               # Encrypted files
 ```
 
 ### Key Patterns
@@ -154,9 +154,9 @@ in
 ## Secrets Management (Agenix)
 
 ### Architecture
-- **secrets.nix** (root) - Defines authorized SSH keys per secret
-- **modules/common/secrets.nix** - Cross-platform secret configuration
-- **secrets/** - Encrypted `.age` files (safe to commit)
+- **secrets/secrets.nix** - Defines authorized SSH keys per secret (rules file)
+- **modules/common/secrets.nix** - Cross-platform secret configuration (system module)
+- **secrets/*.age** - Encrypted files (safe to commit)
 
 ### Platform-Agnostic Design
 The secrets module automatically handles platform differences:
@@ -178,8 +178,8 @@ in
 - `ssh-key-rorschach.age` → `~/.ssh/rorschach_agenix` (mode: 0600)
 
 ### Adding New Secrets
-1. Define in `secrets.nix` with authorized keys
-2. Create encrypted file: `agenix -e secrets/name.age -i ~/.ssh/id_ed25519`
+1. Define in `secrets/secrets.nix` with authorized keys
+2. Create encrypted file: `RULES=secrets/secrets.nix agenix -e secrets/name.age -i ~/.ssh/id_ed25519`
 3. Add to `modules/common/secrets.nix` with path and permissions
 4. Build system to decrypt
 
@@ -257,9 +257,10 @@ just validate          # Run flake check (if available)
 4. Use platform conditionals if needed
 
 **Modifying Secrets**:
-- Only edit `modules/common/secrets.nix` for configuration
-- Never commit `.txt`, `.key`, `.token` files
-- Use `${homeDir}` and `${userGroup}` variables
+- Edit `secrets/secrets.nix` to change authorized keys
+- Edit `modules/common/secrets.nix` for system configuration
+- Never commit unencrypted secrets (`.txt`, `.key`, `.token`)
+- Use `${homeDir}` and `${userGroup}` variables for cross-platform paths
 
 ## Important Notes
 
@@ -276,7 +277,7 @@ just validate          # Run flake check (if available)
 
 - `default.nix` - Module entry point (auto-imported by parent)
 - `_filename.nix` - Ignored by automatic module discovery
-- `secrets.nix` (root) - Authorized keys for agenix
+- `secrets/secrets.nix` - Authorized keys for agenix (rules file)
 - `*.age` - Encrypted secrets (safe to commit)
 
 ## Reference Documentation

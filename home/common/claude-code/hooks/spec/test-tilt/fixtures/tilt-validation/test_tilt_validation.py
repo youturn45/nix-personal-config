@@ -76,7 +76,6 @@ class TestTiltValidation:
 
 def test_tiltfile_syntax_independent():
     """Test Tiltfile Python syntax independently of tilt command."""
-    import ast
     
     with open('Tiltfile', 'r') as f:
         content = f.read()

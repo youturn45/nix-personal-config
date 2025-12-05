@@ -23,10 +23,13 @@
     options = lib.mkDefault "--delete-older-than 7d";
   };
 
-  #nix.settings.trusted-substituters = [
-  #  "https://mirrors.ustc.edu.cn/nix-channels/store"
-  #  "https://cache.nixos.org"
-  #];
+  # Configure binary cache substituters
+  # Query Tsinghua mirror first, then fall back to official cache
+  # Tsinghua mirror is signed with the same key as cache.nixos.org
+  nix.settings.substituters = [
+    "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
+    "https://cache.nixos.org"
+  ];
 
   # zsh is the default shell on Mac and we want to make sure that we're
   # configuring the rc correctly with nix-darwin paths.

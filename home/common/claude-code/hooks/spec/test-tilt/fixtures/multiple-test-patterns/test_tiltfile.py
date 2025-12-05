@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test file following test_*.py pattern."""
 
-import pytest
 
 
 def test_pattern2_basic():

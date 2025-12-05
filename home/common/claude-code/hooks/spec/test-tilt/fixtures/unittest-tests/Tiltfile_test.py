@@ -2,9 +2,7 @@
 """Unittest-style tests for Tiltfile."""
 
 import unittest
-from unittest.mock import patch, MagicMock, call
-import os
-import sys
+from unittest.mock import patch
 
 
 class TestTiltfileConfiguration(unittest.TestCase):
