@@ -9,6 +9,4 @@
       ./common # Import NixOS-specific common modules
     ]
     ++ (myLib.collectModulesRecursively ./.); # Import any additional NixOS modules
-
-  time.timeZone = vars.timeZone;
 }

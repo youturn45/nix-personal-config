@@ -122,9 +122,7 @@
       # Voice & Audio Tools
       # ============================================
       "superwhisper" # voice-to-text tool
-      "Moonlight" # remote desktop
-      "Spotify" # music app
-      "tailscale-app" # VPN
+
       # ============================================
       # Gaming
       # ============================================

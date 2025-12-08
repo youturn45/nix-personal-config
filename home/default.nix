@@ -20,6 +20,10 @@ in {
       else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;
 
+    # Disable nixpkgs version check when using unstable branches
+    # Home Manager and nixpkgs-unstable versions may drift slightly
+    enableNixpkgsReleaseCheck = false;
+
     # Essential packages for NixOS systems (Darwin gets packages from modules)
     # Note: All common CLI tools are now provided via home/common/core.nix
     # Git via home/common/dev-tools/git, SSH via home/common/dev-tools/ssh

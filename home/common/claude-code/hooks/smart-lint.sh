@@ -205,9 +205,9 @@ lint_python() {
     
     log_debug "Running Python linters..."
     
-    # Find Python files
+    # Find Python files (exclude test fixtures and common test directories)
     local py_files
-    py_files=$(find . -name "*.py" -type f | grep -v -E "(venv/|\.venv/|__pycache__|\.git/)" | head -100)
+    py_files=$(find . -name "*.py" -type f | grep -v -E "(venv/|\.venv/|__pycache__|\.git/|/spec/|/fixtures/|/test-)" | head -100)
     
     if [[ -z "$py_files" ]]; then
         log_debug "No Python files found"

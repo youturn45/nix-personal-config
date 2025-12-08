@@ -14,9 +14,6 @@
 
   inputs = {
     # official nix pkgs sources
-    nixpkgs = {
-      url = "github:NixOS/nixpkgs/nixos-unstable";
-    };
     nixpkgs-unstable = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
     };
@@ -25,14 +22,13 @@
     };
     nix-darwin = {
       url = "github:lnl7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # home-manager, used for managing user configuration
     home-manager = {
       url = "github:nix-community/home-manager/master";
-      # url = "github:nix-community/home-manager/release-24.11";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # nix-homebrew, used for managing homebrew packages
@@ -43,7 +39,7 @@
     # haumea, used for managing flake imports
     haumea = {
       url = "github:nix-community/haumea/v0.2.2";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # ghostty, used for managing ghostty packages
@@ -54,13 +50,13 @@
     # agenix, used for managing secrets
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # nixvim, used for managing neovim configuration
     nixvim = {
       url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # nur-ryan4yin, custom packages used from ryan4yin
@@ -69,8 +65,8 @@
 
   outputs = inputs @ {
     self,
-    nixpkgs,
     nixpkgs-unstable,
+    nixpkgs-stable,
     nur-ryan4yin,
     nix-darwin,
     nix-homebrew,
@@ -81,7 +77,7 @@
     nixvim,
     ...
   }: let
-    inherit (nixpkgs) lib;
+    inherit (nixpkgs-unstable) lib;
     myLib = import ./my-lib {
       inherit lib;
       haumeaLib = haumea.lib;
@@ -101,7 +97,7 @@
       inherit myvars myLib nur-ryan4yin ghostty agenix home-manager nixvim;
       vars = myvars; # Alias for modules expecting 'vars'
 
-      pkgs = mkPkgs inputs.nixpkgs system;
+      pkgs = mkPkgs inputs.nixpkgs-unstable system;
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
       pkgs-stable = mkPkgs inputs.nixpkgs-stable system;
     };
