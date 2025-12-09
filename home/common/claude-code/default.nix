@@ -5,6 +5,31 @@
   pkgs,
   ...
 }: {
+  # Wrapper script for claude command with proxy check
+  home.packages = [
+    (pkgs.writeShellScriptBin "claude" ''
+      # Check if any proxy environment variable is set
+      if [ -z "$http_proxy" ] && [ -z "$https_proxy" ] && \
+         [ -z "$HTTP_PROXY" ] && [ -z "$HTTPS_PROXY" ] && \
+         [ -z "$ALL_PROXY" ] && [ -z "$all_proxy" ]; then
+
+        echo "⚠️  No proxy configuration detected."
+        echo "Proxy environment variables (http_proxy, https_proxy, etc.) are not set."
+        echo ""
+        read -p "Do you want to continue starting Claude Code? (y/n): " -n 1 -r
+        echo ""
+
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+          echo "Cancelled."
+          exit 1
+        fi
+      fi
+
+      # Run the actual claude command from npm installation
+      exec "$HOME/.npm-global/bin/claude" "$@"
+    '')
+  ];
+
   # Create and manage ~/.claude directory
   home.file.".claude/settings.json".source = ./settings.json;
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
