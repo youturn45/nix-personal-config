@@ -20,7 +20,7 @@
   # Create Ghostty config file for both platforms
   home.file."${config.home.homeDirectory}/.config/ghostty/config".text = ''
     # Ghostty Configuration
-    theme = catppuccin-mocha
+    theme = Catppuccin Mocha
 
     font-family = Fira Code
     font-size = 14
