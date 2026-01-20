@@ -28,6 +28,7 @@
       (python312.withPackages (ps:
         with ps; [
           # Essential development tools
+          pip
           black
           ruff
 
