@@ -40,6 +40,7 @@
 
     # nix related
     #
+    age # modern encryption tool, used by agenix for secrets
     # it provides the command `nom` works just like `nix
     # with more details log output
     nix-output-monitor
