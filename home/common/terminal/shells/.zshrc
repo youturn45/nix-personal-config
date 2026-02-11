@@ -35,60 +35,79 @@ PROXY_LOCAL_HTTP="http://127.0.0.1:7890"
 PROXY_LOCAL_SOCKS="socks5://127.0.0.1:7891"
 PROXY_NETWORK_HTTP="http://10.0.0.5:7890"
 PROXY_NETWORK_SOCKS="socks5://10.0.0.5:7891"
+PROXY_NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.local"
 
-function proxy_on() {
-    local mode="${1:-local}"  # Default to local if no argument provided
-    
-    if [[ "$mode" == "local" ]]; then
-        # Local proxy settings (127.0.0.1)
-        export http_proxy="$PROXY_LOCAL_HTTP"
-        export https_proxy="$PROXY_LOCAL_HTTP"
-        export HTTP_PROXY="$PROXY_LOCAL_HTTP"
-        export HTTPS_PROXY="$PROXY_LOCAL_HTTP"
-        export all_proxy="$PROXY_LOCAL_SOCKS"
-        export ALL_PROXY="$PROXY_LOCAL_SOCKS"
-        printf "本地代理已开启 (127.0.0.1)。\n"
-    elif [[ "$mode" == "network" ]]; then
-        # Network proxy settings (10.0.0.5)
-        export http_proxy="$PROXY_NETWORK_HTTP"
-        export https_proxy="$PROXY_NETWORK_HTTP"
-        export HTTP_PROXY="$PROXY_NETWORK_HTTP"
-        export HTTPS_PROXY="$PROXY_NETWORK_HTTP"
-        export all_proxy="$PROXY_NETWORK_SOCKS"
-        export ALL_PROXY="$PROXY_NETWORK_SOCKS"
-        printf "网络代理已开启 (10.0.0.5)。\n"
-    else
-        printf "错误: 无效的代理模式。使用 'local' 或 'network'。\n"
-        printf "用法: proxy_on [local|network]\n"
-        return 1
-    fi
-    
-    printf "当前代理设置：\n"
-    printf "  HTTP  代理: $http_proxy\n"
-    printf "  HTTPS 代理: $https_proxy\n"
-    printf "  SOCKS 代理: $all_proxy\n"
-}
+function proxy() {
+    local cmd="${1:-help}"
 
-function proxy_off() {
-    unset http_proxy
-    unset https_proxy
-    unset HTTP_PROXY
-    unset HTTPS_PROXY
-    unset all_proxy
-    unset ALL_PROXY
-    
-    printf "终端代理已关闭。\n"
-}
-
-function proxy_status() {
-    if [ -n "$http_proxy" ]; then
-        printf "代理状态: 已开启\n"
-        printf "  HTTP  代理: $http_proxy\n"
-        printf "  HTTPS 代理: $https_proxy\n"
-        printf "  SOCKS 代理: $all_proxy\n"
-    else
-        printf "代理状态: 已关闭\n"
-    fi
+    case "$cmd" in
+        on)
+            local mode="${2:-local}"
+            local proxy_http proxy_socks label
+            if [[ "$mode" == "local" ]]; then
+                proxy_http="$PROXY_LOCAL_HTTP"
+                proxy_socks="$PROXY_LOCAL_SOCKS"
+                label="local (127.0.0.1)"
+            elif [[ "$mode" == "network" ]]; then
+                proxy_http="$PROXY_NETWORK_HTTP"
+                proxy_socks="$PROXY_NETWORK_SOCKS"
+                label="network (10.0.0.5)"
+            else
+                printf "Error: invalid mode '%s'. Use 'local' or 'network'.\n" "$mode"
+                return 1
+            fi
+            export http_proxy="$proxy_http"
+            export https_proxy="$proxy_http"
+            export HTTP_PROXY="$proxy_http"
+            export HTTPS_PROXY="$proxy_http"
+            export all_proxy="$proxy_socks"
+            export ALL_PROXY="$proxy_socks"
+            export no_proxy="$PROXY_NO_PROXY"
+            export NO_PROXY="$PROXY_NO_PROXY"
+            printf "Proxy enabled — %s\n" "$label"
+            printf "  HTTP:  %s\n" "$proxy_http"
+            printf "  SOCKS: %s\n" "$proxy_socks"
+            ;;
+        off)
+            unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+            unset all_proxy ALL_PROXY
+            unset no_proxy NO_PROXY
+            printf "Proxy disabled.\n"
+            ;;
+        show)
+            if [[ -n "$http_proxy" ]]; then
+                printf "Proxy: enabled\n"
+                printf "  HTTP:  %s\n" "$http_proxy"
+                printf "  HTTPS: %s\n" "$https_proxy"
+                printf "  SOCKS: %s\n" "$all_proxy"
+                printf "  Skip:  %s\n" "$no_proxy"
+            else
+                printf "Proxy: disabled\n"
+            fi
+            ;;
+        test)
+            if [[ -z "$http_proxy" ]]; then
+                printf "Proxy is not enabled. Run 'proxy on' first.\n"
+                return 1
+            fi
+            printf "Testing connection through %s ...\n" "$http_proxy"
+            if curl -sf --max-time 5 --proxy "$http_proxy" https://www.google.com > /dev/null 2>&1; then
+                printf "Connection successful.\n"
+            else
+                printf "Connection failed.\n"
+                return 1
+            fi
+            ;;
+        help|*)
+            printf "Usage: proxy <command> [options]\n\n"
+            printf "Commands:\n"
+            printf "  on [local|network]  Enable proxy (default: local)\n"
+            printf "  off                 Disable proxy\n"
+            printf "  show                Show current proxy status\n"
+            printf "  test                Test proxy connectivity\n"
+            printf "  help                Show this help message\n"
+            ;;
+    esac
 }
 
 # Directory navigation

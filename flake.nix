@@ -122,7 +122,6 @@
         modules = [
           ./hosts/darwin/${hostname}.nix
           ./modules/darwin # Darwin modules (imports common)
-          # ./modules/homebrew-mirror.nix # homebrew mirror, comment it if you do not need it
           agenix.darwinModules.default
           home-manager.darwinModules.home-manager
           {
