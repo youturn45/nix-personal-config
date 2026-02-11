@@ -44,9 +44,8 @@
         truncate_to_repo = true;
       };
 
-      # Git with emojis
       git_branch = {
-        symbol = "🌱 ";
+        symbol = " ";
         format = "[$symbol$branch]($style) ";
         style = "bold purple";
       };
@@ -54,17 +53,17 @@
       git_status = {
         format = "([\\[$all_status$ahead_behind\\]]($style) )";
         style = "bold red";
-        conflicted = "🏳";
+        conflicted = "=";
         up_to_date = "✓";
-        untracked = "🤷";
+        untracked = "?";
         ahead = "⇡\${count}";
         diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
         behind = "⇣\${count}";
-        stashed = "📦";
-        modified = "📝";
-        staged = "[++\\(\${count}\\)](green)";
-        renamed = "👅";
-        deleted = "🗑";
+        stashed = "*";
+        modified = "!";
+        staged = "[+\\(\${count}\\)](green)";
+        renamed = "»";
+        deleted = "✘";
       };
 
       # Language/tool symbols with emojis
