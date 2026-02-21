@@ -1,3 +1,0 @@
-# Exclude test fixtures from linting
-spec/
-fixtures/

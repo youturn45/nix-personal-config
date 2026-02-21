@@ -1,12 +1,13 @@
 {
+  agenix,
   myLib,
   vars,
   ...
 }: {
   imports =
     [
+      agenix.nixosModules.default
       ../common # Import common modules shared with Darwin
-      ./common # Import NixOS-specific common modules
     ]
     ++ (myLib.collectModulesRecursively ./.); # Import any additional NixOS modules
 }

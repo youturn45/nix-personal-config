@@ -122,7 +122,6 @@
         modules = [
           ./hosts/darwin/${hostname}.nix
           ./modules/darwin # Darwin modules (imports common)
-          agenix.darwinModules.default
           home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
