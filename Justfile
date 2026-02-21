@@ -25,21 +25,38 @@ proxy_network := "10.0.0.5:7890"
 #
 ############################################################################
 
+# Resolve host aliases to canonical host names (internal helper)
+[private]
+_resolve-host host:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  case "{{host}}" in
+    Rorschach|rorschach|rorshach|ror)
+      echo "Rorschach"
+      ;;
+    NightOwl|nightowl|night-owl|owl)
+      echo "NightOwl"
+      ;;
+    SilkSpectre|silkspectre|silk-spectre|silk)
+      echo "SilkSpectre"
+      ;;
+    nixos|NixOS)
+      echo "nixos"
+      ;;
+    *)
+      echo "❌ Invalid host: {{host}}" >&2
+      echo "Valid hosts: {{all_hosts}}" >&2
+      echo "Aliases: ror, owl, silk, rorshach" >&2
+      exit 1
+      ;;
+  esac
+
 # Validate host parameter (internal helper)
 [private]
 _validate-host host:
   #!/usr/bin/env bash
   set -euo pipefail
-  case "{{host}}" in
-    Rorschach|NightOwl|SilkSpectre|nixos)
-      exit 0
-      ;;
-    *)
-      echo "❌ Invalid host: {{host}}"
-      echo "Valid hosts: {{all_hosts}}"
-      exit 1
-      ;;
-  esac
+  just _resolve-host "{{host}}" >/dev/null
 
 # Get rebuild command for host (internal helper)
 [private]
@@ -56,13 +73,14 @@ _rebuild-cmd host:
 _validate-darwin-host host:
   #!/usr/bin/env bash
   set -euo pipefail
-  case "{{host}}" in
+  resolved_host="$(just _resolve-host "{{host}}")"
+  case "$resolved_host" in
     Rorschach|NightOwl|SilkSpectre)
       exit 0
       ;;
     *)
-      echo "❌ Invalid Darwin host: {{host}}"
-      echo "Valid Darwin hosts: {{darwin_hosts}}"
+      echo "❌ Invalid Darwin host: {{host}} (resolved: $resolved_host)"
+      echo "Valid Darwin hosts: {{darwin_hosts}}" >&2
       exit 1
       ;;
   esac
@@ -132,27 +150,6 @@ smart-proxy mode="auto":
       ;;
   esac
 
-# Show current proxy status
-[group('proxy')]
-proxy-status:
-  @echo "🔍 Current proxy status:"
-  @if [ -n "${http_proxy:-}" ]; then \
-    echo "📡 Terminal proxy: ACTIVE"; \
-    echo "  HTTP: $http_proxy"; \
-    echo "  HTTPS: ${https_proxy:-}"; \
-    echo "  SOCKS: ${all_proxy:-}"; \
-  else \
-    echo "📡 Terminal proxy: INACTIVE"; \
-  fi
-
-# Test proxy connectivity
-[group('proxy')]
-test-proxy mode="auto":
-  @echo "🔍 Testing proxy connectivity..."
-  @just smart-proxy {{mode}}
-  @curl -s --connect-timeout 5 --proxy "${http_proxy:-}" https://httpbin.org/ip > /dev/null && \
-    echo "✅ HTTP proxy: WORKING" || echo "❌ HTTP proxy: FAILED"
-
 ############################################################################
 #
 #  Build Commands
@@ -166,14 +163,15 @@ build host=hostname proxy_mode="auto" debug="false": (_validate-host host) (smar
   #!/usr/bin/env bash
   set -euo pipefail
 
-  REBUILD_CMD=$(just _rebuild-cmd {{host}})
+  resolved_host="$(just _resolve-host "{{host}}")"
+  REBUILD_CMD=$(just _rebuild-cmd "$resolved_host")
 
   if [ "{{debug}}" = "true" ]; then
-    echo "🔧 Debug building {{host}} (proxy: {{proxy_mode}})"
-    sudo -E $REBUILD_CMD switch --flake .#{{host}} --show-trace --verbose
+    echo "🔧 Debug building $resolved_host (proxy: {{proxy_mode}})"
+    sudo -E $REBUILD_CMD switch --flake .#$resolved_host --show-trace --verbose
   else
-    echo "🏗️  Building {{host}} (proxy: {{proxy_mode}})"
-    sudo -E $REBUILD_CMD switch --flake .#{{host}}
+    echo "🏗️  Building $resolved_host (proxy: {{proxy_mode}})"
+    sudo -E $REBUILD_CMD switch --flake .#$resolved_host
   fi
 
 # Quick build aliases for Darwin hosts
@@ -185,6 +183,24 @@ owl proxy_mode="auto": (build "NightOwl" proxy_mode)
 
 [group('build')]
 silk proxy_mode="auto": (build "SilkSpectre" proxy_mode)
+
+# Build NixOS installer ISO image
+[group('build')]
+iso host="nixos" proxy_mode="auto": (_validate-host host) (smart-proxy proxy_mode)
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  resolved_host="$(just _resolve-host "{{host}}")"
+  if [ "$resolved_host" != "nixos" ]; then
+    echo "❌ ISO build is only supported for nixos host."
+    echo "Use: just iso nixos"
+    exit 1
+  fi
+
+  out_link="result-iso-$resolved_host"
+  echo "💿 Building NixOS ISO for $resolved_host (proxy: {{proxy_mode}})..."
+  nix build ".#nixosConfigurations.$resolved_host.config.system.build.isoImage" --out-link "$out_link"
+  echo "✅ ISO build complete: $out_link"
 
 ############################################################################
 #

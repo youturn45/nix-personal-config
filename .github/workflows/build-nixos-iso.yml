@@ -1,0 +1,58 @@
+name: Build NixOS ISO
+
+on:
+  push:
+    paths:
+      - "flake.nix"
+      - "flake.lock"
+      - "hosts/nixos/**"
+      - "modules/nixos/**"
+      - "my-lib/**"
+      - "vars/**"
+      - ".github/workflows/build-nixos-iso.yml"
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build NixOS ISO
+        run: nix build .#nixosConfigurations.nixos.config.system.build.isoImage --out-link result-iso-nixos
+
+      - name: Find ISO path
+        run: |
+          set -euo pipefail
+          ISO_PATH="$(find -L result-iso-nixos -type f -name '*.iso' | head -n 1)"
+          if [ -z "${ISO_PATH}" ]; then
+            echo "ISO not found under result-iso-nixos"
+            exit 1
+          fi
+          echo "ISO_PATH=${ISO_PATH}" >> "$GITHUB_ENV"
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nixos-iso-${{ github.sha }}
+          path: ${{ env.ISO_PATH }}
+          retention-days: 7
+
+      - name: Publish ISO to GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: iso-${{ github.sha }}
+          name: NixOS ISO ${{ github.sha }}
+          files: ${{ env.ISO_PATH }}
+          generate_release_notes: true
