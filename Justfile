@@ -43,13 +43,13 @@ _resolve-host host:
     SilkSpectre|silkspectre|silk-spectre|silk)
       echo "SilkSpectre"
       ;;
-    ozymandias|Ozymandias|oz)
+    ozymandias|Ozymandias|oz|ozy)
       echo "ozymandias"
       ;;
     *)
       echo "❌ Invalid host: {{host}}" >&2
       echo "Valid hosts: {{all_hosts}}" >&2
-      echo "Aliases: ror, owl, silk, oz, rorshach" >&2
+      echo "Aliases: ror, owl, silk, oz, ozy, rorshach" >&2
       exit 1
       ;;
   esac
@@ -189,6 +189,10 @@ owl proxy_mode="auto": (build "NightOwl" proxy_mode)
 
 [group('build')]
 silk proxy_mode="auto": (build "SilkSpectre" proxy_mode)
+
+# Quick build alias for NixOS host
+[group('build')]
+ozy proxy_mode="auto": (build "ozymandias" proxy_mode)
 
 # Build NixOS installer ISO image
 [group('build')]

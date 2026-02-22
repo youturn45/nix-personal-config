@@ -17,6 +17,11 @@
           hardwareModule
         ])
         ++ [
+          # Allow unfree packages (e.g. vscode) for NixOS + Home Manager eval/build.
+          {
+            nixpkgs.config.allowUnfree = true;
+          }
+
           # Host-specific module
           hostModule
 
@@ -32,7 +37,7 @@
             home-manager.users.${myvars.username} = import ../../home/nixos;
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
-              specialArgs.nixvim.homeManagerModules.nixvim
+              specialArgs.nixvim.homeModules.nixvim
             ];
           }
         ];

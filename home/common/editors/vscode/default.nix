@@ -7,9 +7,11 @@
     # Swap to pkgs.vscodium if you prefer VSCodium.
     package = pkgs.vscode;
 
-    extensions =
+    profiles.default.extensions =
       (with pkgs.vscode-extensions; [
         bbenoist.nix
+        catppuccin.catppuccin-vsc
+        catppuccin.catppuccin-vsc-icons
         esbenp.prettier-vscode
         ms-python.python
       ])
