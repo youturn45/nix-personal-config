@@ -12,8 +12,11 @@ hostname := "Rorschach"
 # Available Darwin hosts
 darwin_hosts := "Rorschach NightOwl SilkSpectre"
 
+# Available NixOS hosts
+nixos_hosts := "ozymandias"
+
 # All hosts including NixOS
-all_hosts := darwin_hosts + " nixos"
+all_hosts := darwin_hosts + " " + nixos_hosts
 
 # Proxy configuration
 proxy_local := "127.0.0.1:7890"
@@ -40,13 +43,13 @@ _resolve-host host:
     SilkSpectre|silkspectre|silk-spectre|silk)
       echo "SilkSpectre"
       ;;
-    nixos|NixOS)
-      echo "nixos"
+    ozymandias|Ozymandias|oz)
+      echo "ozymandias"
       ;;
     *)
       echo "❌ Invalid host: {{host}}" >&2
       echo "Valid hosts: {{all_hosts}}" >&2
-      echo "Aliases: ror, owl, silk, rorshach" >&2
+      echo "Aliases: ror, owl, silk, oz, rorshach" >&2
       exit 1
       ;;
   esac
@@ -62,11 +65,14 @@ _validate-host host:
 [private]
 _rebuild-cmd host:
   #!/usr/bin/env bash
-  if [ "{{host}}" = "nixos" ]; then
-    echo "nixos-rebuild"
-  else
-    echo "darwin-rebuild"
-  fi
+  case "{{host}}" in
+    Rorschach|NightOwl|SilkSpectre)
+      echo "darwin-rebuild"
+      ;;
+    *)
+      echo "nixos-rebuild"
+      ;;
+  esac
 
 # Validate Darwin-only host (internal helper)
 [private]
@@ -186,20 +192,13 @@ silk proxy_mode="auto": (build "SilkSpectre" proxy_mode)
 
 # Build NixOS installer ISO image
 [group('build')]
-iso host="nixos" proxy_mode="auto": (_validate-host host) (smart-proxy proxy_mode)
+iso proxy_mode="auto": (smart-proxy proxy_mode)
   #!/usr/bin/env bash
   set -euo pipefail
 
-  resolved_host="$(just _resolve-host "{{host}}")"
-  if [ "$resolved_host" != "nixos" ]; then
-    echo "❌ ISO build is only supported for nixos host."
-    echo "Use: just iso nixos"
-    exit 1
-  fi
-
-  out_link="result-iso-$resolved_host"
-  echo "💿 Building NixOS ISO for $resolved_host (proxy: {{proxy_mode}})..."
-  nix build ".#nixosConfigurations.$resolved_host.config.system.build.isoImage" --out-link "$out_link"
+  out_link="result-iso-ozymandias"
+  echo "💿 Building NixOS ISO (proxy: {{proxy_mode}})..."
+  nix build ".#packages.x86_64-linux.ozymandias-iso" --out-link "$out_link"
   echo "✅ ISO build complete: $out_link"
 
 ############################################################################
@@ -221,9 +220,10 @@ build-test host=hostname proxy_mode="auto": (_validate-host host) (smart-proxy p
   #!/usr/bin/env bash
   set -euo pipefail
 
-  REBUILD_CMD=$(just _rebuild-cmd {{host}})
-  echo "🏗️  Testing build for {{host}} (proxy: {{proxy_mode}})..."
-  $REBUILD_CMD build --flake .#{{host}}
+  resolved_host="$(just _resolve-host "{{host}}")"
+  REBUILD_CMD=$(just _rebuild-cmd "$resolved_host")
+  echo "🏗️  Testing build for $resolved_host (proxy: {{proxy_mode}})..."
+  $REBUILD_CMD build --flake .#$resolved_host
 
 # Show current generation before building
 [group('test')]
@@ -236,8 +236,9 @@ current-gen:
 safe-build host=hostname proxy_mode="auto": (_validate-darwin-host host) current-gen (build-test host proxy_mode)
   #!/usr/bin/env bash
   set -euo pipefail
+  resolved_host="$(just _resolve-host "{{host}}")"
   echo "✅ Build test passed! Proceeding with switch..."
-  sudo darwin-rebuild switch --flake .#{{host}}
+  sudo darwin-rebuild switch --flake .#$resolved_host
 
 # Test all Darwin hosts
 [group('test')]

@@ -4,45 +4,42 @@
 }: let
   # Get inputs from specialArgs
   inherit (specialArgs) home-manager myvars;
-in
-  lib.nixosSystem {
-    inherit specialArgs;
-    system = "x86_64-linux";
-    modules = [
-      # Hardware configuration
-      ./hardware-configuration.nix
+  mkNixosHost = {
+    hostModule,
+    hardwareModule ? null,
+  }:
+    lib.nixosSystem {
+      inherit specialArgs;
+      system = "x86_64-linux";
+      modules =
+        (lib.optionals (hardwareModule != null) [
+          # Host-specific hardware configuration
+          hardwareModule
+        ])
+        ++ [
+          # Host-specific module
+          hostModule
 
-      # System modules
-      ../../modules/nixos # NixOS modules (imports common)
+          # System modules
+          ../../modules/nixos # NixOS modules (imports common)
 
-      # Hostname
-      {
-        networking.hostName = "ozymandias";
-
-        # Host-specific static network configuration
-        networking.useDHCP = false;
-        networking.interfaces.enp0s3 = {
-          useDHCP = false;
-          ipv4.addresses = [
-            {
-              address = "10.0.0.4";
-              prefixLength = 24;
-            }
-          ];
-        };
-      }
-
-      # Add Home Manager
-      home-manager.nixosModules.home-manager
-      {
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
-        home-manager.extraSpecialArgs = specialArgs;
-        home-manager.users.${myvars.username} = import ../../home/nixos;
-        home-manager.backupFileExtension = "backup";
-        home-manager.sharedModules = [
-          specialArgs.nixvim.homeManagerModules.nixvim
+          # Add Home Manager
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = specialArgs;
+            home-manager.users.${myvars.username} = import ../../home/nixos;
+            home-manager.backupFileExtension = "backup";
+            home-manager.sharedModules = [
+              specialArgs.nixvim.homeManagerModules.nixvim
+            ];
+          }
         ];
-      }
-    ];
-  }
+    };
+in {
+  ozymandias = mkNixosHost {
+    hostModule = ./ozymandias/default.nix;
+    hardwareModule = ./ozymandias/hardware-configuration.nix;
+  };
+}

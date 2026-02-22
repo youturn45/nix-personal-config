@@ -115,6 +115,17 @@
       pkgs-stable = mkPkgs inputs.nixpkgs-stable "x86_64-linux";
     };
 
+    nixosHosts = import ./hosts/nixos {
+      inherit lib;
+      specialArgs = nixosSpecialArgs;
+    };
+
+    nixosIso = nixosHosts.ozymandias.extendModules {
+      modules = [
+        "${nixpkgs-unstable}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+      ];
+    };
+
     mkDarwinHost = hostname:
       nix-darwin.lib.darwinSystem {
         specialArgs = darwinSpecialArgs;
@@ -141,11 +152,11 @@
       NightOwl = mkDarwinHost "NightOwl";
       SilkSpectre = mkDarwinHost "SilkSpectre";
     };
-    nixosConfigurations = {
-      nixos = import ./hosts/nixos {
-        inherit lib;
-        specialArgs = nixosSpecialArgs;
+    nixosConfigurations =
+      nixosHosts
+      // {
+        ozymandias-iso = nixosIso;
       };
-    };
+    packages.x86_64-linux.ozymandias-iso = nixosIso.config.system.build.isoImage;
   };
 }
