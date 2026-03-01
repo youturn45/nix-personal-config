@@ -4,7 +4,7 @@
   ...
 }: {
   # NixOS-specific home manager configuration
-  # This module is imported at build-level in hosts/nixos/default.nix
+  # This module is imported at build-level in flake.nix
   # It imports the common home configuration and adds NixOS-specific settings
 
   imports = [

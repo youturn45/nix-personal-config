@@ -115,18 +115,54 @@
       pkgs-stable = mkPkgs inputs.nixpkgs-stable "x86_64-linux";
     };
 
-    nixosHosts = import ./hosts/nixos {
-      inherit lib;
-      specialArgs = nixosSpecialArgs;
+    mkNixosHost = {
+      hostModule,
+      hardwareModule ? null,
+    }:
+      lib.nixosSystem {
+        specialArgs = nixosSpecialArgs;
+        system = "x86_64-linux";
+        modules =
+          (lib.optionals (hardwareModule != null) [
+            hardwareModule
+          ])
+          ++ [
+            # Allow unfree packages (e.g. vscode) for NixOS + Home Manager eval/build.
+            {
+              nixpkgs.config.allowUnfree = true;
+            }
+
+            hostModule
+            ./modules/nixos
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = nixosSpecialArgs;
+              home-manager.users.${myvars.username} = import ./home/nixos;
+              home-manager.backupFileExtension = "backup";
+              home-manager.sharedModules = [
+                nixvim.homeModules.nixvim
+              ];
+            }
+          ];
+      };
+
+    nixosOzymandias = mkNixosHost {
+      hostModule = ./hosts/nixos/ozymandias/configuration.nix;
+      hardwareModule = ./hosts/nixos/ozymandias/hardware-configuration.nix;
     };
 
-    nixosIso = nixosHosts.ozymandias.extendModules {
+    nixosIso = nixosOzymandias.extendModules {
       modules = [
         "${nixpkgs-unstable}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
       ];
     };
 
-    mkDarwinHost = hostname:
+    mkDarwinHost = {
+      hostname,
+      hmModule ? ./home/darwin,
+    }:
       nix-darwin.lib.darwinSystem {
         specialArgs = darwinSpecialArgs;
         system = "${myvars.system}";
@@ -138,7 +174,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = darwinSpecialArgs;
-            home-manager.users.${myvars.username} = import ./home/darwin;
+            home-manager.users.${myvars.username} = import hmModule;
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
               nixvim.homeModules.nixvim
@@ -148,15 +184,14 @@
       };
   in {
     darwinConfigurations = {
-      Rorschach = mkDarwinHost "Rorschach";
-      NightOwl = mkDarwinHost "NightOwl";
-      SilkSpectre = mkDarwinHost "SilkSpectre";
+      Rorschach = mkDarwinHost { hostname = "Rorschach"; };
+      NightOwl = mkDarwinHost { hostname = "NightOwl"; };
+      SilkSpectre = mkDarwinHost { hostname = "SilkSpectre"; };
     };
-    nixosConfigurations =
-      nixosHosts
-      // {
-        ozymandias-iso = nixosIso;
-      };
+    nixosConfigurations = {
+      ozymandias = nixosOzymandias;
+      ozymandias-iso = nixosIso;
+    };
     packages.x86_64-linux.ozymandias-iso = nixosIso.config.system.build.isoImage;
   };
 }

@@ -31,6 +31,7 @@
 
     # Shell integration
     shell-integration = zsh
+    term = xterm-256color
 
     # Window settings
     window-decoration = true

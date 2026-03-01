@@ -95,16 +95,16 @@ in
 ```
 ├── vars/default.nix        # Global variables (username, system, timezone)
 ├── my-lib/                 # Custom helper functions
-│   ├── default.nix
-│   └── helpers.nix         # collectModulesRecursively function
+│   └── default.nix         # collectModulesRecursively function
 ├── hosts/                  # Host-specific configurations
 │   ├── darwin/
 │   │   ├── Rorschach.nix   # MacBook Air M4
 │   │   ├── NightOwl.nix
 │   │   └── SilkSpectre.nix
 │   └── nixos/
-│       ├── default.nix
-│       └── hardware-configuration.nix
+│       └── ozymandias/
+│           ├── configuration.nix
+│           └── hardware-configuration.nix
 ├── modules/                # System configuration
 │   ├── common/             # Cross-platform (packages, fonts, secrets)
 │   ├── darwin/             # macOS-specific (Homebrew, defaults)
@@ -128,16 +128,23 @@ in
 ### Key Patterns
 
 1. **Automatic Module Discovery**
-   - Uses `collectModulesRecursively` from `my-lib/helpers.nix`
+   - Uses `collectModulesRecursively` from `my-lib/default.nix`
    - Files/directories starting with `_` are ignored
-   - Each directory's `default.nix` is excluded from recursive import
+   - Root `default.nix` of the imported directory is excluded from recursive import
+   - For nested subdirectories, `default.nix` replaces sibling files in that folder
 
-2. **Centralized Variables**
+2. **Purpose of `default.nix` in This Repo**
+   - Root/module-entry `default.nix` is an orchestrator and is imported explicitly.
+   - Nested `*/default.nix` files are leaf/bundle entrypoints discovered by `collectModulesRecursively`.
+   - This is why multiple `default.nix` files are expected and correct.
+   - Avoid double imports: do not both explicitly import a subdirectory and recursively collect it, or modules can be evaluated twice.
+
+3. **Centralized Variables**
    - All system variables in `vars/default.nix`
    - Access via `myvars` or `vars` in modules
    - Includes: username, system arch, timezone, state versions
 
-3. **Module Imports Pattern**
+4. **Module Imports Pattern**
    ```nix
    # In modules/darwin/default.nix or modules/nixos/default.nix
    imports = [
@@ -145,7 +152,7 @@ in
    ] ++ (myLib.collectModulesRecursively ./.);
    ```
 
-4. **Flake Structure**
+5. **Flake Structure**
    - Darwin hosts: `darwinConfigurations.<hostname>`
    - NixOS hosts: `nixosConfigurations.<hostname>`
    - Agenix module included via `agenix.darwinModules.default` or `agenix.nixosModules.default`

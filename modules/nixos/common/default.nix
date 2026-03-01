@@ -1,49 +1,36 @@
 {
-  myLib,
+  config,
+  lib,
   myvars,
   pkgs,
   ...
-}: {
-  imports = myLib.collectModulesRecursively ./.;
+}: let
+  cfg = config.youturn.roles;
+in {
+  config = lib.mkIf cfg.common.enable {
+    system.stateVersion = "24.11";
 
-  system.stateVersion = "24.11";
-
-  # Enable flakes and nix-command globally
-  nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
-    trusted-users = [myvars.username];
-  };
-
-  # User configuration
-  users.users.${myvars.username} = {
-    isNormalUser = true;
-    description = myvars.userfullname;
-    extraGroups = ["wheel" "networkmanager" "video" "audio"];
-    shell = pkgs.zsh;
-  };
-
-  # Enable zsh system-wide
-  programs.zsh.enable = true;
-
-  # Enable SSH agent system-wide
-  programs.ssh.startAgent = true;
-
-  # Enable SSH daemon
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      PermitRootLogin = "yes";
+    # Enable flakes and nix-command globally.
+    nix.settings = {
+      experimental-features = ["nix-command" "flakes"];
+      trusted-users = [myvars.username];
     };
-  };
 
-  # Enable display manager and session management
-  services.xserver = {
-    enable = true;
-    displayManager.lightdm.enable = true;
-    desktopManager.xfce.enable = true;
-  };
+    users.users.${myvars.username} = {
+      isNormalUser = true;
+      description = myvars.userfullname;
+      extraGroups = ["wheel" "networkmanager" "video" "audio"];
+      shell = pkgs.zsh;
+    };
 
-  # Enable D-Bus
-  services.dbus.enable = true;
+    programs.zsh.enable = true;
+    programs.ssh.startAgent = true;
+
+    # Keep key baseline tools available at system scope.
+    environment.systemPackages = with pkgs; [
+      btop
+    ];
+
+    services.dbus.enable = true;
+  };
 }
