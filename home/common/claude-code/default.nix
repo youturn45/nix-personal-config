@@ -83,6 +83,7 @@
     export PATH="${pkgs.nodejs_22}/bin:$HOME/.npm-global/bin:$PATH"
 
     echo "Installing or updating Claude Code..."
+    rm -rf "$HOME/.npm-global/lib/node_modules/@anthropic-ai/.claude-code-"* 2>/dev/null || true
     npm install -g @anthropic-ai/claude-code@latest
   '';
 }

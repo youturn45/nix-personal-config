@@ -1,5 +1,10 @@
 # Starship is managed by Home Manager (programs.starship.enableZshIntegration = true)
 
+# Ghostty compatibility: fall back to a known terminfo
+if [[ "$TERM" == "xterm-ghostty" ]]; then
+    export TERM="xterm-256color"
+fi
+
 # Platform-specific initialization
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Homebrew initialization (Darwin only)

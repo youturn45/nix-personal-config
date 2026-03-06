@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  myLib,
   ...
 }: {
   # Darwin-specific home manager configuration
@@ -9,7 +10,7 @@
 
   imports = [
     ../default.nix # Import common home configuration
-  ];
+  ] ++ (myLib.collectModulesRecursively ./gui);
 
   # Darwin-specific packages
   # home.packages = with pkgs; [
