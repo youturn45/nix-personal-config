@@ -73,13 +73,8 @@
         exit 1
       fi
 
-      echo -e "''${YELLOW}[Rsync]''${NC} Syncing repo -> Clash Verge Rev directory..."
-      ${pkgs.rsync}/bin/rsync -av --delete \
-        --exclude='.git' \
-        --exclude='.gitignore' \
-        --exclude='.gitmodules' \
-        --exclude='.github' \
-        "$LOCAL_DIR/" "$VERGE_DIR/"
+      echo -e "''${YELLOW}[Sync]''${NC} Updating Clash Verge Rev active config.yaml..."
+      install -m 0644 "$LOCAL_DIR/config.yaml" "$VERGE_DIR/config.yaml"
 
       if [ -n "$ICLOUD_DIR" ]; then
         mkdir -p "$ICLOUD_DIR"
