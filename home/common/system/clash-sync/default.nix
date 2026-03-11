@@ -28,7 +28,7 @@
     LOCAL_DIR="${localClashDir}"
     VERGE_DIR="${vergeClashDir}"
     ICLOUD_DIR_DEFAULT="${iCloudMirrorDir}"
-    ICLOUD_DIR="${ICLOUD_CLASH_DIR:-$ICLOUD_DIR_DEFAULT}"
+    ICLOUD_DIR="''${ICLOUD_CLASH_DIR:-$ICLOUD_DIR_DEFAULT}"
     REPO="${clashRepo}"
     IS_DARWIN="${
       if pkgs.stdenv.isDarwin

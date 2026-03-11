@@ -528,7 +528,7 @@ Container-related helper configuration for development workflows.
 
 **Configuration:**
 ```nix
-theme = "catppuccin-mocha";
+theme = "Catppuccin Mocha";
 font-family = "FiraCode Nerd Font";
 font-size = 13;
 background-opacity = 0.95;
