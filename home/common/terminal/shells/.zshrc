@@ -38,8 +38,8 @@ fi
 # Proxy configuration presets
 PROXY_LOCAL_HTTP="http://127.0.0.1:7890"
 PROXY_LOCAL_SOCKS="socks5://127.0.0.1:7891"
-PROXY_NETWORK_HTTP="http://10.0.0.5:7890"
-PROXY_NETWORK_SOCKS="socks5://10.0.0.5:7891"
+PROXY_NETWORK_HTTP="http://10.0.0.3:7890"
+PROXY_NETWORK_SOCKS="socks5://10.0.0.3:7891"
 PROXY_NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.local"
 
 function proxy() {
@@ -56,7 +56,7 @@ function proxy() {
             elif [[ "$mode" == "network" ]]; then
                 proxy_http="$PROXY_NETWORK_HTTP"
                 proxy_socks="$PROXY_NETWORK_SOCKS"
-                label="network (10.0.0.5)"
+                label="network (10.0.0.3)"
             else
                 printf "Error: invalid mode '%s'. Use 'local' or 'network'.\n" "$mode"
                 return 1
@@ -114,6 +114,9 @@ function proxy() {
             ;;
     esac
 }
+
+# Enable proxy by default
+proxy on local > /dev/null
 
 # Directory navigation
 alias ..='cd ..'
