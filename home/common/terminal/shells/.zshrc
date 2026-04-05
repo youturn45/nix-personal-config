@@ -66,6 +66,7 @@ function proxy() {
             export HTTPS_PROXY="$proxy_http"
             export all_proxy="$proxy_socks"
             export ALL_PROXY="$proxy_socks"
+            unset no_proxy NO_PROXY
             printf "Proxy enabled — %s\n" "$label"
             printf "  HTTP:  %s\n" "$proxy_http"
             printf "  SOCKS: %s\n" "$proxy_socks"
