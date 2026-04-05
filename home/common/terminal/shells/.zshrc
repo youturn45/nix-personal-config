@@ -40,7 +40,6 @@ PROXY_LOCAL_HTTP="http://127.0.0.1:7890"
 PROXY_LOCAL_SOCKS="socks5://127.0.0.1:7891"
 PROXY_NETWORK_HTTP="http://10.0.0.3:7890"
 PROXY_NETWORK_SOCKS="socks5://10.0.0.3:7891"
-PROXY_NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.local"
 
 function proxy() {
     local cmd="${1:-help}"
@@ -67,8 +66,6 @@ function proxy() {
             export HTTPS_PROXY="$proxy_http"
             export all_proxy="$proxy_socks"
             export ALL_PROXY="$proxy_socks"
-            export no_proxy="$PROXY_NO_PROXY"
-            export NO_PROXY="$PROXY_NO_PROXY"
             printf "Proxy enabled — %s\n" "$label"
             printf "  HTTP:  %s\n" "$proxy_http"
             printf "  SOCKS: %s\n" "$proxy_socks"
@@ -76,7 +73,6 @@ function proxy() {
         off)
             unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
             unset all_proxy ALL_PROXY
-            unset no_proxy NO_PROXY
             printf "Proxy disabled.\n"
             ;;
         show)
@@ -85,7 +81,6 @@ function proxy() {
                 printf "  HTTP:  %s\n" "$http_proxy"
                 printf "  HTTPS: %s\n" "$https_proxy"
                 printf "  SOCKS: %s\n" "$all_proxy"
-                printf "  Skip:  %s\n" "$no_proxy"
             else
                 printf "Proxy: disabled\n"
             fi
