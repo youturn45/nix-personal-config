@@ -18,9 +18,8 @@ nixos_hosts := "ozymandias"
 # All hosts including NixOS
 all_hosts := darwin_hosts + " " + nixos_hosts
 
-# Proxy configuration
+# Proxy configuration (local fallback only — network proxy is read from $http_proxy at runtime)
 proxy_local := "127.0.0.1:7890"
-proxy_network := "10.0.0.5:7890"
 
 ############################################################################
 #
@@ -108,7 +107,7 @@ default:
 ############################################################################
 
 # Smart proxy detection and configuration
-# Modes: auto (detect), local ({{proxy_local}}), network ({{proxy_network}}), off (disabled)
+# Modes: auto (use $http_proxy if set, else local), local ({{proxy_local}}), off (disabled)
 [group('proxy')]
 smart-proxy mode="auto":
   #!/usr/bin/env bash
@@ -125,14 +124,7 @@ smart-proxy mode="auto":
     auto)
       if [ -n "${http_proxy:-}" ]; then
         echo "🔍 Terminal proxy detected: $http_proxy"
-        if [[ "$http_proxy" == *"127.0.0.1"* ]]; then
-          sudo python3 scripts/darwin_set_proxy.py local
-        elif [[ "$http_proxy" == *"10.0.0.5"* ]]; then
-          sudo python3 scripts/darwin_set_proxy.py network
-        else
-          echo "📡 Unknown proxy, defaulting to local mode"
-          sudo python3 scripts/darwin_set_proxy.py local
-        fi
+        sudo python3 scripts/darwin_set_proxy.py "$http_proxy"
       else
         echo "📡 No proxy detected, using local mode"
         sudo python3 scripts/darwin_set_proxy.py local
@@ -142,16 +134,13 @@ smart-proxy mode="auto":
       echo "📡 Using local proxy ({{proxy_local}})"
       sudo python3 scripts/darwin_set_proxy.py local
       ;;
-    network)
-      echo "📡 Using network proxy ({{proxy_network}})"
-      sudo python3 scripts/darwin_set_proxy.py network
-      ;;
     off)
-      echo "📡 Proxy configuration skipped"
+      echo "📡 Proxy disabled"
+      sudo python3 scripts/darwin_set_proxy.py off
       ;;
     *)
       echo "❌ Invalid proxy mode: {{mode}}"
-      echo "Valid modes: auto, local, network, off"
+      echo "Valid modes: auto, local, off"
       exit 1
       ;;
   esac
