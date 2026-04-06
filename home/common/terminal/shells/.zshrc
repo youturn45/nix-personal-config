@@ -141,3 +141,6 @@ alias egrep='egrep --color=auto'
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
+
+# Auto-enable proxy on shell start
+proxy on

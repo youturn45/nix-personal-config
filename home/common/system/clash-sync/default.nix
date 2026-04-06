@@ -15,10 +15,16 @@
     then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
     else "";
 
-  # Optional iCloud mirror location (can be overridden at runtime)
+  # Optional iCloud mirror for Clash Verge Rev (can be overridden at runtime)
   iCloudMirrorDir =
     if pkgs.stdenv.isDarwin
     then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
+    else "";
+
+  # ClashX Meta iCloud directory
+  clashMetaICloudDir =
+    if pkgs.stdenv.isDarwin
+    then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
     else "";
 
   # Sync script that pulls from git and syncs to iCloud (macOS only)
@@ -29,6 +35,7 @@
     VERGE_DIR="${vergeClashDir}"
     ICLOUD_DIR_DEFAULT="${iCloudMirrorDir}"
     ICLOUD_DIR="''${ICLOUD_CLASH_DIR:-$ICLOUD_DIR_DEFAULT}"
+    CLASH_META_ICLOUD_DIR="${clashMetaICloudDir}"
     REPO="${clashRepo}"
     IS_DARWIN="${
       if pkgs.stdenv.isDarwin
@@ -67,18 +74,16 @@
     # Sync on macOS: push repo config to Clash Verge Rev active directory,
     # and optionally mirror to iCloud folder.
     if [ "$IS_DARWIN" = "true" ]; then
-      if [ ! -d "$VERGE_DIR" ]; then
-        echo -e "''${RED}[Warning]''${NC} Clash Verge Rev directory not found: $VERGE_DIR"
-        echo "Please ensure Clash Verge Rev is installed and launched at least once."
-        exit 1
+      if [ -d "$VERGE_DIR" ]; then
+        echo -e "''${YELLOW}[Sync]''${NC} Updating Clash Verge Rev active config.yaml..."
+        install -m 0644 "$LOCAL_DIR/config.yaml" "$VERGE_DIR/config.yaml"
+      else
+        echo -e "''${YELLOW}[Clash Verge Rev]''${NC} Directory not found, skipping: $VERGE_DIR"
       fi
-
-      echo -e "''${YELLOW}[Sync]''${NC} Updating Clash Verge Rev active config.yaml..."
-      install -m 0644 "$LOCAL_DIR/config.yaml" "$VERGE_DIR/config.yaml"
 
       if [ -n "$ICLOUD_DIR" ]; then
         mkdir -p "$ICLOUD_DIR"
-        echo -e "''${YELLOW}[Rsync]''${NC} Mirroring Clash config -> iCloud..."
+        echo -e "''${YELLOW}[Rsync]''${NC} Mirroring Clash config -> Clash Verge Rev iCloud..."
         ${pkgs.rsync}/bin/rsync -av --delete \
           --exclude='.git' \
           --exclude='.gitignore' \
@@ -87,11 +92,29 @@
           "$LOCAL_DIR/" "$ICLOUD_DIR/"
       fi
 
+      # Sync to ClashX Meta iCloud directory if it exists
+      if [ -d "$CLASH_META_ICLOUD_DIR" ]; then
+        echo -e "''${YELLOW}[Rsync]''${NC} Mirroring Clash config -> ClashX Meta iCloud..."
+        ${pkgs.rsync}/bin/rsync -av --delete \
+          --exclude='.git' \
+          --exclude='.gitignore' \
+          --exclude='.gitmodules' \
+          --exclude='.github' \
+          "$LOCAL_DIR/" "$CLASH_META_ICLOUD_DIR/"
+      else
+        echo -e "''${YELLOW}[ClashX Meta]''${NC} iCloud dir not found, skipping: $CLASH_META_ICLOUD_DIR"
+      fi
+
       echo -e "''${GREEN}[Done]''${NC} Clash configuration synced successfully!"
-      echo -e "  Repo:   $LOCAL_DIR"
-      echo -e "  Verge:  $VERGE_DIR"
+      echo -e "  Repo:         $LOCAL_DIR"
+      if [ -d "$VERGE_DIR" ]; then
+        echo -e "  Verge:        $VERGE_DIR"
+      fi
       if [ -n "$ICLOUD_DIR" ]; then
-        echo -e "  iCloud: $ICLOUD_DIR"
+        echo -e "  Verge iCloud: $ICLOUD_DIR"
+      fi
+      if [ -d "$CLASH_META_ICLOUD_DIR" ]; then
+        echo -e "  Meta iCloud:  $CLASH_META_ICLOUD_DIR"
       fi
     else
       echo -e "''${GREEN}[Done]''${NC} Clash configuration updated!"
