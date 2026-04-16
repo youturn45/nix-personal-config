@@ -29,6 +29,7 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 - 🛡️ **Safe Build System** - Validation, testing, and rollback capabilities
 - 🎨 **Consistent Theming** - Catppuccin Mocha throughout the system
 - ⚡ **Modern Toolchain** - NixVim, Starship, modern CLI tools, and more
+- 🌍 **Proxy Stack** - Mihomo (Clash Meta) with Zashboard UI, auto-managed via Git
 
 ## 🚀 Quick Start
 
@@ -64,6 +65,9 @@ just build NightOwl                # Build specific host
 just build Rorschach local         # Build with local proxy (127.0.0.1:7890)
 just build Rorschach auto true     # Build with debug/verbose output
 
+# To use a remote/network proxy, set $http_proxy before building:
+http_proxy=http://10.0.0.3:7890 just build   # auto mode picks it up
+
 # Quick host aliases
 just ror                           # Quick build for Rorschach
 just silk                          # Quick build for SilkSpectre
@@ -71,7 +75,7 @@ just owl                           # Quick build for NightOwl
 just ozy                           # Quick build for ozymandias (NixOS)
 
 # Available hosts: Rorschach, NightOwl, SilkSpectre, ozymandias
-# Available proxy modes: auto (default), local, off
+# Proxy modes: auto (default, uses $http_proxy if set), local (127.0.0.1:7890), off
 ```
 
 ### Safe Development Workflow
@@ -164,11 +168,12 @@ nix-personal-config/
 - **NixOS**: System services, hardware configuration
 
 ### User-Level (home/)
-- **Editors**: NixVim with 7+ LSP servers, Treesitter, autocompletion, formatting
-- **Development**: Git, SSH, Node.js, Python, LaTeX, formatters, linters
+- **Editors**: NixVim with 7+ LSP servers, Treesitter, autocompletion, formatting; VS Code
+- **Development**: Git, SSH, Node.js, Python, Go, LaTeX, formatters, linters
 - **Shell**: Zsh, Starship prompt, modern CLI tools
 - **Terminal**: Ghostty, Kitty, btop, yazi file manager
 - **Theming**: Catppuccin Mocha everywhere
+- **Proxy UI**: Zashboard dashboard for Mihomo (cross-platform: launchd/systemd)
 
 ### Secrets Management
 - **agenix**: SSH key-based encryption for secrets

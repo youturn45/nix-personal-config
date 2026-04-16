@@ -376,6 +376,15 @@ dock = {
 - **Security**: Touch ID for sudo authentication
 - **Fonts**: Comprehensive font installation (Nerd Fonts, Chinese fonts)
 
+#### mihomo.nix - Proxy Service (Clash Meta)
+**Purpose**: Installs and manages the Mihomo (Clash Meta) proxy daemon on macOS
+
+**Features:**
+- System-wide Mihomo binary installation
+- Git-based config auto-sync via SSH
+- launchd user agent for auto-start on login
+- Integrates with Zashboard (home/common/system/zashboard) for web UI
+
 #### nix-core.nix - Nix Configuration
 **Purpose**: Nix daemon optimization and platform integration
 
@@ -521,6 +530,14 @@ defaultBranch = "main";
 - Hidden file display
 - Directory-first sorting
 - Keyboard-driven interface
+
+### home/common/system/zashboard/ - Proxy Dashboard
+**Purpose**: Zashboard web UI for managing the Mihomo proxy, served as a local service
+
+**Features:**
+- Multi-host API discovery (hardcoded backend discovery for cluster setups)
+- Deterministic UUID generation per host
+- Cross-platform service registration: launchd on macOS, systemd on NixOS
 
 ### home/common/system/_zellij/default.nix - Terminal Multiplexer
 **Purpose**: Modern alternative to tmux with better UX
