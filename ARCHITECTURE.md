@@ -1,6 +1,6 @@
 # Nix Personal Configuration - Architecture Documentation
 
-> **Generated**: January 2025  
+> **Generated**: January 2025 · **Updated**: April 2026  
 > **Version**: Production-ready configuration (post-cleanup)  
 > **System**: Multi-platform Nix configuration (macOS + NixOS)
 
@@ -48,17 +48,27 @@ nix-personal-config/
 ├── modules/
 │   ├── common/          # Shared across Darwin and NixOS
 │   │   ├── default.nix  # Common module entry point
-│   │   └── fonts.nix    # Shared font configuration
+│   │   ├── fonts.nix    # Shared font configuration
+│   │   └── secrets.nix  # Agenix secrets configuration
 │   ├── darwin/          # macOS-specific modules
-│   │   └── default.nix  # Imports common + Darwin modules
+│   │   ├── default.nix  # Imports common + Darwin modules
+│   │   ├── apps.nix
+│   │   ├── homebrew-proxy.nix
+│   │   ├── host-users.nix
+│   │   ├── nix-core.nix
+│   │   └── system-settings.nix
 │   └── nixos/           # NixOS-specific modules
 │       ├── default.nix  # Imports common + NixOS modules
-│       └── common/      # NixOS common system modules
+│       ├── common/      # NixOS common system modules
+│       └── roles/       # Role-based NixOS configurations
+│           ├── desktop/
+│           └── server/
 ├── home/                # Home Manager configuration
 │   ├── default.nix      # Entry for Home Manager
 │   ├── common/          # Cross-platform user configurations
 │   │   ├── core.nix
 │   │   ├── claude-code/
+│   │   ├── codex/
 │   │   ├── dev-tools/
 │   │   ├── editors/
 │   │   ├── gui/
@@ -70,12 +80,14 @@ nix-personal-config/
 ├── hosts/
 │   ├── darwin/
 │   │   ├── Rorschach.nix
-│   │   ├── NightOwl.nix
+│   │   ├── NightOwl/       # Multi-file host config
 │   │   └── SilkSpectre.nix
 │   └── nixos/
-│       ├── default.nix
-│       └── hardware-configuration.nix
+│       └── ozymandias/
+│           ├── configuration.nix
+│           └── hardware-configuration.nix
 └── scripts/
+    ├── darwin_enable_autologin_once.sh
     ├── darwin_set_proxy.py
     └── vnc_paste.py
 ```
@@ -169,10 +181,22 @@ Streamlined command interface for system management and development workflows.
 #### Primary Commands
 | Command | Description | Usage |
 |---------|-------------|--------|
-| `just darwin` | Build and switch to current host | Production deployment |
-| `just darwin-debug` | Debug build with verbose output | Troubleshooting |
-| `just build Rorschach` | Build Rorschach configuration | Host-specific build |
-| `just ror` | Quick build for Rorschach | Host-specific alias |
+| `just build` | Build and switch current host (Rorschach) | Production deployment |
+| `just build HOST` | Build a specific host | `just build NightOwl` |
+| `just build HOST PROXY DEBUG` | Build with proxy mode and/or debug | `just build Rorschach auto true` |
+| `just ror` | Quick build for Rorschach | Host alias |
+| `just owl` | Quick build for NightOwl | Host alias |
+| `just silk` | Quick build for SilkSpectre | Host alias |
+| `just ozy` | Quick build for ozymandias (NixOS) | Host alias |
+| `just iso` | Build NixOS installer ISO | `just iso` |
+
+#### Testing & Validation Commands
+| Command | Description | Usage |
+|---------|-------------|--------|
+| `just validate` | Format + flake check | Pre-commit validation |
+| `just build-test HOST` | Test build without switching | `just build-test SilkSpectre` |
+| `just safe-build HOST` | Validate → test → switch | Safe deployment |
+| `just test-all` | Test all Darwin hosts | CI-style check |
 
 #### Maintenance Commands
 | Command | Description | Purpose |
@@ -181,20 +205,22 @@ Streamlined command interface for system management and development workflows.
 | `just upp <input>` | Update specific input | Targeted updates |
 | `just gc` | Garbage collect unused entries | Storage cleanup |
 | `just clean` | Remove old generations (7+ days) | System maintenance |
-| `just fmt` | Format Nix files | Code consistency |
+| `just fmt` | Format Nix files (alejandra) | Code consistency |
+| `just rollback` | Rollback to previous generation | Recovery |
+| `just generations` | List recent generations | Inspection |
 
 #### Setup Commands (New Mac)
 ```bash
 just brew           # Install Homebrew and just
 just lix            # Install Lix (Nix alternative)
 just darwin-channel # Setup Darwin channels
-just dot            # Build and switch to configuration
+just dot            # Initial bootstrap build and switch
 ```
 
 **Integration Points:**
-- Works with `darwin_set_proxy.py` for network configuration
-- Integrates with nix-darwin rebuild process
-- Supports both stable and development workflows
+- `smart-proxy` recipe auto-detects `$http_proxy` or falls back to local proxy
+- Works with `darwin_set_proxy.py` for nix-daemon proxy configuration
+- Integrates with nix-darwin and nixos-rebuild processes
 
 ## Variables System
 
@@ -369,7 +395,7 @@ dock = {
 - SMB NetBIOS name configuration
 - User shell assignment (zsh)
 
-### modules/_nixos/ - NixOS-Specific Configuration
+### modules/nixos/ - NixOS-Specific Configuration
 
 #### common/ - Shared NixOS Modules
 **Purpose**: Shared NixOS settings used by all NixOS hosts
@@ -388,7 +414,7 @@ dock = {
 - PATH configuration for Nix profiles
 - Module discovery integration
 
-### home/base/core.nix - Essential User Tools
+### home/common/core.nix - Essential User Tools
 
 #### core.nix - Modern CLI Toolchain
 **Purpose**: Contemporary replacements for traditional Unix tools
@@ -496,7 +522,7 @@ defaultBranch = "main";
 - Directory-first sorting
 - Keyboard-driven interface
 
-### home/base/system/_zellij/default.nix - Terminal Multiplexer
+### home/common/system/_zellij/default.nix - Terminal Multiplexer
 **Purpose**: Modern alternative to tmux with better UX
 
 **Features:**
@@ -511,10 +537,10 @@ defaultBranch = "main";
 - Automatic session attachment
 - Exit handling configuration
 
-### home/base/system/_container/default.nix - Container Tooling
+### home/common/system/_container/default.nix - Container Tooling
 Container-related helper configuration for development workflows.
 
-### home/base/gui/ - GUI Applications
+### home/common/gui/ - GUI Applications
 
 #### terminal/ghostty.nix - GPU-Accelerated Terminal
 **Purpose**: High-performance terminal emulator configuration
@@ -537,20 +563,23 @@ background-blur-radius = 20;
 
 ## Host Configurations
 
-### hosts/darwin/*.nix - macOS Hosts
+### hosts/darwin/ - macOS Hosts
 macOS host configurations using nix-darwin:
 - `Rorschach.nix` — primary development machine (MacBook Air M4)
-- `NightOwl.nix` — secondary macOS host
+- `NightOwl/` — secondary macOS host (multi-file layout)
 - `SilkSpectre.nix` — tertiary macOS host
 
-### hosts/nixos/default.nix - NixOS Host
-Defines the `nixos` system by composing:
+### hosts/nixos/ozymandias/ - NixOS Host
+Defines the `ozymandias` system by composing:
 - Hardware configuration (`hardware-configuration.nix`)
-- Shared modules (`modules/common`, `modules/_nixos/common`)
+- Shared modules (`modules/common`, `modules/nixos/common`)
 - Home Manager user configuration (`home/`)
-Sets `networking.hostName = "nixos"` for the NixOS target.
+Sets `networking.hostName = "ozymandias"` for the NixOS target.
 
 ## Utility Scripts
+
+### scripts/darwin_enable_autologin_once.sh - One-Time Autologin
+**Purpose**: Enables macOS auto-login for the primary user on first boot (one-shot, self-disabling)
 
 ### scripts/darwin_set_proxy.py - Network Configuration
 **Purpose**: Configurable proxy setup for Nix daemon with multiple network modes
@@ -706,8 +735,8 @@ import ../../home/nixos;  # Imports ../default.nix (common) internally
 ### Local Development
 1. **Environment Setup**: Use system/Home Manager tools (no `nix develop` devShells defined)
 2. **Make Changes**: Edit configurations in modular structure
-3. **Test Build**: `just darwin-debug` for verbose testing
-4. **Deploy**: `just darwin` for production deployment
+3. **Test Build**: `just build Rorschach auto true` for verbose/debug testing
+4. **Deploy**: `just build` for production deployment (or `just safe-build` for the full validation workflow)
 
 ### Maintenance Workflow
 1. **Update Dependencies**: `just up` for all inputs

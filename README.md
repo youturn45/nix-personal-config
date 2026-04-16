@@ -19,7 +19,7 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 | `Rorschach`  | MacBook Air M4   | Apple M4      | Laptop  | ✅ Active |
 | `NightOwl`   | Darwin Host      | -             | Desktop | 🚧 Ready  |
 | `SilkSpectre`| Darwin Host      | -             | Laptop  | 🚧 Ready  |
-| `nixos`      | NixOS VM         | x86_64-linux  | Testing | ✅ Ready  |
+| `ozymandias` | NixOS VM         | x86_64-linux  | Testing | ✅ Ready  |
 
 ## ✨ Features
 
@@ -58,19 +58,20 @@ just dot
 ### Regular Build Commands
 
 ```bash
-# Unified build command - all-in-one with options
-just build                    # Build current host (Rorschach)
-just build NightOwl           # Build specific host
-just build --debug            # Build with debug output
-just build --proxy network    # Build with specific proxy mode
+# Unified build command: just build [HOST [PROXY_MODE [DEBUG]]]
+just build                         # Build current host (Rorschach), auto proxy
+just build NightOwl                # Build specific host
+just build Rorschach local         # Build with local proxy (127.0.0.1:7890)
+just build Rorschach auto true     # Build with debug/verbose output
 
 # Quick host aliases
-just ror                      # Quick build for Rorschach
-just silk                     # Quick build for SilkSpectre
-just owl                      # Quick build for NightOwl
+just ror                           # Quick build for Rorschach
+just silk                          # Quick build for SilkSpectre
+just owl                           # Quick build for NightOwl
+just ozy                           # Quick build for ozymandias (NixOS)
 
-# Available hosts: Rorschach, NightOwl, SilkSpectre
-# Available proxy modes: auto, local, network, off
+# Available hosts: Rorschach, NightOwl, SilkSpectre, ozymandias
+# Available proxy modes: auto (default), local, off
 ```
 
 ### Safe Development Workflow
