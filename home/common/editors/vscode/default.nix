@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   programs.vscode = {
     enable = true;
     # Swap to pkgs.vscodium if you prefer VSCodium.

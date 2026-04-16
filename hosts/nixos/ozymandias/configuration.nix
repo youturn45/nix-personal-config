@@ -1,6 +1,4 @@
-{
-  ...
-}: {
+{...}: {
   youturn.roles = {
     common.enable = true;
     server.enable = true;

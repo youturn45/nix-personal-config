@@ -8,9 +8,11 @@
   # This module is imported at build-level in flake.nix
   # It imports the common home configuration and adds NixOS-specific settings
 
-  imports = [
-    ../default.nix # Import common home configuration
-  ] ++ (myLib.collectModulesRecursively ./gui);
+  imports =
+    [
+      ../default.nix # Import common home configuration
+    ]
+    ++ (myLib.collectModulesRecursively ./gui);
 
   # NixOS-specific packages
   # home.packages = with pkgs; [

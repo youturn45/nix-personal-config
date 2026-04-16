@@ -184,9 +184,9 @@
       };
   in {
     darwinConfigurations = {
-      Rorschach = mkDarwinHost { hostname = "Rorschach"; };
-      NightOwl = mkDarwinHost { hostname = "NightOwl"; };
-      SilkSpectre = mkDarwinHost { hostname = "SilkSpectre"; };
+      Rorschach = mkDarwinHost {hostname = "Rorschach";};
+      NightOwl = mkDarwinHost {hostname = "NightOwl";};
+      SilkSpectre = mkDarwinHost {hostname = "SilkSpectre";};
     };
     nixosConfigurations = {
       ozymandias = nixosOzymandias;
