@@ -8,9 +8,11 @@
   # This module is imported at build-level in flake.nix
   # It imports the common home configuration and adds Darwin-specific settings
 
-  imports = [
-    ../default.nix # Import common home configuration
-  ] ++ (myLib.collectModulesRecursively ./gui);
+  imports =
+    [
+      ../default.nix # Import common home configuration
+    ]
+    ++ (myLib.collectModulesRecursively ./gui);
 
   # Darwin-specific packages
   # home.packages = with pkgs; [

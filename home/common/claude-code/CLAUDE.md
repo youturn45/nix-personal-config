@@ -52,8 +52,6 @@ We build production code together. I handle implementation details while you gui
 
 **When stuck:** Stop. The simple solution is usually correct.
 
-**When uncertain:** "Let me ultrathink about this architecture."
-
 **When choosing:** "I see approach A (simple) vs B (flexible). Which do you prefer?"
 
 Your redirects prevent over-engineering. When uncertain about implementation, stop and ask for guidance.
@@ -71,7 +69,7 @@ Your redirects prevent over-engineering. When uncertain about implementation, st
 
 ## Progress Tracking
 
-- **TodoWrite** for task management
+- **TaskCreate** for task management
 - **Clear naming** in all code
 
 Focus on maintainable solutions over clever abstractions.

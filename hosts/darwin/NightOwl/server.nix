@@ -1,4 +1,8 @@
-{lib, myvars, ...}: {
+{
+  lib,
+  myvars,
+  ...
+}: {
   # NightOwl dedicated-host posture lives here.
   # Keep host-specific server behavior isolated from shared darwin modules.
 

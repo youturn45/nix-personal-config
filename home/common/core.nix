@@ -154,7 +154,4 @@
       enableNushellIntegration = true;
     };
   };
-
-  
-  
 }

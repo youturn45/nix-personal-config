@@ -48,31 +48,37 @@ else:
     pl["EnvironmentVariables"]["http_proxy"] = HTTP_PROXY
     pl["EnvironmentVariables"]["https_proxy"] = HTTP_PROXY
 
-os.chmod(NIX_DAEMON_PLIST, 0o644)
-NIX_DAEMON_PLIST.write_bytes(plistlib.dumps(pl))
-os.chmod(NIX_DAEMON_PLIST, 0o444)
+original = NIX_DAEMON_PLIST.read_bytes()
+new_bytes = plistlib.dumps(pl)
 
-# reload the plist
-for cmd in (
-	f"launchctl unload {NIX_DAEMON_PLIST}",
-	f"launchctl load {NIX_DAEMON_PLIST}",
-):
-    print(cmd)
-    subprocess.run(shlex.split(cmd), capture_output=False)
+if original == new_bytes:
+    print("nix-daemon proxy already up to date, skipping restart")
+else:
+    os.chmod(NIX_DAEMON_PLIST, 0o644)
+    NIX_DAEMON_PLIST.write_bytes(new_bytes)
+    os.chmod(NIX_DAEMON_PLIST, 0o444)
 
-# Check if daemon is already running
-print("Checking nix-daemon status...")
-try:
-    subprocess.run(["nix", "daemon", "--version"], check=True, capture_output=True)
-    print("nix-daemon is running")
-except subprocess.CalledProcessError:
-    # Daemon not ready yet, wait and try again
-    print("nix-daemon not ready, waiting 3 seconds...")
-    time.sleep(3)
-    try:
-        subprocess.run(["nix", "daemon", "--version"], check=True, capture_output=True)
-        print("nix-daemon is running")
-    except subprocess.CalledProcessError:
-        print("Error: nix-daemon failed to start")
-        exit(1)
+    for cmd in (
+        f"launchctl unload {NIX_DAEMON_PLIST}",
+        f"launchctl load {NIX_DAEMON_PLIST}",
+    ):
+        print(cmd)
+        subprocess.run(shlex.split(cmd), capture_output=False)
+
+    # Wait until the daemon accepts store connections (same check nix-darwin activation uses).
+    # This prevents the activation's own wait loop from firing repeatedly.
+    NIX_BASH = "/nix/store/ny5ngjbcqpn01bj3j8fxq1nbqiyaw78q-bash-5.3p3/bin/bash"
+    print("Waiting for nix-daemon to accept connections...")
+    for attempt in range(30):
+        result = subprocess.run(
+            ["nix-store", "--store", "daemon", "-q", "--hash", NIX_BASH],
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            print("nix-daemon is ready")
+            break
+        time.sleep(1)
+    else:
+        print("Error: nix-daemon failed to become ready after 30s")
+        sys.exit(1)
 
