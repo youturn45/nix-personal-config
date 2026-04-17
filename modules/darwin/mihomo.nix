@@ -11,8 +11,23 @@
   sshKey = "${homeDir}/.ssh/Youturn";
   gitSSH = "ssh -i ${sshKey} -o StrictHostKeyChecking=accept-new -o BatchMode=yes";
 in {
-  # Install mihomo binary system-wide
-  environment.systemPackages = [pkgs.mihomo];
+  environment.systemPackages = [
+    pkgs.mihomo
+
+    (pkgs.writeShellScriptBin "mihomo-reload" ''
+      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
+      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
+    '')
+
+    (pkgs.writeShellScriptBin "mihomo-sync" ''
+      set -e
+      echo "mihomo: pulling latest config..."
+      ${pkgs.git}/bin/git -C ${configDir} pull --ff-only
+      echo "mihomo: reloading..."
+      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
+      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
+    '')
+  ];
 
   # Clone config repo on first build; pull on subsequent builds
   system.activationScripts.mihomoSetup = {
@@ -40,9 +55,18 @@ in {
     serviceConfig = {
       Label = "io.github.metacubex.mihomo";
       ProgramArguments = [
-        "${pkgs.mihomo}/bin/mihomo"
-        "-d"
-        configDir
+        "/bin/sh" "-c"
+        ''
+          mkdir -p ${logDir}
+          networksetup -listallnetworkservices | tail -n +2 \
+            | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
+            | while IFS= read -r svc; do
+              networksetup -setwebproxy "$svc" 127.0.0.1 7890 2>/dev/null
+              networksetup -setsecurewebproxy "$svc" 127.0.0.1 7890 2>/dev/null
+              networksetup -setsocksfirewallproxy "$svc" 127.0.0.1 7893 2>/dev/null
+            done
+          exec ${pkgs.mihomo}/bin/mihomo -d ${configDir}
+        ''
       ];
       RunAtLoad = true;
       KeepAlive = true;
