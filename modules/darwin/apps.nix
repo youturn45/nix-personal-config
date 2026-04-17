@@ -68,6 +68,8 @@
     brews = [
       "libomp"
       "batt"
+      "steipete/tap/remindctl"
+      "steipete/tap/gogcli"
       #  "ffmpeg"
     ];
 
