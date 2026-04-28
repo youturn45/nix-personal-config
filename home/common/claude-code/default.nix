@@ -82,6 +82,8 @@
   home.file.".claude/todos/.keep".text = "";
   home.file.".claude/statsig/.keep".text = "";
   home.file.".claude/commands/.keep".text = "";
+  # Skills directory — not managed as a symlink so Claude can install skills freely at runtime
+  home.file.".claude/skills/.keep".text = "";
 
   # Merge Claude runtime config into ~/.claude.json without replacing it —
   # Claude Code writes auth tokens there, so we can't manage it as a read-only symlink

@@ -43,7 +43,7 @@
       persistent-apps = [
         "/Applications/Google Chrome.app"
         # "/Applications/WeChat.app"
-        "/Applications/Obsidian.app"
+        # "/Applications/Obsidian.app"
         # "/Applications/Spotify.app"
       ];
     };
