@@ -2,9 +2,8 @@
   lib,
   pkgs,
   ...
-}: {
-  # All Claude Code settings inlined — no separate settings.json file needed
-  home.file.".claude/settings.json".text = builtins.toJSON {
+}: let
+  settingsJson = builtins.toJSON {
     hooks = {};
     env = {
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
@@ -61,6 +60,7 @@
       ];
     };
   };
+in {
 
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
 
@@ -84,6 +84,17 @@
   home.file.".claude/commands/.keep".text = "";
   # Skills directory — not managed as a symlink so Claude can install skills freely at runtime
   home.file.".claude/skills/.keep".text = "";
+
+  # Write settings.json as a real file (not a symlink) so Claude Code can modify it at runtime
+  home.activation.claudeSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    _settings="$HOME/.claude/settings.json"
+    mkdir -p "$HOME/.claude"
+    # Only write if the file is currently a nix store symlink or doesn't exist
+    if [ ! -f "$_settings" ] || [ -L "$_settings" ]; then
+      rm -f "$_settings"
+      echo '${settingsJson}' > "$_settings"
+    fi
+  '';
 
   # Merge Claude runtime config into ~/.claude.json without replacing it —
   # Claude Code writes auth tokens there, so we can't manage it as a read-only symlink

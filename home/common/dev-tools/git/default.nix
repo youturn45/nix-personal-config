@@ -95,8 +95,28 @@
       diff-so-fancy = true;
       line-numbers = true;
       true-color = "always";
-      # features => named groups of settings, used to keep related settings organized
-      # features = "";
+    };
+  };
+
+  programs.lazygit = {
+    enable = true;
+    settings = {
+      gui.theme = {
+        activeBorderColor = ["#cba6f7" "bold"];
+        inactiveBorderColor = ["#a6adc8"];
+        optionsTextColor = ["#89b4fa"];
+        selectedLineBgColor = ["#313244"];
+        cherryPickedCommitFgColor = ["#cba6f7"];
+        cherryPickedCommitBgColor = ["#45475a"];
+        markedBaseCommitFgColor = ["#f9e2af"];
+        markedBaseCommitBgColor = ["#45475a"];
+        unstagedChangesColor = ["#f38ba8"];
+        defaultFgColor = ["#cdd6f4"];
+      };
+      git.paging = {
+        colorArg = "always";
+        pager = "delta --dark --paging=never";
+      };
     };
   };
 }
