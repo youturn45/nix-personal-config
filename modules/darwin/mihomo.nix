@@ -33,7 +33,7 @@ in {
   system.activationScripts.mihomoSetup = {
     text = ''
       mkdir -p ${logDir}
-      chown ${myvars.username}:staff ${logDir}
+      chown -R ${myvars.username}:staff ${logDir}
 
       if [ ! -d "${configDir}/.git" ]; then
         echo "mihomo: cloning config repo..."
