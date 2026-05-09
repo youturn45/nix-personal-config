@@ -57,6 +57,12 @@
         "Bash(git stash list)"
         "Bash(git config --list)"
         "Bash(git config --get *)"
+        "Bash(launchctl list *)"
+        "Bash(nix eval *)"
+        "Bash(nix flake check *)"
+        "Bash(nix search *)"
+        "Bash(nix-env *)"
+        "Bash(home-manager generations *)"
       ];
     };
   };
