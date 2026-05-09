@@ -59,7 +59,7 @@
 
     # development tools (moved from system packages)
     gh # GitHub CLI
-    clickhouse
+    clickhouse-cli
 
     # Formatters for editors
     glow # Markdown viewer
