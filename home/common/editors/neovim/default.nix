@@ -172,6 +172,24 @@ in {
       };
     };
 
+    extraConfigLua = ''
+      local scratch_buf = nil
+
+      vim.api.nvim_create_user_command("Scratch", function()
+        if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
+          vim.api.nvim_set_current_buf(scratch_buf)
+        else
+          scratch_buf = vim.api.nvim_create_buf(false, true)
+          vim.api.nvim_set_current_buf(scratch_buf)
+
+          vim.bo[scratch_buf].buftype = "nofile"
+          vim.bo[scratch_buf].bufhidden = "hide"
+          vim.bo[scratch_buf].swapfile = false
+          vim.bo[scratch_buf].filetype = "markdown"
+        end
+      end, {})
+    '';
+
     # Essential keymaps
     keymaps = [
       # Neo-tree

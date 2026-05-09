@@ -20,47 +20,28 @@
     ""
     mirror_env;
 
-  proxy_default = "http://127.0.0.1:7890";
-  mirror_probe_url = "https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api";
 in {
-  # Mirror env vars for interactive `brew` use in new shells
-  environment.variables = mirror_env;
-
-  # Inject mirror-with-fallback + proxy into the homebrew activation script
-  # Order: probe mirror raw (domestic, no proxy) → fallback to origin via proxy
+  # Inject proxy-or-mirror logic into the homebrew activation script
+  # Proxy set in env → origin servers via proxy; no proxy → TUNA mirror directly
   system.activationScripts.homebrew.text = lib.mkBefore ''
-    _PROXY="''${http_proxy:-${proxy_default}}"
+    _PROXY="''${http_proxy:-''${HTTP_PROXY:-}}"
 
-    # Helper to enable proxy (only needed for international/origin servers)
-    _enable_proxy() {
-      export http_proxy="$_PROXY"
-      export https_proxy="$_PROXY"
-      export HTTP_PROXY="$_PROXY"
-      export HTTPS_PROXY="$_PROXY"
-      export no_proxy="localhost,127.0.0.1,::1"
-      export NO_PROXY="localhost,127.0.0.1,::1"
-      echo >&2 "homebrew-proxy: proxy enabled ($_PROXY)"
-    }
-
-    # --- homebrew-proxy: probe mirror BEFORE proxy (domestic, directly reachable) ---
-    if /usr/bin/curl -sfL --max-time 5 -o /dev/null "${mirror_probe_url}"; then
-      echo >&2 "homebrew-proxy: mirror reachable, enabling Tsinghua mirror"
-      ${mirror_env_exports}
-      # Wrapper: on per-package failure, enable proxy + unset mirror, retry with origin
-      brew() {
-        local real_brew
-        real_brew="$(/usr/bin/which brew)"
-        if ! "$real_brew" "$@"; then
-          echo >&2 "homebrew-proxy: mirror failed, retrying with origin + proxy..."
-          ${mirror_env_unsets}
-          _enable_proxy
-          "$real_brew" "$@"
-        fi
-      }
+    if [ -n "$_PROXY" ]; then
+      _PROXY_ADDR="''${_PROXY#http://}"
+      _PROXY_HOST="''${_PROXY_ADDR%:*}"
+      _PROXY_PORT="''${_PROXY_ADDR##*:}"
+      if /usr/bin/nc -z "$_PROXY_HOST" "$_PROXY_PORT" 2>/dev/null; then
+        echo >&2 "homebrew-proxy: proxy available ($_PROXY), using origin servers"
+        ${mirror_env_unsets}
+        export http_proxy="$_PROXY" https_proxy="$_PROXY" HTTP_PROXY="$_PROXY" HTTPS_PROXY="$_PROXY"
+        export no_proxy="localhost,127.0.0.1,::1" NO_PROXY="localhost,127.0.0.1,::1"
+      else
+        echo >&2 "homebrew-proxy: proxy set but unreachable, using Tsinghua mirror"
+        ${mirror_env_exports}
+      fi
     else
-      echo >&2 "homebrew-proxy: mirror unreachable, using origin servers with proxy"
-      ${mirror_env_unsets}
-      _enable_proxy
+      echo >&2 "homebrew-proxy: no proxy set, using Tsinghua mirror"
+      ${mirror_env_exports}
     fi
   '';
 }
