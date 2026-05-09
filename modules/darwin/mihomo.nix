@@ -33,6 +33,7 @@ in {
   system.activationScripts.mihomoSetup = {
     text = ''
       mkdir -p ${logDir}
+      touch ${logDir}/mihomo.log ${logDir}/mihomo.error.log
       chown -R ${myvars.username}:staff ${logDir}
 
       if [ ! -d "${configDir}/.git" ]; then
@@ -63,7 +64,7 @@ in {
             | while IFS= read -r svc; do
               networksetup -setwebproxy "$svc" 127.0.0.1 7890 2>/dev/null
               networksetup -setsecurewebproxy "$svc" 127.0.0.1 7890 2>/dev/null
-              networksetup -setsocksfirewallproxy "$svc" 127.0.0.1 7893 2>/dev/null
+              networksetup -setsocksfirewallproxy "$svc" 127.0.0.1 7891 2>/dev/null
             done
           exec ${pkgs.mihomo}/bin/mihomo -d ${configDir}
         ''

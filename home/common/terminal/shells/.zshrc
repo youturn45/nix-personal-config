@@ -99,14 +99,66 @@ function proxy() {
                 return 1
             fi
             ;;
+        macos-on)
+            if [[ "$OSTYPE" != "darwin"* ]]; then
+                printf "Error: macos-on is only supported on macOS.\n"
+                return 1
+            fi
+            local mode="${2:-local}"
+            local proxy_http proxy_socks label
+            if [[ "$mode" == "local" ]]; then
+                proxy_http="$PROXY_LOCAL_HTTP"
+                proxy_socks="$PROXY_LOCAL_SOCKS"
+                label="local (127.0.0.1)"
+            elif [[ "$mode" == "network" ]]; then
+                proxy_http="$PROXY_NETWORK_HTTP"
+                proxy_socks="$PROXY_NETWORK_SOCKS"
+                label="network (10.0.0.3)"
+            else
+                printf "Error: invalid mode '%s'. Use 'local' or 'network'.\n" "$mode"
+                return 1
+            fi
+            local http_addr="${proxy_http#http://}"
+            local http_host="${http_addr%:*}"
+            local http_port="${http_addr##*:}"
+            local socks_addr="${proxy_socks#socks5://}"
+            local socks_host="${socks_addr%:*}"
+            local socks_port="${socks_addr##*:}"
+            networksetup -listallnetworkservices | tail -n +2 \
+                | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
+                | while IFS= read -r svc; do
+                    networksetup -setwebproxy "$svc" "$http_host" "$http_port" 2>/dev/null
+                    networksetup -setsecurewebproxy "$svc" "$http_host" "$http_port" 2>/dev/null
+                    networksetup -setsocksfirewallproxy "$svc" "$socks_host" "$socks_port" 2>/dev/null
+                done
+            printf "macOS system proxy enabled — %s\n" "$label"
+            printf "  HTTP:  %s:%s\n" "$http_host" "$http_port"
+            printf "  SOCKS: %s:%s\n" "$socks_host" "$socks_port"
+            ;;
+        macos-off)
+            if [[ "$OSTYPE" != "darwin"* ]]; then
+                printf "Error: macos-off is only supported on macOS.\n"
+                return 1
+            fi
+            networksetup -listallnetworkservices | tail -n +2 \
+                | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
+                | while IFS= read -r svc; do
+                    networksetup -setwebproxystate "$svc" off 2>/dev/null
+                    networksetup -setsecurewebproxystate "$svc" off 2>/dev/null
+                    networksetup -setsocksfirewallproxystate "$svc" off 2>/dev/null
+                done
+            printf "macOS system proxy disabled.\n"
+            ;;
         help|*)
             printf "Usage: proxy <command> [options]\n\n"
             printf "Commands:\n"
-            printf "  on [local|network]  Enable proxy (default: local)\n"
-            printf "  off                 Disable proxy\n"
-            printf "  show                Show current proxy status\n"
-            printf "  test                Test proxy connectivity\n"
-            printf "  help                Show this help message\n"
+            printf "  on [local|network]       Enable shell proxy env vars (default: local)\n"
+            printf "  off                      Disable shell proxy env vars\n"
+            printf "  macos-on [local|network] Set macOS system proxy via networksetup\n"
+            printf "  macos-off                Clear macOS system proxy via networksetup\n"
+            printf "  show                     Show current proxy status\n"
+            printf "  test                     Test proxy connectivity\n"
+            printf "  help                     Show this help message\n"
             ;;
     esac
 }
