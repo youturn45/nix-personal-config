@@ -182,10 +182,9 @@ in {
           scratch_buf = vim.api.nvim_create_buf(false, true)
           vim.api.nvim_set_current_buf(scratch_buf)
 
-          vim.bo[scratch_buf].buftype = "nofile"
           vim.bo[scratch_buf].bufhidden = "hide"
           vim.bo[scratch_buf].swapfile = false
-          vim.bo[scratch_buf].filetype = "markdown"
+          vim.bo[scratch_buf].filetype = "md"
         end
       end, {})
     '';
