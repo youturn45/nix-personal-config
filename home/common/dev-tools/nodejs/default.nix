@@ -6,8 +6,9 @@
 }: {
   # Node.js and npm configuration
   home.packages = with pkgs; [
-    nodejs_22 # Latest LTS version
-    # npm comes bundled with nodejs
+    nodejs_22
+    pnpm
+    bun
   ];
 
   # Create npm directories on activation
