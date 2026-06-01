@@ -26,15 +26,19 @@
       if nc -z -G 1 127.0.0.1 7890 2>/dev/null; then
         export HTTP_PROXY="http://127.0.0.1:7890"
         export HTTPS_PROXY="http://127.0.0.1:7890"
+        export GOPROXY="https://proxy.golang.org,direct"
         echo "Go install: using local proxy (127.0.0.1:7890)"
       elif nc -z -G 1 10.0.0.3 7890 2>/dev/null; then
         export HTTP_PROXY="http://10.0.0.3:7890"
         export HTTPS_PROXY="http://10.0.0.3:7890"
+        export GOPROXY="https://proxy.golang.org,direct"
         echo "Go install: using network proxy (10.0.0.3:7890)"
       else
-        echo "Go install: no proxy detected, proceeding directly"
+        export GOPROXY="https://goproxy.cn,https://goproxy.io,direct"
+        echo "Go install: no proxy detected, using goproxy.cn mirror"
       fi
     else
+      export GOPROXY="https://proxy.golang.org,direct"
       echo "Go install: using inherited proxy (''${HTTP_PROXY:-$http_proxy})"
     fi
 
@@ -48,8 +52,10 @@
     "$HOME/.go/bin"
   ];
 
-  # Set GOPATH to user directory (keeps go install packages out of ~/go)
   home.sessionVariables = {
     GOPATH = "$HOME/.go";
+    # goproxy.cn is accessible in China; falls back to goproxy.io then direct
+    # When a local proxy (mihomo/ClashX) is running it will route through that anyway
+    GOPROXY = "https://goproxy.cn,https://goproxy.io,direct";
   };
 }
