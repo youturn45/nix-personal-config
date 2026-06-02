@@ -154,5 +154,11 @@
       enableZshIntegration = true;
       enableNushellIntegration = true;
     };
+
+    tmux = {
+      enable = true;
+      mouse = true;
+      focusEvents = true;
+    };
   };
 }
