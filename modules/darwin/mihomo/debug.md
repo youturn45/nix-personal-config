@@ -1,5 +1,30 @@
 # Mihomo Debug Guide
 
+## How it works
+
+Mihomo runs as a **per-user LaunchAgent** managed by nix-darwin. The `launchd.agents.mihomo` block in `default.nix` generates a plist at `~/Library/LaunchAgents/io.github.metacubex.mihomo.plist`.
+
+**Key plist properties:**
+- `RunAtLoad = true` — starts automatically at login
+- `KeepAlive = true` — launchd restarts mihomo if it crashes
+- `Label` — `io.github.metacubex.mihomo` (used in all `launchctl` commands)
+- Logs go to `~/Library/Logs/mihomo/`
+
+**Startup sequence** (what the plist's shell script does on each launch):
+1. Creates the log directory if missing
+2. Iterates all network services, skipping Tailscale/Bridge/JTAG/Bluetooth/VPN
+3. Sets HTTP and HTTPS proxy to `127.0.0.1:7890` on each service
+4. Sets SOCKS5 proxy to `127.0.0.1:7891` on each service
+5. `exec`s mihomo with `~/.config/clash.meta` as the config directory
+
+**Helper scripts:**
+- `mihomo-reload` — sends SIGHUP to reload config in-place (no proxy gap)
+- `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then sends SIGHUP
+
+**Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory and clone (first time) or pull (subsequent times) the config repo from GitHub over SSH using `~/.ssh/Youturn`.
+
+---
+
 ## Check service status
 
 ```bash

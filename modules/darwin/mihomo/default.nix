@@ -14,18 +14,26 @@ in {
   environment.systemPackages = [
     pkgs.mihomo
 
+    (pkgs.writeShellScriptBin "mihomo-start" ''
+      launchctl kickstart gui/$(id -u)/io.github.metacubex.mihomo \
+        && echo "mihomo started"
+    '')
+
     (pkgs.writeShellScriptBin "mihomo-reload" ''
-      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
-      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
+      if pkill -HUP mihomo; then
+        echo "mihomo reloaded"
+      else
+        echo "mihomo is not running, starting via launchd..."
+        launchctl kickstart gui/$(id -u)/io.github.metacubex.mihomo \
+          && echo "mihomo started"
+      fi
     '')
 
     (pkgs.writeShellScriptBin "mihomo-sync" ''
       set -e
       echo "mihomo: pulling latest config..."
       ${pkgs.git}/bin/git -C ${configDir} pull --ff-only
-      echo "mihomo: reloading..."
-      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
-      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
+      mihomo-reload
     '')
   ];
 
