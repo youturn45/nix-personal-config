@@ -185,7 +185,7 @@
   in {
     darwinConfigurations = {
       Rorschach = mkDarwinHost {hostname = "Rorschach";};
-      NightOwl = mkDarwinHost {hostname = "NightOwl";};
+      NightOwl = mkDarwinHost {hostname = "NightOwl"; hmModule = ./home/darwin/server;};
       SilkSpectre = mkDarwinHost {hostname = "SilkSpectre";};
     };
     nixosConfigurations = {
