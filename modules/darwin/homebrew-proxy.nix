@@ -58,5 +58,12 @@ in {
       echo >&2 "homebrew-proxy: no proxy, SJTU unreachable — falling back to Tsinghua mirror"
       ${tuna_exports}
     fi
+
+    # Stamp the selected mirror URL directly into Homebrew's git config so
+    # it persists for all future brew invocations, not just this activation.
+    if [ -d /opt/homebrew/.git ]; then
+      git -C /opt/homebrew remote set-url origin "$HOMEBREW_BREW_GIT_REMOTE"
+      echo >&2 "homebrew-proxy: set /opt/homebrew remote to $HOMEBREW_BREW_GIT_REMOTE"
+    fi
   '';
 }
