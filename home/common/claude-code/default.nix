@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -75,9 +76,9 @@
         "WebSearch(*)"
         "WebFetch(*)"
         "Read(//nix/store/**)"
-        "Read(//${config.home.homeDirectory}/.config/**)"
-        "Read(//${config.home.homeDirectory}/.nix-profile/etc/**)"
-        "Read(//${config.home.homeDirectory}/.local/state/nix/profiles/**)"
+        "Read(~/.config/**)"
+        "Read(~/.nix-profile/etc/**)"
+        "Read(~/.local/state/nix/profiles/**)"
         "Read(//opt/homebrew/etc/**)"
         "Bash(git -C /opt/homebrew remote *)"
         "Bash(git -C /opt/homebrew config --list)"
