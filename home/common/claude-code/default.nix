@@ -72,6 +72,17 @@
         "Bash(nix search *)"
         "Bash(nix-env *)"
         "Bash(home-manager generations *)"
+        "WebSearch(*)"
+        "WebFetch(*)"
+        "Read(//nix/store/**)"
+        "Read(//${config.home.homeDirectory}/.config/**)"
+        "Read(//${config.home.homeDirectory}/.nix-profile/etc/**)"
+        "Read(//${config.home.homeDirectory}/.local/state/nix/profiles/**)"
+        "Read(//opt/homebrew/etc/**)"
+        "Bash(git -C /opt/homebrew remote *)"
+        "Bash(git -C /opt/homebrew config --list)"
+        "Bash(/opt/homebrew/bin/brew shellenv *)"
+        "Bash(env -i HOME=${config.home.homeDirectory} PATH=/opt/homebrew/bin:/usr/bin:/bin brew --version)"
       ];
     };
   };
