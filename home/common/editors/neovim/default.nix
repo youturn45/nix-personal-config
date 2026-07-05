@@ -156,7 +156,7 @@ in {
           formatters_by_ft = {
             nix = ["alejandra"];
             rust = ["rustfmt"];
-            python = ["black"];
+            python = ["ruff_format"];
             javascript = ["prettier"];
             typescript = ["prettier"];
             json = ["prettier"];
