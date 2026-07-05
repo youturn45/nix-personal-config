@@ -95,3 +95,38 @@ networksetup -getsocksfirewallproxy Wi-Fi
 ```
 
 All three should show `Enabled: Yes` and point to `127.0.0.1`.
+
+---
+
+## Common issue: crash-looping with no logs (log dir owned by root)
+
+**Symptom:** `launchctl print gui/$(id -u)/io.github.metacubex.mihomo` shows
+`state = spawn scheduled` (or `waiting`), `active count = 0`, `last exit code = 1`,
+and both `mihomo.log`/`mihomo.error.log` are empty or stuck at an old timestamp
+(mihomo isn't even starting, so it never gets a chance to log anything itself).
+
+**Cause:** `~/Library/Logs/mihomo/` and/or its log files got re-owned by `root`
+(observed via `sudo ls -la ~/Library/Logs/mihomo/` — owner shows `root` instead
+of your user). This can happen when a `darwin-rebuild`/`just build` activation
+run recreates or reloads the launchd agent before the `mihomoSetup` activation
+script's `chown -R` has taken effect. Since launchd runs the agent as your user
+(not root), it can't open a root-owned log file, and the whole `/bin/sh -c '...'`
+job fails before mihomo even execs.
+
+**Check for it:**
+
+```bash
+sudo ls -la ~/Library/Logs/mihomo/   # look for owner != your username
+log show --predicate 'eventMessage contains "mihomo"' --last 1h --info | grep FATAL
+```
+
+The second command surfaces the `logger`-based FATAL message the launchd job
+emits via syslog when it detects the log dir isn't writable — this still shows
+up even when the log *files themselves* can't be written to.
+
+**Fix:**
+
+```bash
+sudo chown -R $(whoami):staff ~/Library/Logs/mihomo/
+launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+```

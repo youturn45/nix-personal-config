@@ -10,22 +10,25 @@
   repoUrl = "git@github.com:youturn45/clash.meta.git";
   sshKey = "${homeDir}/.ssh/Youturn";
   gitSSH = "ssh -i ${sshKey} -o StrictHostKeyChecking=accept-new -o BatchMode=yes";
+  reloadScript = ''
+    if ! pgrep -x mihomo >/dev/null; then
+      echo "mihomo is not running, starting it..." >&2
+      exec launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+    fi
+    sudo pkill -HUP -x mihomo && echo "mihomo reloaded"
+  '';
 in {
   environment.systemPackages = [
     pkgs.mihomo
 
-    (pkgs.writeShellScriptBin "mihomo-reload" ''
-      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
-      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
-    '')
+    (pkgs.writeShellScriptBin "mihomo-reload" reloadScript)
 
     (pkgs.writeShellScriptBin "mihomo-sync" ''
       set -e
       echo "mihomo: pulling latest config..."
       ${pkgs.git}/bin/git -C ${configDir} pull --ff-only
       echo "mihomo: reloading..."
-      pid=$(pgrep mihomo) || { echo "mihomo is not running" >&2; exit 1; }
-      sudo kill -HUP "$pid" && echo "mihomo reloaded (PID $pid)"
+      ${reloadScript}
     '')
   ];
 
@@ -59,6 +62,10 @@ in {
         "/bin/sh" "-c"
         ''
           mkdir -p ${logDir}
+          if [ ! -w ${logDir} ]; then
+            logger -t mihomo "FATAL: ${logDir} not writable by $(id -un) -- fix with: sudo chown -R $(id -un):staff ${logDir} (see modules/darwin/mihomo/debug.md)"
+            exit 1
+          fi
           networksetup -listallnetworkservices | tail -n +2 \
             | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
             | while IFS= read -r svc; do

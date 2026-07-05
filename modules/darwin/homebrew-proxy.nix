@@ -30,32 +30,34 @@
   tuna_exports = mkExports tuna_env;
 
 in {
-  # Proxy set + reachable → origin via proxy
-  # No proxy (or unreachable) → try SJTU first, fall back to TUNA
+  # Priority: env proxy (if reachable) → local mihomo → SJTU mirror → TUNA mirror
   system.activationScripts.homebrew.text = lib.mkBefore ''
     _PROXY="''${http_proxy:-''${HTTP_PROXY:-}}"
+    _EFFECTIVE_PROXY=""
 
     if [ -n "$_PROXY" ]; then
       _PROXY_ADDR="''${_PROXY#http://}"
       _PROXY_HOST="''${_PROXY_ADDR%:*}"
       _PROXY_PORT="''${_PROXY_ADDR##*:}"
       if /usr/bin/nc -z "$_PROXY_HOST" "$_PROXY_PORT" 2>/dev/null; then
-        echo >&2 "homebrew-proxy: proxy available ($_PROXY), using origin servers"
-        ${mkUnsets}
-        export http_proxy="$_PROXY" https_proxy="$_PROXY" HTTP_PROXY="$_PROXY" HTTPS_PROXY="$_PROXY"
-        export no_proxy="localhost,127.0.0.1,::1" NO_PROXY="localhost,127.0.0.1,::1"
-      elif /usr/bin/nc -z mirror.sjtu.edu.cn 443 2>/dev/null; then
-        echo >&2 "homebrew-proxy: proxy unreachable, SJTU available — using SJTU mirror"
-        ${sjtu_exports}
-      else
-        echo >&2 "homebrew-proxy: proxy and SJTU unreachable, falling back to Tsinghua mirror"
-        ${tuna_exports}
+        _EFFECTIVE_PROXY="$_PROXY"
       fi
+    fi
+
+    if [ -z "$_EFFECTIVE_PROXY" ] && /usr/bin/nc -z 127.0.0.1 7890 2>/dev/null; then
+      _EFFECTIVE_PROXY="http://127.0.0.1:7890"
+    fi
+
+    if [ -n "$_EFFECTIVE_PROXY" ]; then
+      echo >&2 "homebrew-proxy: proxy available ($_EFFECTIVE_PROXY), using origin servers"
+      ${mkUnsets}
+      export http_proxy="$_EFFECTIVE_PROXY" https_proxy="$_EFFECTIVE_PROXY" HTTP_PROXY="$_EFFECTIVE_PROXY" HTTPS_PROXY="$_EFFECTIVE_PROXY"
+      export no_proxy="localhost,127.0.0.1,::1" NO_PROXY="localhost,127.0.0.1,::1"
     elif /usr/bin/nc -z mirror.sjtu.edu.cn 443 2>/dev/null; then
-      echo >&2 "homebrew-proxy: no proxy, SJTU available — using SJTU mirror"
+      echo >&2 "homebrew-proxy: no reachable proxy, SJTU available — using SJTU mirror"
       ${sjtu_exports}
     else
-      echo >&2 "homebrew-proxy: no proxy, SJTU unreachable — falling back to Tsinghua mirror"
+      echo >&2 "homebrew-proxy: no reachable proxy, SJTU unreachable — falling back to Tsinghua mirror"
       ${tuna_exports}
     fi
 
