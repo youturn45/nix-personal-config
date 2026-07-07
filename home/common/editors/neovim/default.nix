@@ -146,6 +146,8 @@ in {
 
       # Additional functionality
       markdown-preview.enable = true;
+      # Counterpart of the tmux-side plugin in home/common/terminal/tmux
+      tmux-navigator.enable = true;
       # Note: copilot-vim requires allowUnfree = true
       # copilot-vim.enable = true;
 

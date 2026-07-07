@@ -20,9 +20,6 @@
     htop # Basic system monitor
     fastfetch # System information display
 
-    # Terminal utilities
-    tmux # Terminal multiplexer
-
     # Essential networking & tools
     curl # Data transfer tool
     wget # File downloader
