@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s*)",
+      "Bash(openclaw config validate*)",
+      "Bash(openclaw config get *)",
+      "Bash(npm run typecheck)"
+    ]
+  }
+}
