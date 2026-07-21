@@ -67,6 +67,9 @@ function proxy() {
             export all_proxy="$proxy_socks"
             export ALL_PROXY="$proxy_socks"
             unset no_proxy NO_PROXY
+            # npm/pnpm ignore http_proxy/https_proxy; they only read npm_config_*
+            export npm_config_proxy="$proxy_http"
+            export npm_config_https_proxy="$proxy_http"
             printf "Proxy enabled — %s\n" "$label"
             printf "  HTTP:  %s\n" "$proxy_http"
             printf "  SOCKS: %s\n" "$proxy_socks"
@@ -74,6 +77,7 @@ function proxy() {
         off)
             unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
             unset all_proxy ALL_PROXY
+            unset npm_config_proxy npm_config_https_proxy
             printf "Proxy disabled.\n"
             ;;
         show)

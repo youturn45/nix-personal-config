@@ -1,37 +1,18 @@
 {lib, ...}: let
-  # SJTUG (Shanghai Jiao Tong University) mirror — primary
-  # Note: SJTUG does not provide HOMEBREW_API_DOMAIN; NO_INSTALL_FROM_API forces git-based installs
-  sjtu_env = {
-    HOMEBREW_NO_INSTALL_FROM_API = "1";
-    HOMEBREW_BOTTLE_DOMAIN = "https://mirror.sjtu.edu.cn/homebrew-bottles/bottles";
-    HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.sjtug.sjtu.edu.cn/git/brew.git";
-    HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.sjtug.sjtu.edu.cn/git/homebrew-core.git";
-    HOMEBREW_PIP_INDEX_URL = "https://mirror.sjtu.edu.cn/pypi/web/simple";
-  };
-
-  # Tsinghua (TUNA) mirror — secondary fallback
-  tuna_env = {
-    HOMEBREW_API_DOMAIN = "https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api";
-    HOMEBREW_BOTTLE_DOMAIN = "https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles";
-    HOMEBREW_BREW_GIT_REMOTE = "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git";
-    HOMEBREW_CORE_GIT_REMOTE = "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git";
-    HOMEBREW_PIP_INDEX_URL = "https://pypi.tuna.tsinghua.edu.cn/simple";
-  };
-
-  mkExports = lib.attrsets.foldlAttrs
-    (acc: name: value: acc + "export ${name}=${value}\n")
-    "";
-
-  # Unsets for all vars across both mirror sets (union of keys)
-  allKeys = lib.attrNames (sjtu_env // tuna_env);
+  # Keep Homebrew on upstream by default. Mirror state can become stale enough
+  # to break cask API parsing during nix-darwin activation.
+  allKeys = [
+    "HOMEBREW_API_DOMAIN"
+    "HOMEBREW_BOTTLE_DOMAIN"
+    "HOMEBREW_BREW_GIT_REMOTE"
+    "HOMEBREW_CORE_GIT_REMOTE"
+    "HOMEBREW_NO_INSTALL_FROM_API"
+    "HOMEBREW_PIP_INDEX_URL"
+  ];
   mkUnsets = lib.concatMapStrings (name: "unset ${name}\n") allKeys;
-
-  sjtu_exports = mkExports sjtu_env;
-  tuna_exports = mkExports tuna_env;
-
 in {
-  # Proxy set + reachable → origin via proxy
-  # No proxy (or unreachable) → try SJTU first, fall back to TUNA
+  # Proxy set + reachable → origin via proxy.
+  # No proxy, or proxy unreachable → origin without mirror environment.
   system.activationScripts.homebrew.text = lib.mkBefore ''
     _PROXY="''${http_proxy:-''${HTTP_PROXY:-}}"
 
@@ -44,19 +25,14 @@ in {
         ${mkUnsets}
         export http_proxy="$_PROXY" https_proxy="$_PROXY" HTTP_PROXY="$_PROXY" HTTPS_PROXY="$_PROXY"
         export no_proxy="localhost,127.0.0.1,::1" NO_PROXY="localhost,127.0.0.1,::1"
-      elif /usr/bin/nc -z mirror.sjtu.edu.cn 443 2>/dev/null; then
-        echo >&2 "homebrew-proxy: proxy unreachable, SJTU available — using SJTU mirror"
-        ${sjtu_exports}
       else
-        echo >&2 "homebrew-proxy: proxy and SJTU unreachable, falling back to Tsinghua mirror"
-        ${tuna_exports}
+        echo >&2 "homebrew-proxy: proxy unreachable, using origin servers without proxy"
+        ${mkUnsets}
+        unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
       fi
-    elif /usr/bin/nc -z mirror.sjtu.edu.cn 443 2>/dev/null; then
-      echo >&2 "homebrew-proxy: no proxy, SJTU available — using SJTU mirror"
-      ${sjtu_exports}
     else
-      echo >&2 "homebrew-proxy: no proxy, SJTU unreachable — falling back to Tsinghua mirror"
-      ${tuna_exports}
+      echo >&2 "homebrew-proxy: no proxy, using origin servers"
+      ${mkUnsets}
     fi
   '';
 }
