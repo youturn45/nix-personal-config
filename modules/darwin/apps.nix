@@ -69,7 +69,7 @@
       "libomp"
       "batt"
       "steipete/tap/remindctl"
-      "steipete/tap/gogcli"
+      "openclaw/tap/gogcli"
       #  "ffmpeg"
     ];
 
