@@ -2,13 +2,17 @@
 
 ## Overview
 
+All mirrors have been dropped — every tool below hits origin directly, routing through the local mihomo proxy only when one is actually reachable.
+
 | Tool | Strategy | Detection | Inherits shell `HTTP(S)_PROXY`? | Config location |
 |---|---|---|---|---|
-| Homebrew | Proxy if reachable, else mirror fallback | Dynamic (`nc` check on activation) | Yes, by design — script reads it, then re-exports both cases for curl/git | `modules/darwin/homebrew-proxy.nix` |
-| Go (`go install`) | Proxy if reachable, else mirror fallback | Dynamic (`nc` check on activation) | Yes — both the detection script *and* the `go` binary itself (`net/http.ProxyFromEnvironment`) honor it natively | `home/common/dev-tools/go/default.nix` |
-| Nix (binary cache) | Static mirror, then official cache | None — fixed ordered list | **No** for substituter/store fetches — those run through `nix-daemon`, a system service that doesn't see interactive shell env unless explicitly wired into the daemon's own launchd environment | `modules/darwin/nix-core.nix` |
-| pip | Static mirror only | None | Yes — pip's vendored `requests` library auto-detects it, no config needed | `home/common/dev-tools/_pip/default.nix` |
-| npm | Inherits `HTTP(S)_PROXY`/`http(s)_proxy` from shell env automatically (npm built-in) | None — no `.npmrc` proxy config, relies on shell env | Yes — npm's `proxy`/`https-proxy` config falls back to env vars natively | `home/common/dev-tools/nodejs/default.nix` |
+| Homebrew | Origin, via proxy if reachable | Dynamic (`nc` check on activation: inherited proxy, then `127.0.0.1:7890`) | Yes, by design — script reads it, then re-exports for curl/git | `modules/darwin/homebrew-proxy.nix` |
+| Go (`go install`, `go get`) | Origin, via proxy if set | None — no activation-time detection | Yes — Go's `net/http.ProxyFromEnvironment` honors it natively; `GOPROXY` uses Go's built-in default (`https://proxy.golang.org,direct`) | `home/common/dev-tools/go/default.nix` |
+| Nix (binary cache) | Origin only | None | No — daemon-level, see below | `modules/darwin/nix-core.nix` uses Nix's built-in default substituters (just `cache.nixos.org`) |
+| uv | Origin only | None | Yes — reqwest/pip-style env detection, no config needed | `home/common/python/default.nix` (`index-url = https://pypi.org/simple`) |
+| pip | Static mirror only | None | Yes — pip's vendored `requests` library auto-detects it, no config needed | `home/common/dev-tools/_pip/default.nix` (unchanged, out of scope) |
+| npm/pnpm | Origin only | None | **No** — npm ignores raw `HTTP_PROXY`/`http_proxy`; needs `npm_config_proxy`/`npm_config_https_proxy` instead (now exported by the `proxy` zsh function) | `home/common/terminal/shells/.zshrc` |
+| bun | Origin only | None | Yes — reads `HTTP_PROXY`/`HTTPS_PROXY` natively | n/a |
 
 System proxy itself (Wi-Fi/LAN HTTP+SOCKS) is set by the Mihomo launchd agent — see below.
 
@@ -49,59 +53,47 @@ Mihomo (Clash Meta) runs as a nix-darwin launchd agent, replacing ClashX Meta as
 **File:** `modules/darwin/homebrew-proxy.nix` — runs as a `system.activationScripts.homebrew` block (root, on every build).
 
 Decision order:
-1. If `http_proxy`/`HTTP_PROXY` is inherited **and** reachable (`nc -z`) → export it for `http(s)_proxy`/`HTTP(S)_PROXY`, use origin Homebrew/GitHub servers.
-2. Else if `mirror.sjtu.edu.cn:443` is reachable → use SJTU (Shanghai Jiao Tong) mirror env vars (`HOMEBREW_BOTTLE_DOMAIN`, `HOMEBREW_BREW_GIT_REMOTE`, `HOMEBREW_CORE_GIT_REMOTE`, `HOMEBREW_PIP_INDEX_URL`). SJTU doesn't serve `HOMEBREW_API_DOMAIN`, so `HOMEBREW_NO_INSTALL_FROM_API=1` forces git-based installs.
-3. Else fall back to Tsinghua (TUNA) mirror env vars.
+1. If `http_proxy`/`HTTP_PROXY` is inherited **and** reachable (`nc -z`) → use it.
+2. Else if `127.0.0.1:7890` (local mihomo) is listening → use it directly, even without an inherited env var.
+3. Else → unset every `HOMEBREW_*`/proxy env var and hit origin (Homebrew/GitHub) with no proxy at all.
 
-The selected `HOMEBREW_BREW_GIT_REMOTE` is also stamped directly into `/opt/homebrew`'s git config (`git remote set-url origin ...`) so it persists across all future `brew` invocations, not just the activation run.
+No mirror env vars (`HOMEBREW_BOTTLE_DOMAIN`, `HOMEBREW_API_DOMAIN`, etc.) are ever set — they're only unset, defensively, in case they leaked in from an interactive shell.
 
 **Env inheritance:** `curl` (used by `brew`'s downloader) and `git` both honor lowercase `http_proxy`/`https_proxy` natively. This has historically been inconsistent for uppercase `HTTPS_PROXY` and gets stripped under `sudo` without `-E` — which is why the activation script explicitly re-exports all four (`http_proxy`, `https_proxy`, `HTTP_PROXY`, `HTTPS_PROXY`) itself rather than relying on whatever the caller already has set.
 
+### Go (`go install`, `go get`)
 
+**File:** `home/common/dev-tools/go/default.nix`.
 
-### Go (`go install`)
-
-**File:** `home/common/dev-tools/go/default.nix`, in `home.activation.installGoPackages`.
-
-Decision order:
-1. If `HTTP_PROXY`/`http_proxy` already inherited → keep it, set `GOPROXY=https://proxy.golang.org,direct`.
-2. Else probe `127.0.0.1:7890` (local Mihomo) → use it, same `GOPROXY`.
-3. Else probe `10.0.0.3:7890` (LAN Mihomo instance) → use it, same `GOPROXY`.
-4. Else no proxy found → `GOPROXY=https://goproxy.cn,https://goproxy.io,direct` (China-friendly mirror chain).
-
-`home.sessionVariables.GOPROXY` is also statically set to the goproxy.cn chain as the shell default outside of activation.
-
-**Env inheritance:** the `go` binary itself uses Go's standard `net/http` client for both GOPROXY requests and direct VCS fetches, which calls `http.ProxyFromEnvironment` — this honors `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (or lowercase) automatically. So the activation script's job is only to *decide which proxy URL to export*; once exported, `go` itself would have picked it up natively even without the script.
+No detection logic at all. `GOPROXY` is left unset, so Go uses its own built-in default (`https://proxy.golang.org,direct`) — origin first, direct fallback, both native to the `go` binary. Go's standard `net/http` client calls `http.ProxyFromEnvironment`, which honors `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (or lowercase) automatically — so whatever proxy the `proxy` zsh function exported is picked up with zero extra config.
 
 ### Nix (binary cache substituters)
 
-**File:** `modules/darwin/nix-core.nix` — `nix.settings.substituters`.
+**File:** `modules/darwin/nix-core.nix` — no longer overrides `nix.settings.substituters`; Nix's built-in default (`https://cache.nixos.org`) is used as-is.
 
-Static ordered list, no runtime detection:
-1. `https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store` (signed with the same key as `cache.nixos.org`)
-2. `https://cache.nixos.org` (official, fallback)
+Note: `flake.nix` has a commented-out `nixConfig` block referencing a USTC mirror — it's inactive and unrelated to the system substituters above.
 
-Note: `flake.nix` has a commented-out `nixConfig` block referencing a USTC mirror — it's inactive and only would affect flake evaluation itself (not the system substituters above) if uncommented.
+**Env inheritance:** this is *not* a "does the tool honor env vars" question — substituter/store fetches run through `nix-daemon`, a system service that doesn't see your interactive shell's exported `HTTP_PROXY`/`http_proxy` (daemons don't inherit a user shell's environment). Proxying the daemon itself goes through a completely separate mechanism: `just build`/`just smart-proxy` calls `scripts/darwin_set_proxy.py`, which writes `http_proxy`/`https_proxy` directly into the nix-daemon's own launchd plist (`/Library/LaunchDaemons/org.nixos.nix-daemon.plist`) and restarts it. That's independent of `.zshrc` and already working — no change needed there.
 
-**Env inheritance:** unlike the other tools here, this is *not* a simple "does the tool honor env vars" question. Substituter/store fetches run through `nix-daemon`, a system service — it does not see your interactive shell's exported `HTTP_PROXY`/`https_proxy`, since daemons don't inherit a user shell's environment. Setting `export HTTP_PROXY=...` in a terminal has **no effect** on `nix build`/`nix copy` substituter downloads. To proxy the daemon itself you'd need to inject the variable into the daemon's own launchd environment (e.g. `launchctl setenv` + restart, or wiring it into the daemon's plist) — this repo doesn't currently do that, which is why it relies purely on the static mirror order instead. (Flake input fetches like `fetchTarball`/`fetchGit`, which can run client-side rather than through the daemon, may behave differently — not verified here.)
+### uv
+
+**File:** `home/common/python/default.nix` — writes `~/.config/uv/uv.toml` with `index-url = "https://pypi.org/simple"` (origin, no mirror).
+
+**Env inheritance:** uv is Rust/reqwest-based and follows pip's networking conventions — it honors `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` natively, no extra config needed.
 
 ### pip
 
 **File:** `home/common/dev-tools/_pip/default.nix` — writes `~/.config/pip/pip.conf`.
 
-Static mirror only, no fallback or detection: `index-url = https://mirror.nju.edu.cn/pypi/web/simple` (Nanjing University). Commented-out alternatives in the same file: `mirror.nju.edu.cn` (dup), `mirrors.bfsu.edu.cn` (Beijing Foreign Studies University).
+Static mirror only, no fallback or detection: `index-url = https://mirror.nju.edu.cn/pypi/web/simple` (Nanjing University). Out of scope for the origin-only pass — left as-is. Commented-out alternatives in the same file: `mirror.nju.edu.cn` (dup), `mirrors.bfsu.edu.cn` (Beijing Foreign Studies University).
 
-**Env inheritance:** pip's vendored `requests` library auto-detects `HTTP_PROXY`/`HTTPS_PROXY` (and lowercase) from the environment with no config needed. So even with the static mirror set, an exported `HTTP_PROXY` in the shell will still be used by pip alongside/instead of the mirror domain.
+**Env inheritance:** pip's vendored `requests` library auto-detects `HTTP_PROXY`/`HTTPS_PROXY` (and lowercase) from the environment with no config needed.
 
-### npm
+### npm / pnpm / bun
 
-**File:** `home/common/dev-tools/nodejs/default.nix`.
+**File:** `home/common/dev-tools/nodejs/default.nix` (packages/`.npmrc`), `home/common/terminal/shells/.zshrc` (proxy wiring).
 
-No explicit proxy/mirror config in `.npmrc` (only `prefix`, `cache`, `init-author-name`, `init-license`, `fund=false`, `audit=false`) — but npm itself automatically honors proxy env vars per its [config docs](https://docs.npmjs.com/cli/v11/using-npm/config/):
-- `proxy` (HTTP): honors `HTTP_PROXY`/`http_proxy` if set.
-- `https-proxy` (HTTPS — relevant since the default registry is `https://registry.npmjs.org`): honors `HTTPS_PROXY`/`https_proxy`/`HTTP_PROXY`/`http_proxy` if set (checks both cases).
-
-So whether `npm install` actually goes through Mihomo depends entirely on whether the *current shell* has those env vars exported — unlike Go/Homebrew, there's no activation script here that detects and exports them, so an interactive shell without `HTTP_PROXY` set will go direct with no mirror fallback. Candidate for adding the same dynamic detect-then-fallback pattern used by Go/Homebrew if `npm install` proves slow/unreachable without a proxy.
+No mirror config, `.npmrc` only sets `prefix`, `cache`, `init-author-name`, `init-license`, `fund=false`, `audit=false`. But npm/pnpm — unlike almost every other tool here — **do not** read raw `HTTP_PROXY`/`http_proxy` (a long-standing, still-open npm limitation). They do read `npm_config_proxy`/`npm_config_https_proxy` env vars, so the `proxy` zsh function now exports those too, mirrored to the same value as `http_proxy`/`https_proxy`, and unsets them in `proxy off`. `bun` is unaffected by this — it reads `HTTP_PROXY`/`HTTPS_PROXY` natively.
 
 ---
 
