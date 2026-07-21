@@ -32,6 +32,7 @@
     # Network tools
     httpie
     mtr
+    mosh
   ];
 
   environment.variables.EDITOR = "nvim";
