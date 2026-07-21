@@ -47,6 +47,8 @@
       upgrade = false; # Skip upgrading packages for faster builds
       # 'zap': uninstalls all formulae(and related files) not listed in the generated Brewfile
       cleanup = "zap";
+      # brew bundle --cleanup now requires --force in newer versions
+      extraFlags = [ "--force" ];
     };
 
     # Applications to install from Mac App Store using mas.
@@ -69,7 +71,6 @@
       "libomp"
       "batt"
       "steipete/tap/remindctl"
-      "openclaw/tap/gogcli"
       #  "ffmpeg"
     ];
 

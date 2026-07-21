@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -58,16 +59,36 @@
         "Bash(git config --list)"
         "Bash(git config --get *)"
         "Bash(launchctl list *)"
+        "Bash(launchctl getenv *)"
+        "Bash(launchctl print *)"
+        "Bash(git -C * status *)"
+        "Bash(git -C * log *)"
+        "Bash(git -C * diff *)"
+        "Bash(git -C * show *)"
+        "Bash(git -C * remote *)"
+        "Bash(git -C * config *)"
+        "Bash(git -C * branch *)"
         "Bash(nix eval *)"
         "Bash(nix flake check *)"
         "Bash(nix search *)"
         "Bash(nix-env *)"
         "Bash(home-manager generations *)"
+        "WebSearch(*)"
+        "WebFetch(*)"
+        "Read(//nix/store/**)"
+        "Read(~/.config/**)"
+        "Read(~/.nix-profile/etc/**)"
+        "Read(~/.local/state/nix/profiles/**)"
+        "Read(//opt/homebrew/etc/**)"
+        "Bash(git -C /opt/homebrew remote *)"
+        "Bash(git -C /opt/homebrew config --list)"
+        "Bash(/opt/homebrew/bin/brew shellenv *)"
+        "Bash(env -i HOME=${config.home.homeDirectory} PATH=/opt/homebrew/bin:/usr/bin:/bin brew --version)"
       ];
     };
   };
+  settingsFile = pkgs.writeText "claude-managed-settings.json" settingsJson;
 in {
-
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
 
   # All hook scripts deployed automatically — just add a script to hooks/ and it's live
@@ -91,14 +112,20 @@ in {
   # Skills directory — not managed as a symlink so Claude can install skills freely at runtime
   home.file.".claude/skills/.keep".text = "";
 
-  # Write settings.json as a real file (not a symlink) so Claude Code can modify it at runtime
+  # Write settings.json as a real file (not a symlink) so Claude Code can modify it
+  # at runtime. Merge on every activation: nix owns permissions/env/hooks, while
+  # runtime keys Claude Code adds (model, tui, ...) are preserved. Rules accepted
+  # via "Always allow" live in nix-owned keys and are reset on rebuild — durable
+  # rules belong here or in a repo's committed .claude/settings.json.
   home.activation.claudeSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
     _settings="$HOME/.claude/settings.json"
     mkdir -p "$HOME/.claude"
-    # Only write if the file is currently a nix store symlink or doesn't exist
-    if [ ! -f "$_settings" ] || [ -L "$_settings" ]; then
+    if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
+      _tmp="$(mktemp)"
+      ${pkgs.jq}/bin/jq -s '.[0] + .[1]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
+    else
       rm -f "$_settings"
-      echo '${settingsJson}' > "$_settings"
+      cat ${settingsFile} > "$_settings"
     fi
   '';
 
