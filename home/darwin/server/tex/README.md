@@ -2,12 +2,15 @@
 
 TeX Live setup with automated font management for reproducible document builds.
 
+**Server-only.** This module lives in `home/darwin/server/` and is loaded only by
+NightOwl. The full TeX Live distribution is large, so it is deliberately kept off
+the everyday laptops. Headless server: CLI toolchain only, no GUI editor/viewer.
+
 ## Overview
 
 This configuration provides:
 - **TeX Live scheme-full**: Complete LaTeX distribution with all packages
 - **Automated font linking**: Nix-managed fonts automatically synced to TEXMF
-- **Cross-platform**: Works identically on macOS (nix-darwin) and NixOS
 - **Reproducible**: Font versions locked to Nix store, ensuring consistent compilation
 
 ## Architecture
@@ -128,15 +131,11 @@ Shell aliases defined in this configuration:
 ```bash
 # Clean LaTeX auxiliary files
 texclean
-
-# Quick compile and view (pdflatex + zathura)
-texview document.tex
 ```
 
 ## Environment Variables
 
 - `TEXMFHOME`: `~/.texmf` - User-specific TeX packages and fonts
-- `PDFVIEWER`: `zathura` - Default PDF viewer
 
 ## Adding New Fonts
 
@@ -155,7 +154,7 @@ fonts.packages = with pkgs; [
 
 ### 2. Add to LaTeX Font List
 
-Edit `home/common/dev-tools/tex/default.nix`:
+Edit `home/darwin/server/tex/default.nix`:
 
 ```nix
 texFonts = with pkgs; [
@@ -263,30 +262,18 @@ We could enable `fontconfig` and `OSFONTDIR` to let LaTeX access `/Library/Fonts
 - **texlab**: Language server for LaTeX (LSP)
 - **latexrun**: Build automation tool
 - **rubber**: Automated LaTeX compilation
-- **texstudio**: LaTeX editor (GUI)
-- **zathura**: Lightweight PDF viewer (configured with Catppuccin theme)
-- **evince**: GNOME document viewer
 - **imagemagick**: Image conversion for LaTeX
 - **ghostscript**: PostScript interpreter
 
-### Zathura Configuration
-
-PDF viewer with Catppuccin Mocha theme:
-- Dark mode by default (`recolor = true`)
-- Vim-like keybindings
-- Fast and minimal
-
-**Usage**:
-```bash
-zathura document.pdf
-```
+GUI editors/viewers (texstudio, zathura, evince) are intentionally omitted —
+this runs on a headless server. View PDFs on the client that fetches them.
 
 ## References
 
 - [TeX Live Manual](https://www.tug.org/texlive/doc.html)
 - [fontspec Documentation](https://ctan.org/pkg/fontspec) - XeLaTeX/LuaLaTeX font selection
 - [TEXMF Directory Structure](https://www.tug.org/texmf-dist/)
-- [Nix Fonts Configuration](../../modules/common/fonts.nix)
+- [Nix Fonts Configuration](../../../../modules/common/fonts.nix)
 - [XeTeX Font Loading](https://www.tug.org/xetex/)
 
 ## Design Decisions

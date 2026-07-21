@@ -71,7 +71,6 @@
     brews = [
       "libomp"
       "batt"
-      "steipete/tap/remindctl"
       #  "ffmpeg"
     ];
 
@@ -126,7 +125,6 @@
       # Gaming
       # ============================================
       "steam"
-      "maa"
 
       # ============================================
       # Development Tools & Editors

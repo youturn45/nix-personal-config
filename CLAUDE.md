@@ -16,7 +16,17 @@ All system settings, including `.config`, are managed through this flake — no 
 
 - System-level (root) → `modules/`; user-level (dotfiles, packages) → `home/`. Both split into `common/`, `darwin/`, `nixos/` per platform; cross-platform code branches on `pkgs.stdenv.isDarwin`.
 - Modules auto-discovered via `collectModulesRecursively` (`my-lib/default.nix`): `_`-prefixed files/dirs ignored, a directory's own `default.nix` excluded from recursion, nested `*/default.nix` overrides sibling files. Never both explicitly import a subdirectory and let it be auto-collected.
+- **Module folder layout (tmux-style):** every module is a folder named for its function, with the code in `default.nix` and any sidecar files (settings, READMEs, `.md` docs, config data) inside that same folder — e.g. `home/common/terminal/tmux/default.nix`, `modules/darwin/mihomo/{default.nix,debug.md}`. Don't leave a module as a bare `foo.nix` next to its `foo.md`/settings; fold them into `foo/default.nix` + `foo/…`. The `default.nix`-replace rule means auto-collection picks up only the `default.nix` and ignores the sidecars.
 - All variables in `vars/default.nix` as `myvars.*` — never hardcode usernames/paths.
+
+## Server vs everyday split
+
+The daily-driver laptops (Rorschach, SilkSpectre) stay lean; heavy or server-only software (LaTeX, remote-gaming apps like MAA/BlueStacks, `remindctl`, media tooling) lives only on NightOwl. The rule is simple: **server-only code must not sit in any path the laptop configs collect.** Two designated homes:
+
+- **Server-only home modules → `home/darwin/server/`.** `flake.nix` gives NightOwl the `home/darwin/server` hmModule; its `default.nix` auto-collects the folder. Laptops use `home/darwin` (which only collects `./gui`) and never enter `server/`. Drop a function-named folder (e.g. `tex/default.nix`, `media/default.nix`) in `home/darwin/server/` and it is server-only automatically — no `_` prefix or explicit import needed.
+- **Server-only system/Homebrew modules → `modules/darwin/_server/`.** `_`-prefixed so auto-collection skips it; import the module explicitly from `hosts/darwin/NightOwl.nix` (e.g. `../../modules/darwin/_server/apps`). Its `homebrew.brews`/`casks` merge with the shared block in `modules/darwin/apps.nix`. Because `apps.nix` sets `cleanup = "zap"`, moving an app out of the shared block into here uninstalls it from the laptops on their next rebuild — that is the intended effect.
+
+Never put server-only packages directly in shared files (`home/common/**`, `home/darwin/default.nix`, `modules/darwin/apps.nix`) — they would land on every host.
 
 ## Before Committing
 

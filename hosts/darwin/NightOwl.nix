@@ -6,6 +6,7 @@
 }: {
   imports = [
     ./NightOwl/server.nix
+    ../../modules/darwin/_server/apps # server-only homebrew apps
   ];
 
   # Host-specific settings
