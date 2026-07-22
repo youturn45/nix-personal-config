@@ -18,6 +18,7 @@
       "*" = {
         # Automatically add keys to SSH agent
         addKeysToAgent = "yes";
+        identityFile = "~/.ssh/Youturn";
       };
 
       github = {
@@ -34,7 +35,10 @@
     # SSH client configuration
     extraConfig = ''
       ${lib.optionalString pkgs.stdenv.isDarwin ''
-        # Use macOS keychain for storing passphrases (Darwin only)
+        # UseKeychain is an Apple-only directive; IgnoreUnknown must come
+        # first so non-Apple ssh builds (e.g. mosh's bundled nixpkgs openssh)
+        # skip it instead of aborting config parsing.
+        IgnoreUnknown UseKeychain
         UseKeychain yes
       ''}
     '';
@@ -45,6 +49,15 @@
     # SSH agent socket will be set by the service
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };
+
+  # sshd silently rejects keys if ~/.ssh or authorized_keys have wrong
+  # permissions, so make sure both exist and are locked down on every build.
+  home.activation.setupAuthorizedKeys = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.ssh
+    $DRY_RUN_CMD chmod 700 ${config.home.homeDirectory}/.ssh
+    $DRY_RUN_CMD touch ${config.home.homeDirectory}/.ssh/authorized_keys
+    $DRY_RUN_CMD chmod 600 ${config.home.homeDirectory}/.ssh/authorized_keys
+  '';
 
   # Add a shell init script to load SSH key if it's not already loaded
   programs.zsh.initContent = lib.mkAfter ''
