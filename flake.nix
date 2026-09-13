@@ -17,9 +17,6 @@
     nixpkgs-unstable = {
       url = "github:NixOS/nixpkgs/nixos-unstable";
     };
-    nixpkgs-stable = {
-      url = "github:NixOS/nixpkgs/nixos-24.11";
-    };
     nix-darwin = {
       url = "github:lnl7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -66,7 +63,6 @@
   outputs = inputs @ {
     self,
     nixpkgs-unstable,
-    nixpkgs-stable,
     nur-ryan4yin,
     nix-darwin,
     nix-homebrew,
@@ -99,7 +95,6 @@
 
       pkgs = mkPkgs inputs.nixpkgs-unstable system;
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
-      pkgs-stable = mkPkgs inputs.nixpkgs-stable system;
     };
 
     # Darwin-specific specialArgs (using macOS system from myvars)
@@ -112,7 +107,6 @@
 
       # Only include alternative package sets, let NixOS manage its own pkgs
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable "x86_64-linux";
-      pkgs-stable = mkPkgs inputs.nixpkgs-stable "x86_64-linux";
     };
 
     mkNixosHost = {
@@ -183,9 +177,15 @@
         ];
       };
   in {
+    formatter = lib.genAttrs ["aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux"] (
+      system: (mkPkgs nixpkgs-unstable system).alejandra
+    );
     darwinConfigurations = {
       Rorschach = mkDarwinHost {hostname = "Rorschach";};
-      NightOwl = mkDarwinHost {hostname = "NightOwl"; hmModule = ./home/darwin/server;};
+      NightOwl = mkDarwinHost {
+        hostname = "NightOwl";
+        hmModule = ./home/darwin/server;
+      };
       SilkSpectre = mkDarwinHost {hostname = "SilkSpectre";};
     };
     nixosConfigurations = {

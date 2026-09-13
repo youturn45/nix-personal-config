@@ -1,7 +1,7 @@
 {
-  pkgs,
   lib,
   myLib,
+  osConfig,
   ...
 }: {
   # NixOS-specific home manager configuration
@@ -12,7 +12,7 @@
     [
       ../default.nix # Import common home configuration
     ]
-    ++ (myLib.collectModulesRecursively ./gui);
+    ++ lib.optionals osConfig.youturn.roles.desktop.enable (myLib.collectModulesRecursively ./gui);
 
   # NixOS-specific packages
   # home.packages = with pkgs; [

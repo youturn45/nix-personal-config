@@ -1,9 +1,8 @@
 # Python tooling: uv for projects, Nix for ambient tools
 #
 # Ownership split:
-#   - Nix (here): uv itself, ruff for ad-hoc lint/format, and a Python with
-#     the JupyterLab stack for SSH/remote notebook serving.
-#   - uv (per project): pytest, mypy, pinned ruff, ipykernel — added with
+#   - Nix (here): uv itself, ruff for ad-hoc lint/format, and Python with IPython.
+#   - uv (per project): JupyterLab, ipykernel, pytest, mypy, pinned ruff — added with
 #     `uv add --dev` and run through `uv run`. No pip anywhere.
 #
 # On NixOS, binary wheels need system libraries on LD_LIBRARY_PATH and
@@ -20,11 +19,7 @@
 
       (python312.withPackages (ps:
         with ps; [
-          # Jupyter server for SSH/remote development; projects register
-          # their own kernels via `uv run python -m ipykernel install`
-          jupyterlab
-          jupyter-client
-          ipykernel # plain global kernel, sees only this environment
+          # Interactive Python shell; notebook tooling belongs to projects.
           ipython
         ]))
     ]

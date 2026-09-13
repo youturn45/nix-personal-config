@@ -2,10 +2,19 @@
   myvars,
   myLib,
   pkgs,
+  lib,
+  osConfig,
   ...
 }: let
-  # Define common modules for all platforms
-  commonModules = myLib.collectModulesRecursively ./common;
+  # macOS keeps its existing GUI tools; NixOS follows the desktop role.
+  desktopEnabled = !(osConfig ? youturn.roles.desktop.enable) || osConfig.youturn.roles.desktop.enable;
+  isGuiModule = path:
+    lib.hasPrefix "${toString ./common/gui}/" (toString path)
+    || path == ./common/editors/vscode/default.nix;
+  commonModules =
+    builtins.filter
+    (path: desktopEnabled || !(isGuiModule path))
+    (myLib.collectModulesRecursively ./common);
 in {
   # Import common modules for all platforms
   imports = commonModules;

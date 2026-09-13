@@ -66,7 +66,7 @@
     alejandra # Nix formatter
     rustfmt # Rust formatter
     # ruff (Python formatter/linter) - provided by home/common/python/default.nix
-    nodePackages.prettier # JS/TS/JSON/YAML/MD formatter
+    prettier # JS/TS/JSON/YAML/MD formatter
     stylua # Lua formatter
   ];
 

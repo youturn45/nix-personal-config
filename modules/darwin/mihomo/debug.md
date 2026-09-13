@@ -21,7 +21,7 @@ Mihomo runs as a **per-user LaunchAgent** managed by nix-darwin. The `launchd.ag
 - `mihomo-reload` — sends SIGHUP to reload config in-place (no proxy gap)
 - `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then sends SIGHUP
 
-**Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory and clone (first time) or pull (subsequent times) the config repo from GitHub over SSH using `~/.ssh/Youturn`.
+**Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory. It clones the config repo from GitHub over SSH using `~/.ssh/Youturn` only if the checkout is missing. Existing checkouts are updated explicitly with `mihomo-sync`, which uses the same SSH key and reloads Mihomo after a successful pull. Nix rollbacks do not roll back this separate config checkout.
 
 ---
 

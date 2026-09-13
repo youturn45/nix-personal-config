@@ -26,13 +26,14 @@ in {
     (pkgs.writeShellScriptBin "mihomo-sync" ''
       set -e
       echo "mihomo: pulling latest config..."
+      export GIT_SSH_COMMAND="${gitSSH}"
       ${pkgs.git}/bin/git -C ${configDir} pull --ff-only
       echo "mihomo: reloading..."
       ${reloadScript}
     '')
   ];
 
-  # Clone config repo on first build; pull on subsequent builds
+  # Bootstrap once; update existing checkouts explicitly with mihomo-sync.
   system.activationScripts.mihomoSetup = {
     text = ''
       mkdir -p ${logDir}
@@ -44,11 +45,6 @@ in {
         sudo -u ${myvars.username} \
           GIT_SSH_COMMAND="${gitSSH}" \
           ${lib.getExe pkgs.git} clone ${repoUrl} ${configDir}
-      else
-        echo "mihomo: pulling latest config..."
-        sudo -u ${myvars.username} \
-          GIT_SSH_COMMAND="${gitSSH}" \
-          ${lib.getExe pkgs.git} -C ${configDir} pull --ff-only
       fi
     '';
   };
@@ -59,7 +55,8 @@ in {
     serviceConfig = {
       Label = "io.github.metacubex.mihomo";
       ProgramArguments = [
-        "/bin/sh" "-c"
+        "/bin/sh"
+        "-c"
         ''
           mkdir -p ${logDir}
           if [ ! -w ${logDir} ]; then
