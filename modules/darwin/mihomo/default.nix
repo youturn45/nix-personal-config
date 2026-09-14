@@ -1,5 +1,6 @@
 {
   pkgs-stable,
+  pkgs-unstable,
   myvars,
   lib,
   ...
@@ -18,7 +19,7 @@
   '';
 in {
   environment.systemPackages = [
-    pkgs-stable.mihomo
+    pkgs-unstable.mihomo
 
     (pkgs-stable.writeShellScriptBin "mihomo-reload" restartScript)
 
@@ -74,7 +75,7 @@ in {
                 "127.0.0.1" "localhost" "*.local" "169.254/16" \
                 "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" 2>/dev/null
             done
-          exec ${pkgs-stable.mihomo}/bin/mihomo -d ${configDir}
+          exec ${pkgs-unstable.mihomo}/bin/mihomo -d ${configDir}
         ''
       ];
       RunAtLoad = true;
