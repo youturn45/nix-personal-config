@@ -56,6 +56,12 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # claude-code-nix, hourly-updated Claude Code package
+    claude-code-nix = {
+      url = "github:sadjow/claude-code-nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     # agenix, used for managing secrets -- DISABLED, see modules/common/_secrets.nix
     # for why and how to re-enable. Uncomment this block as step one of that.
     # agenix = {
@@ -85,6 +91,7 @@
     haumea,
     ghostty,
     codex-cli-nix,
+    claude-code-nix,
     nixvim,
     # agenix, -- DISABLED, uncomment along with the input block above
     ...
@@ -110,7 +117,7 @@
     # ours) is set via the `nixpkgs.pkgs` option instead, in mkDarwinHost /
     # mkNixosHost below. Our own modules use pkgs-stable/pkgs-unstable only.
     mkSpecialArgs = system: {
-      inherit myvars myLib nur-ryan4yin ghostty codex-cli-nix home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit myvars myLib nur-ryan4yin ghostty codex-cli-nix claude-code-nix home-manager nixvim; # add `agenix` back here too when re-enabling
       vars = myvars; # Alias for modules expecting 'vars'
 
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
@@ -122,7 +129,7 @@
 
     # Linux-specific specialArgs for NixOS (no `pkgs` here either, same reason as above)
     nixosSpecialArgs = {
-      inherit myvars myLib nur-ryan4yin ghostty codex-cli-nix home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit myvars myLib nur-ryan4yin ghostty codex-cli-nix claude-code-nix home-manager nixvim; # add `agenix` back here too when re-enabling
       vars = myvars; # Alias for modules expecting 'vars'
 
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable "x86_64-linux";

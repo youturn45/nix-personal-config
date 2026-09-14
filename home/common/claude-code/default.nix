@@ -1,106 +1,25 @@
 {
-  config,
+  claude-code-nix,
   lib,
   pkgs-stable,
-  pkgs-unstable,
   ...
 }: let
-  claudeNativePackage =
-    {
-      "aarch64-darwin" = "@anthropic-ai/claude-code-darwin-arm64";
-      "x86_64-darwin" = "@anthropic-ai/claude-code-darwin-x64";
-      "aarch64-linux" = "@anthropic-ai/claude-code-linux-arm64";
-      "x86_64-linux" = "@anthropic-ai/claude-code-linux-x64";
-    }
-    .${
-      pkgs-stable.stdenv.hostPlatform.system
-    };
+  claude-code = claude-code-nix.packages.${pkgs-stable.stdenv.hostPlatform.system}.default;
 
+  # Defaults for ~/.claude/settings.json. Permissions live in managed settings
+  # (modules/common/claude-code); everything in this file belongs to Claude Code.
   settingsJson = builtins.toJSON {
-    hooks = {};
     env = {
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
     };
-    permissions = {
-      allow = [
-        "Bash(cat *)"
-        "Bash(ls *)"
-        "Bash(ll *)"
-        "Bash(head *)"
-        "Bash(tail *)"
-        "Bash(wc *)"
-        "Bash(grep *)"
-        "Bash(rg *)"
-        "Bash(find *)"
-        "Bash(fd *)"
-        "Bash(tree *)"
-        "Bash(stat *)"
-        "Bash(file *)"
-        "Bash(du *)"
-        "Bash(diff *)"
-        "Bash(sort *)"
-        "Bash(uniq *)"
-        "Bash(cut *)"
-        "Bash(awk *)"
-        "Bash(sed *)"
-        "Bash(jq *)"
-        "Bash(yq *)"
-        "Bash(echo *)"
-        "Bash(printf *)"
-        "Bash(which *)"
-        "Bash(whereis *)"
-        "Bash(pwd)"
-        "Bash(whoami)"
-        "Bash(id)"
-        "Bash(hostname)"
-        "Bash(uname *)"
-        "Bash(date *)"
-        "Bash(env)"
-        "Bash(printenv *)"
-        "Bash(git status)"
-        "Bash(git status *)"
-        "Bash(git log *)"
-        "Bash(git diff *)"
-        "Bash(git branch *)"
-        "Bash(git show *)"
-        "Bash(git blame *)"
-        "Bash(git ls-files *)"
-        "Bash(git remote *)"
-        "Bash(git tag *)"
-        "Bash(git stash list)"
-        "Bash(git config --list)"
-        "Bash(git config --get *)"
-        "Bash(launchctl list *)"
-        "Bash(launchctl getenv *)"
-        "Bash(launchctl print *)"
-        "Bash(git -C * status *)"
-        "Bash(git -C * log *)"
-        "Bash(git -C * diff *)"
-        "Bash(git -C * show *)"
-        "Bash(git -C * remote *)"
-        "Bash(git -C * config *)"
-        "Bash(git -C * branch *)"
-        "Bash(nix eval *)"
-        "Bash(nix flake check *)"
-        "Bash(nix search *)"
-        "Bash(nix-env *)"
-        "Bash(home-manager generations *)"
-        "WebSearch(*)"
-        "WebFetch(*)"
-        "Read(//nix/store/**)"
-        "Read(~/.config/**)"
-        "Read(~/.nix-profile/etc/**)"
-        "Read(~/.local/state/nix/profiles/**)"
-        "Read(//opt/homebrew/etc/**)"
-        "Bash(git -C /opt/homebrew remote *)"
-        "Bash(git -C /opt/homebrew config --list)"
-        "Bash(/opt/homebrew/bin/brew shellenv *)"
-        "Bash(env -i HOME=${config.home.homeDirectory} PATH=/opt/homebrew/bin:/usr/bin:/bin brew --version)"
-      ];
-    };
   };
-  settingsFile = pkgs-stable.writeText "claude-managed-settings.json" settingsJson;
+  settingsFile = pkgs-stable.writeText "claude-settings-defaults.json" settingsJson;
 in {
+  programs.claude-code = {
+    enable = true;
+    package = claude-code;
+  };
+
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
 
   # All hook scripts deployed automatically — just add a script to hooks/ and it's live
@@ -124,17 +43,15 @@ in {
   # Skills directory — not managed as a symlink so Claude can install skills freely at runtime
   home.file.".claude/skills/.keep".text = "";
 
-  # Write settings.json as a real file (not a symlink) so Claude Code can modify it
-  # at runtime. Merge on every activation: nix owns permissions/env/hooks, while
-  # runtime keys Claude Code adds (model, tui, ...) are preserved. Rules accepted
-  # via "Always allow" live in nix-owned keys and are reset on rebuild — durable
-  # rules belong here or in a repo's committed .claude/settings.json.
+  # settings.json stays a real, Claude-owned file. Nix only fills in missing
+  # defaults (deep merge, the live file wins), so /model, /config and
+  # "Always allow" edits survive rebuilds.
   home.activation.claudeSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
     _settings="$HOME/.claude/settings.json"
     mkdir -p "$HOME/.claude"
     if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
       _tmp="$(mktemp)"
-      ${pkgs-stable.jq}/bin/jq -s '.[0] + .[1]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
+      ${pkgs-stable.jq}/bin/jq -s '.[1] * .[0]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
     else
       rm -f "$_settings"
       cat ${settingsFile} > "$_settings"
@@ -151,23 +68,5 @@ in {
     else
       echo '{"teammateMode": "tmux"}' > "$_claude_json"
     fi
-  '';
-
-  # Install Claude Code on activation (requires Node.js from nodejs module)
-  home.activation.installClaudeCode = lib.hm.dag.entryAfter ["installNpm"] ''
-    export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    export PATH="$HOME/.npm-global/bin:${pkgs-unstable.nodejs_latest}/bin:$PATH"
-
-    echo "Installing or updating Claude Code..."
-    rm -rf "$HOME/.npm-global/lib/node_modules/@anthropic-ai/.claude-code-"* 2>/dev/null || true
-    npm install -g @anthropic-ai/claude-code@latest --allow-scripts=@anthropic-ai/claude-code
-
-    # npm can silently omit Claude Code's platform-native optional dependency,
-    # leaving bin/claude.exe as a fallback message. Install the matching native
-    # package at the wrapper's exact version, then rerun the official installer.
-    _claude_package_json="$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/package.json"
-    _claude_version="$(${pkgs-stable.jq}/bin/jq -r .version "$_claude_package_json")"
-    npm install -g "${claudeNativePackage}@$_claude_version"
-    ${pkgs-unstable.nodejs_latest}/bin/node "$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/install.cjs"
   '';
 }
