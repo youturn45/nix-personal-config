@@ -14,18 +14,24 @@
 
   inputs = {
     # official nix pkgs sources
+    nixpkgs-darwin = {
+      url = "https://github.com/NixOS/nixpkgs/archive/refs/heads/nixpkgs-26.05-darwin.tar.gz";
+    };
+    nixpkgs-nixos = {
+      url = "https://github.com/NixOS/nixpkgs/archive/refs/heads/nixos-26.05.tar.gz";
+    };
     nixpkgs-unstable = {
-      url = "github:NixOS/nixpkgs/nixos-unstable";
+      url = "https://github.com/NixOS/nixpkgs/archive/refs/heads/nixpkgs-unstable.tar.gz";
     };
     nix-darwin = {
-      url = "github:lnl7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      url = "https://github.com/nix-darwin/nix-darwin/archive/refs/heads/nix-darwin-26.05.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     # home-manager, used for managing user configuration
     home-manager = {
-      url = "github:nix-community/home-manager/master";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      url = "https://github.com/nix-community/home-manager/archive/refs/heads/release-26.05.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     # nix-homebrew, used for managing homebrew packages
@@ -36,7 +42,7 @@
     # haumea, used for managing flake imports
     haumea = {
       url = "github:nix-community/haumea/v0.2.2";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     # ghostty, used for managing ghostty packages
@@ -44,16 +50,17 @@
       url = "github:ghostty-org/ghostty";
     };
 
-    # agenix, used for managing secrets
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
+    # agenix, used for managing secrets -- DISABLED, see modules/common/_secrets.nix
+    # for why and how to re-enable. Uncomment this block as step one of that.
+    # agenix = {
+    #   url = "github:ryantm/agenix";
+    #   inputs.nixpkgs.follows = "nixpkgs-darwin";
+    # };
 
     # nixvim, used for managing neovim configuration
     nixvim = {
-      url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      url = "https://github.com/nix-community/nixvim/archive/refs/heads/nixos-26.05.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
     # nur-ryan4yin, custom packages used from ryan4yin
@@ -62,6 +69,8 @@
 
   outputs = inputs @ {
     self,
+    nixpkgs-darwin,
+    nixpkgs-nixos,
     nixpkgs-unstable,
     nur-ryan4yin,
     nix-darwin,
@@ -69,11 +78,11 @@
     home-manager,
     haumea,
     ghostty,
-    agenix,
     nixvim,
+    # agenix, -- DISABLED, uncomment along with the input block above
     ...
   }: let
-    inherit (nixpkgs-unstable) lib;
+    inherit (nixpkgs-darwin) lib;
     myLib = import ./my-lib {
       inherit lib;
       haumeaLib = haumea.lib;
@@ -89,31 +98,35 @@
       };
 
     # Create system-specific specialArgs
+    # No `pkgs` here deliberately -- the canonical `pkgs` module argument
+    # (needed by nix-darwin/home-manager's own built-in modules, not just
+    # ours) is set via the `nixpkgs.pkgs` option instead, in mkDarwinHost /
+    # mkNixosHost below. Our own modules use pkgs-stable/pkgs-unstable only.
     mkSpecialArgs = system: {
-      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager nixvim;
+      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
       vars = myvars; # Alias for modules expecting 'vars'
 
-      pkgs = mkPkgs inputs.nixpkgs-unstable system;
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
+      pkgs-stable = mkPkgs inputs.nixpkgs-darwin system;
     };
 
     # Darwin-specific specialArgs (using macOS system from myvars)
     darwinSpecialArgs = mkSpecialArgs myvars.system;
 
-    # Linux-specific specialArgs for NixOS (without pkgs to avoid warnings)
+    # Linux-specific specialArgs for NixOS (no `pkgs` here either, same reason as above)
     nixosSpecialArgs = {
-      inherit myvars myLib nur-ryan4yin ghostty agenix home-manager nixvim;
+      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
       vars = myvars; # Alias for modules expecting 'vars'
 
-      # Only include alternative package sets, let NixOS manage its own pkgs
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable "x86_64-linux";
+      pkgs-stable = mkPkgs inputs.nixpkgs-nixos "x86_64-linux";
     };
 
     mkNixosHost = {
       hostModule,
       hardwareModule ? null,
     }:
-      lib.nixosSystem {
+      nixpkgs-nixos.lib.nixosSystem {
         specialArgs = nixosSpecialArgs;
         system = "x86_64-linux";
         modules =
@@ -121,9 +134,14 @@
             hardwareModule
           ])
           ++ [
-            # Allow unfree packages (e.g. vscode) for NixOS + Home Manager eval/build.
             {
-              nixpkgs.config.allowUnfree = true;
+              # Canonical `pkgs` for this system -- needed by nix-darwin/home-manager's
+              # own built-in modules, not just ours (which use pkgs-stable/pkgs-unstable
+              # from specialArgs instead). Same source as nixosSpecialArgs.pkgs-stable.
+              # allowUnfree is already baked in at construction time (see mkPkgs) --
+              # setting nixpkgs.config.* here too would conflict: NixOS asserts against
+              # combining an externally-built `nixpkgs.pkgs` with `nixpkgs.config.*`.
+              nixpkgs.pkgs = nixosSpecialArgs.pkgs-stable;
             }
 
             hostModule
@@ -149,7 +167,7 @@
 
     nixosIso = nixosOzymandias.extendModules {
       modules = [
-        "${nixpkgs-unstable}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+        "${nixpkgs-nixos}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
       ];
     };
 
@@ -161,6 +179,12 @@
         specialArgs = darwinSpecialArgs;
         system = "${myvars.system}";
         modules = [
+          {
+            # Canonical `pkgs` for this system -- needed by nix-darwin/home-manager's
+            # own built-in modules, not just ours (which use pkgs-stable/pkgs-unstable
+            # from specialArgs instead). Same source as darwinSpecialArgs.pkgs-stable.
+            nixpkgs.pkgs = darwinSpecialArgs.pkgs-stable;
+          }
           ./hosts/darwin/${hostname}.nix
           ./modules/darwin # Darwin modules (imports common)
           home-manager.darwinModules.home-manager

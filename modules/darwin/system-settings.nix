@@ -1,6 +1,6 @@
 {
   config,
-  pkgs,
+  pkgs-stable,
   lib,
   myvars,
   ...
@@ -323,5 +323,5 @@
 
   # Shell Configuration
   programs.zsh.enable = true;
-  environment.shells = [pkgs.zsh];
+  environment.shells = [pkgs-stable.zsh];
 }

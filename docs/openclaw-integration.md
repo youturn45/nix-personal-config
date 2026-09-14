@@ -254,7 +254,9 @@ pnpm gateway:watch
 
 ## Secrets Management
 
-Regardless of install method, sensitive values should be managed through agenix (already configured in this repo).
+> **Note:** agenix is currently disabled in this repo (see `docs/build.md`) — it was never reliably decryptable on any actual machine here, and wasn't worth enabling just for this not-yet-built integration. Everything below assumes agenix is configured; it isn't right now. Follow the re-enable instructions in `docs/build.md` and re-encrypt the secret for whichever SSH key actually exists on the target machine before following this section.
+
+Regardless of install method, sensitive values should be managed through agenix.
 
 ### Secrets to create
 

@@ -2,7 +2,7 @@
   config,
   lib,
   myvars,
-  pkgs,
+  pkgs-stable,
   ...
 }: let
   cfg = config.youturn.roles;
@@ -20,14 +20,14 @@ in {
       isNormalUser = true;
       description = myvars.userfullname;
       extraGroups = ["wheel" "networkmanager" "video" "audio"];
-      shell = pkgs.zsh;
+      shell = pkgs-stable.zsh;
     };
 
     programs.zsh.enable = true;
     programs.ssh.startAgent = true;
 
     # Keep key baseline tools available at system scope.
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs-stable; [
       btop
     ];
 

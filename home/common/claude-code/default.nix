@@ -1,9 +1,21 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
+  pkgs-unstable,
   ...
 }: let
+  claudeNativePackage =
+    {
+      "aarch64-darwin" = "@anthropic-ai/claude-code-darwin-arm64";
+      "x86_64-darwin" = "@anthropic-ai/claude-code-darwin-x64";
+      "aarch64-linux" = "@anthropic-ai/claude-code-linux-arm64";
+      "x86_64-linux" = "@anthropic-ai/claude-code-linux-x64";
+    }
+    .${
+      pkgs-stable.stdenv.hostPlatform.system
+    };
+
   settingsJson = builtins.toJSON {
     hooks = {};
     env = {
@@ -87,7 +99,7 @@
       ];
     };
   };
-  settingsFile = pkgs.writeText "claude-managed-settings.json" settingsJson;
+  settingsFile = pkgs-stable.writeText "claude-managed-settings.json" settingsJson;
 in {
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
 
@@ -122,7 +134,7 @@ in {
     mkdir -p "$HOME/.claude"
     if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
       _tmp="$(mktemp)"
-      ${pkgs.jq}/bin/jq -s '.[0] + .[1]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
+      ${pkgs-stable.jq}/bin/jq -s '.[0] + .[1]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
     else
       rm -f "$_settings"
       cat ${settingsFile} > "$_settings"
@@ -135,19 +147,27 @@ in {
     _claude_json="$HOME/.claude.json"
     _tmp="$(mktemp)"
     if [ -f "$_claude_json" ]; then
-      ${pkgs.jq}/bin/jq '. + {"teammateMode": "tmux"}' "$_claude_json" > "$_tmp" && mv "$_tmp" "$_claude_json"
+      ${pkgs-stable.jq}/bin/jq '. + {"teammateMode": "tmux"}' "$_claude_json" > "$_tmp" && mv "$_tmp" "$_claude_json"
     else
       echo '{"teammateMode": "tmux"}' > "$_claude_json"
     fi
   '';
 
   # Install Claude Code on activation (requires Node.js from nodejs module)
-  home.activation.installClaudeCode = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  home.activation.installClaudeCode = lib.hm.dag.entryAfter ["installNpm"] ''
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    export PATH="${pkgs.nodejs_22}/bin:$HOME/.npm-global/bin:$PATH"
+    export PATH="$HOME/.npm-global/bin:${pkgs-unstable.nodejs_latest}/bin:$PATH"
 
     echo "Installing or updating Claude Code..."
     rm -rf "$HOME/.npm-global/lib/node_modules/@anthropic-ai/.claude-code-"* 2>/dev/null || true
-    npm install -g @anthropic-ai/claude-code@latest
+    npm install -g @anthropic-ai/claude-code@latest --allow-scripts=@anthropic-ai/claude-code
+
+    # npm can silently omit Claude Code's platform-native optional dependency,
+    # leaving bin/claude.exe as a fallback message. Install the matching native
+    # package at the wrapper's exact version, then rerun the official installer.
+    _claude_package_json="$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/package.json"
+    _claude_version="$(${pkgs-stable.jq}/bin/jq -r .version "$_claude_package_json")"
+    npm install -g "${claudeNativePackage}@$_claude_version"
+    ${pkgs-unstable.nodejs_latest}/bin/node "$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/install.cjs"
   '';
 }

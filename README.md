@@ -25,7 +25,6 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 
 - 🔧 **Modular Architecture** - Automatic module discovery with clean separation of concerns
 - 🌐 **Cross-Platform** - Shared configuration between macOS and NixOS
-- 🔐 **Secrets Management** - Encrypted secrets with agenix (SSH key-based encryption)
 - 🛡️ **Safe Build System** - Validation, testing, and rollback capabilities
 - 🎨 **Consistent Theming** - Catppuccin Mocha throughout the system
 - ⚡ **Modern Toolchain** - NixVim, Starship, modern CLI tools, and more
@@ -138,17 +137,14 @@ nix-personal-config/
 │   ├── darwin/         # macOS hosts (Rorschach, NightOwl, SilkSpectre)
 │   └── nixos/          # NixOS hosts
 ├── modules/            # System-level modules
-│   ├── common/         # Shared (packages, fonts, secrets)
+│   ├── common/         # Shared (packages, fonts; secrets support present but disabled, see below)
 │   ├── darwin/         # macOS-specific (Homebrew, defaults)
 │   └── nixos/          # NixOS-specific (systemd, services)
 ├── home/               # Home Manager configurations
 │   ├── common/         # Shared user configs
 │   ├── darwin/         # macOS user configs
 │   └── nixos/          # NixOS user configs
-├── secrets/            # Encrypted secrets (agenix)
-│   ├── secrets.nix     # Authorized SSH keys (agenix rules)
-│   ├── README.md       # Secrets management guide
-│   └── *.age           # Encrypted files (safe to commit)
+├── secrets/            # Encrypted secrets (agenix) -- inert, agenix disabled by default
 ├── vars/               # Centralized variables
 └── my-lib/             # Custom helper functions
 ```
@@ -158,7 +154,7 @@ nix-personal-config/
 ## 🛠️ What's Included
 
 ### System-Level (modules/)
-- **Common**: Shared packages, fonts, secrets (agenix), timezone
+- **Common**: Shared packages, fonts, timezone
 - **macOS**: Homebrew integration, system defaults, user management, Nix daemon config
 - **NixOS**: System services, hardware configuration
 
@@ -169,42 +165,13 @@ nix-personal-config/
 - **Terminal**: Ghostty, Kitty, btop, yazi file manager
 - **Theming**: Catppuccin Mocha everywhere
 
-### Secrets Management
-- **agenix**: SSH key-based encryption for secrets
-- **GitHub Token**: Available at `~/.config/github/token`
-- **Cross-platform**: Automatic path handling for Darwin/NixOS
-- See [secrets/README.md](secrets/README.md) for setup guide
-
-## 🔐 Secrets Management
-
-This configuration uses [agenix](https://github.com/ryantm/agenix) for encrypted secrets management.
-
-### Quick Start
-
-```bash
-# 1. Generate SSH key (if you don't have one)
-ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
-
-# 2. Update secrets/secrets.nix with your public key
-cat ~/.ssh/id_ed25519.pub
-# Copy and update the key in secrets/secrets.nix
-
-# 3. Create and encrypt your GitHub token
-RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-
-# 4. Build and apply
-just safe-build
-
-# 5. Verify
-cat ~/.config/github/token
-```
-
-See [**secrets/README.md**](secrets/README.md) for comprehensive setup and usage guide.
+### Secrets Management (disabled)
+This repo has agenix-based secrets support (`modules/common/_secrets.nix`, `secrets/`), but it's disabled by default — the `agenix` flake input is commented out in `flake.nix`. See `docs/build.md` for why (the encrypted secret didn't match any SSH key actually present on these machines) and how to re-enable it.
 
 ## 📚 Documentation
 
 - [**CLAUDE.md**](./CLAUDE.md) - Architecture guide and development workflows
-- [**secrets/README.md**](secrets/README.md) - Secrets management with agenix
+- [**docs/build.md**](docs/build.md) - Build pipeline, flake input strategy, disabled secrets management
 - [**Justfile**](./Justfile) - Available build commands and automation
 
 ## 🤝 Contributing

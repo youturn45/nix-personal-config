@@ -14,18 +14,18 @@ All mirrors have been dropped — every tool below hits origin directly, routing
 | npm/pnpm | Origin only | None | **No** — npm ignores raw `HTTP_PROXY`/`http_proxy`; needs `npm_config_proxy`/`npm_config_https_proxy` instead (now exported by the `proxy` zsh function) | `home/common/terminal/shells/.zshrc` |
 | bun | Origin only | None | Yes — reads `HTTP_PROXY`/`HTTPS_PROXY` natively | n/a |
 
-System proxy itself (Wi-Fi/LAN HTTP+SOCKS) is set by the Mihomo launchd agent — see below.
+System proxy itself (Wi-Fi/LAN HTTP+SOCKS) is set by the Mihomo launchd daemon — see below.
 
 ## Design
 
-Mihomo (Clash Meta) runs as a nix-darwin launchd agent, replacing ClashX Meta as the system proxy.
+Mihomo (Clash Meta) runs as a single root-owned nix-darwin launchd daemon, replacing ClashX Meta as the system proxy.
 
 **Config** is cloned from a private GitHub repo on every `just build`:
 - First build: clones `git@github.com:youturn45/clash.meta.git` into `~/.config/clash.meta/`
 - Subsequent builds: `git pull --ff-only` to sync latest changes
 - SSH key used: `~/.ssh/Youturn`
 
-**On startup**, the launchd agent:
+**On startup**, the launchd daemon:
 1. Creates the log directory (`~/Library/Logs/mihomo/`)
 2. Sets system proxy on all real network interfaces (Wi-Fi, USB LAN — skips Tailscale, Bridge, JTAG)
 3. Launches mihomo pointing at `~/.config/clash.meta/`
@@ -34,15 +34,16 @@ Mihomo (Clash Meta) runs as a nix-darwin launchd agent, replacing ClashX Meta as
 
 | Port | Protocol | Use |
 |------|----------|-----|
-| 7890 | HTTP/HTTPS mixed | System web proxy |
-| 7893 | SOCKS5 | System SOCKS proxy |
+| 7890 | HTTP | System web proxy |
+| 7891 | SOCKS5 | System SOCKS proxy |
+| 7893 | HTTP/SOCKS mixed | Optional mixed proxy |
 | 9090 | HTTP API | External controller / dashboard |
 
 **Key files:**
-- Nix module: `modules/darwin/mihomo.nix`
+- Nix module: `modules/darwin/mihomo/default.nix`
 - Config repo: `~/.config/clash.meta/`
 - Logs: `~/Library/Logs/mihomo/`
-- LaunchAgent plist: `/Library/LaunchAgents/io.github.metacubex.mihomo.plist`
+- LaunchDaemon plist: `/Library/LaunchDaemons/io.github.metacubex.mihomo.plist`
 
 ---
 
@@ -147,37 +148,32 @@ pgrep mihomo
 # Check all proxy-related processes
 ps aux | grep -iE "mihomo|clash|verge" | grep -v grep
 
-# Kill mihomo (needs sudo — launchd will restart it automatically due to KeepAlive)
-sudo kill $(pgrep mihomo)
+# Restart the managed Mihomo process
+sudo launchctl kickstart -k system/io.github.metacubex.mihomo
 
-# Kill mihomo and prevent restart (stop the service first)
-launchctl stop io.github.metacubex.mihomo
-sudo kill $(pgrep mihomo)
+# Stop Mihomo (KeepAlive may start it again; bootout disables it until reloaded)
+sudo launchctl bootout system/io.github.metacubex.mihomo
 ```
 
-### LaunchAgent management
+### LaunchDaemon management
 
 ```bash
-# Check launchd status (exit code 0 = running, 78 = failed to start, -9 = killed)
-launchctl list | grep mihomo
+# Check launchd status
+sudo launchctl print system/io.github.metacubex.mihomo
 
 # View the installed plist
-cat /Library/LaunchAgents/io.github.metacubex.mihomo.plist
+cat /Library/LaunchDaemons/io.github.metacubex.mihomo.plist
 
-# Bootstrap the agent into your user session (if not loaded)
-launchctl bootstrap gui/$(id -u) /Library/LaunchAgents/io.github.metacubex.mihomo.plist
+# Bootstrap the daemon (if not loaded)
+sudo launchctl bootstrap system /Library/LaunchDaemons/io.github.metacubex.mihomo.plist
 
-# Unload the agent from your user session
-launchctl bootout gui/$(id -u)/io.github.metacubex.mihomo
+# Unload the daemon
+sudo launchctl bootout system/io.github.metacubex.mihomo
 
-# Restart the agent (unload + reload in one command)
-launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+# Restart the daemon and replace its PID
+sudo launchctl kickstart -k system/io.github.metacubex.mihomo
 
-# List all LaunchAgents plists installed system-wide
-ls /Library/LaunchAgents/
-ls ~/Library/LaunchAgents/
-
-# List all LaunchDaemons (system-level, run as root)
+# List all LaunchDaemons
 ls /Library/LaunchDaemons/ | grep -v apple
 ```
 
@@ -192,13 +188,9 @@ tail -f ~/Library/Logs/mihomo/mihomo.error.log
 tail -50 ~/Library/Logs/mihomo/mihomo.log
 ```
 
-### Config reload (without restarting)
+### Config reload through the API (without restarting)
 
 ```bash
-# Send SIGHUP — mihomo reloads config without dropping connections
-sudo kill -HUP $(pgrep mihomo)
-
-# Or via the API
 curl -X PUT "http://127.0.0.1:9090/configs?force=true" \
   -H "Content-Type: application/json" \
   -d '{"path": "/Users/youturn/.config/clash.meta/config.yaml"}'
@@ -223,9 +215,9 @@ networksetup -listallnetworkservices | tail -n +2 \
 These are available system-wide after `just build`:
 
 ```bash
-# Pull latest config from GitHub and reload mihomo
+# Pull latest config from GitHub and restart mihomo
 mihomo-sync
 
-# Reload mihomo config without pulling (e.g. after manual edits)
+# Restart mihomo without pulling
 mihomo-reload
 ```

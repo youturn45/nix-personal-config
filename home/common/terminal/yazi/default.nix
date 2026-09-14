@@ -1,5 +1,5 @@
 {
-  pkgs,
+  pkgs-stable,
   pkgs-unstable,
   nur-ryan4yin,
   ...
@@ -8,6 +8,7 @@
   programs.yazi = {
     enable = true;
     package = pkgs-unstable.yazi;
+    shellWrapperName = "yy";
     # Changing working directory when exiting Yazi
     enableBashIntegration = true;
     enableNushellIntegration = true;
@@ -19,5 +20,5 @@
     };
   };
 
-  xdg.configFile."yazi/theme.toml".source = "${nur-ryan4yin.packages.${pkgs.stdenv.hostPlatform.system}.catppuccin-yazi}/mocha.toml";
+  xdg.configFile."yazi/theme.toml".source = "${nur-ryan4yin.packages.${pkgs-stable.stdenv.hostPlatform.system}.catppuccin-yazi}/mocha.toml";
 }

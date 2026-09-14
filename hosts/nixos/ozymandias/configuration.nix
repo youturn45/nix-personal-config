@@ -18,6 +18,8 @@
 
   # Keep DHCP as a fallback if interface names change (common on VMs).
   # Static config below still applies to enp0s3 when that device exists.
+  # mkDefault: the ISO installer variant pulls in NetworkManager, which sets
+  # this to false -- let it win there instead of conflicting.
   networking.useDHCP = lib.mkDefault true;
   networking.interfaces.enp0s3 = {
     useDHCP = false;

@@ -1,4 +1,5 @@
 {
+  pkgs-stable,
   lib,
   myLib,
   osConfig,
@@ -15,7 +16,7 @@
     ++ lib.optionals osConfig.youturn.roles.desktop.enable (myLib.collectModulesRecursively ./gui);
 
   # NixOS-specific packages
-  # home.packages = with pkgs; [
+  # home.packages = with pkgs-stable; [
   #   # Linux-specific tools
   # ];
 

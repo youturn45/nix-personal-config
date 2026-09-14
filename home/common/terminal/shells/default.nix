@@ -1,6 +1,6 @@
 {
   config,
-  pkgs,
+  pkgs-stable,
   pkgs-unstable,
   ...
 }: let
@@ -19,7 +19,7 @@
 
   # Combine aliases based on platform
   shellAliases =
-    if pkgs.stdenv.isLinux
+    if pkgs-stable.stdenv.isLinux
     then baseAliases // nixosAliases
     else baseAliases;
 

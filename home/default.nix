@@ -1,9 +1,9 @@
 {
   myvars,
   myLib,
-  pkgs,
   lib,
   osConfig,
+  pkgs-stable,
   ...
 }: let
   # macOS keeps its existing GUI tools; NixOS follows the desktop role.
@@ -24,14 +24,12 @@ in {
   home = {
     username = myvars.username;
     homeDirectory =
-      if pkgs.stdenv.isDarwin
+      if pkgs-stable.stdenv.isDarwin
       then "/Users/${myvars.username}"
       else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;
 
-    # Disable nixpkgs version check when using unstable branches
-    # Home Manager and nixpkgs-unstable versions may drift slightly
-    enableNixpkgsReleaseCheck = false;
+    enableNixpkgsReleaseCheck = true;
 
     # Essential packages for NixOS systems (Darwin gets packages from modules)
     # Note: All common CLI tools are now provided via home/common/core.nix
@@ -42,7 +40,7 @@ in {
   # Let Home Manager install and manage itself.
   programs.home-manager = {
     enable = true;
-    path = "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+    path = "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
   };
 
   # Add home-manager to PATH

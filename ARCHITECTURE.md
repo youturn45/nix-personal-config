@@ -128,11 +128,11 @@ inputs = {
     url = "github:ghostty-org/ghostty";
   };
 
-  # agenix, used for managing secrets
-  agenix = {
-    url = "github:ryantm/agenix";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
+  # agenix, used for managing secrets -- DISABLED by default, see docs/build.md
+  # agenix = {
+  #   url = "github:ryantm/agenix";
+  #   inputs.nixpkgs.follows = "nixpkgs";
+  # };
 
   # nixvim, used for managing neovim configuration
   nixvim = {

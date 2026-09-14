@@ -1,12 +1,17 @@
+# DISABLED: `_`-prefixed so collectModulesRecursively skips it (see CLAUDE.md).
+#
+# texliveFull is one of the largest single packages in nixpkgs (multi-GB) --
+# disabled here to save space on NightOwl. To re-enable: rename this folder
+# back to `tex`.
 {
   config,
-  pkgs,
+  pkgs-stable,
   lib,
   ...
 }: let
   # Define fonts to make available in TEXMF
   # These match the fonts defined in modules/common/fonts.nix
-  texFonts = with pkgs; [
+  texFonts = with pkgs-stable; [
     # Nerd Fonts for coding
     nerd-fonts.fira-code
     nerd-fonts.jetbrains-mono
@@ -91,9 +96,9 @@
 in {
   # TeX Live with comprehensive package set.
   # Headless server: CLI toolchain only, no GUI editors/viewers.
-  home.packages = with pkgs; [
+  home.packages = with pkgs-stable; [
     # Full TeX Live distribution with most packages
-    texlive.combined.scheme-full
+    texliveFull
 
     # Additional TeX tools
     texlab # Language server for LaTeX

@@ -1,6 +1,6 @@
 {
   config,
-  pkgs,
+  pkgs-stable,
   lib,
   ...
 }: {
@@ -14,7 +14,7 @@
   system.defaults.NSGlobalDomain.AppleInterfaceStyle = "Dark";
 
   # Host-specific packages
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs-stable; [
     # Add any NightOwl-specific packages here
   ];
 

@@ -1,7 +1,7 @@
 {
   myLib,
   vars,
-  pkgs,
+  pkgs-stable,
   ...
 }: {
   imports = myLib.collectModulesRecursively ./.;
@@ -10,7 +10,7 @@
 
   # System-wide packages available to all users
   # Shared between Darwin and NixOS systems
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs-stable; [
     # Compression and archiving tools
     zip # Standard ZIP compression
     p7zip # 7-Zip compression (supports many formats)

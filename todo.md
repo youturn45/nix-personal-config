@@ -8,7 +8,7 @@
 ### Hardware Integration
 - [ ] Implement third party cache sources for faster downloads
 https://seekstar.github.io/2023/02/04/%E4%BD%BF%E7%94%A8%E5%9B%BD%E5%86%85%E6%BA%90%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8nix%E5%8C%85%E7%AE%A1%E7%90%86%E5%99%A8/
-- [ ] WIP implement agenix to add github tokens to speed up process
+- [x] ~~Implement agenix to add github tokens to speed up process~~ — tried and abandoned. The secret was encrypted for a key not present on any machine, and `agenix` (Nix-installed) can't be used pre-build anyway. Fixed the actual rate-limit problem by switching the affected flake inputs to plain tarball URLs instead (see `docs/build.md`); agenix and secrets management disabled (commented out / `_`-prefixed), not deleted — re-enable instructions in `docs/build.md`.
 
 
 ## 🔮 Future Enhancements

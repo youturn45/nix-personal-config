@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   ...
 }: let
   cfg = config.youturn.roles;
@@ -18,7 +18,7 @@ in {
     };
 
     # Server-side tools (expand over time: airflow/overleaf stacks, etc.).
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs-stable; [
       duckdb
     ];
   };

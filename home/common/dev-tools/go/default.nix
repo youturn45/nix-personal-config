@@ -1,11 +1,11 @@
 {
   config,
-  pkgs,
+  pkgs-stable,
   lib,
   ...
 }: {
   # Go toolchain
-  home.packages = with pkgs; [
+  home.packages = with pkgs-stable; [
     go
     # Pinned by flake.lock, including its Go dependencies.
     sonoscli

@@ -2,10 +2,10 @@
 
 ## How it works
 
-Mihomo runs as a **per-user LaunchAgent** managed by nix-darwin. The `launchd.agents.mihomo` block in `default.nix` generates a plist at `~/Library/LaunchAgents/io.github.metacubex.mihomo.plist`.
+Mihomo runs as a single **root-owned LaunchDaemon** managed by nix-darwin. The `launchd.daemons.mihomo` block in `default.nix` generates `/Library/LaunchDaemons/io.github.metacubex.mihomo.plist`.
 
 **Key plist properties:**
-- `RunAtLoad = true` — starts automatically at login
+- `RunAtLoad = true` — starts automatically at boot
 - `KeepAlive = true` — launchd restarts mihomo if it crashes
 - `Label` — `io.github.metacubex.mihomo` (used in all `launchctl` commands)
 - Logs go to `~/Library/Logs/mihomo/`
@@ -18,8 +18,8 @@ Mihomo runs as a **per-user LaunchAgent** managed by nix-darwin. The `launchd.ag
 5. `exec`s mihomo with `~/.config/clash.meta` as the config directory
 
 **Helper scripts:**
-- `mihomo-reload` — sends SIGHUP to reload config in-place (no proxy gap)
-- `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then sends SIGHUP
+- `mihomo-reload` — explicitly restarts the system launchd service and replaces its PID
+- `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then restarts the system service
 
 **Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory. It clones the config repo from GitHub over SSH using `~/.ssh/Youturn` only if the checkout is missing. Existing checkouts are updated explicitly with `mihomo-sync`, which uses the same SSH key and reloads Mihomo after a successful pull. Nix rollbacks do not roll back this separate config checkout.
 
@@ -28,12 +28,10 @@ Mihomo runs as a **per-user LaunchAgent** managed by nix-darwin. The `launchd.ag
 ## Check service status
 
 ```bash
-launchctl list | grep mihomo
+sudo launchctl print system/io.github.metacubex.mihomo
 ```
 
-Output format: `PID  exit_code  label`
-- `-` in PID column = not running
-- Non-zero exit code = crashed (78 = config error, 1 = generic error)
+Look for the `state`, `pid`, and `last exit code` fields.
 
 ---
 
@@ -41,13 +39,13 @@ Output format: `PID  exit_code  label`
 
 ```bash
 # Restart (kills and restarts if already running)
-launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+sudo launchctl kickstart -k system/io.github.metacubex.mihomo
 
 # Stop
-launchctl kill SIGTERM gui/$(id -u)/io.github.metacubex.mihomo
+sudo launchctl kill SIGTERM system/io.github.metacubex.mihomo
 
 # Start (if registered but not running)
-launchctl kickstart gui/$(id -u)/io.github.metacubex.mihomo
+sudo launchctl kickstart system/io.github.metacubex.mihomo
 ```
 
 ---
@@ -74,9 +72,6 @@ tail -f ~/Library/Logs/mihomo/mihomo.log
 
 # Errors only
 tail -f ~/Library/Logs/mihomo/mihomo.error.log
-
-# Fix log permission issues (if owned by root)
-sudo chown -R $(whoami):staff ~/Library/Logs/mihomo/
 ```
 
 ---
@@ -86,18 +81,7 @@ sudo chown -R $(whoami):staff ~/Library/Logs/mihomo/
 After `just build`, if the service doesn't auto-start:
 
 ```bash
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.metacubex.mihomo.plist
-```
-
-If it was previously unloaded and the plist is missing, copy it back from the nix store:
-
-```bash
-# Find the plist in the nix store
-find /nix/store -name "io.github.metacubex.mihomo.plist" | head -1
-
-# Copy it back
-cp <path from above> ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.metacubex.mihomo.plist
+sudo launchctl bootstrap system /Library/LaunchDaemons/io.github.metacubex.mihomo.plist
 ```
 
 ---
@@ -105,8 +89,8 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.metacubex.miho
 ## Sync config from remote
 
 ```bash
-mihomo-sync   # git pull + reload
-mihomo-reload # reload only (no git pull)
+mihomo-sync   # git pull + restart
+mihomo-reload # restart only (no git pull)
 ```
 
 ---
@@ -121,37 +105,13 @@ networksetup -getsocksfirewallproxy Wi-Fi
 
 All three should show `Enabled: Yes` and point to `127.0.0.1`.
 
----
-
-## Common issue: crash-looping with no logs (log dir owned by root)
-
-**Symptom:** `launchctl print gui/$(id -u)/io.github.metacubex.mihomo` shows
-`state = spawn scheduled` (or `waiting`), `active count = 0`, `last exit code = 1`,
-and both `mihomo.log`/`mihomo.error.log` are empty or stuck at an old timestamp
-(mihomo isn't even starting, so it never gets a chance to log anything itself).
-
-**Cause:** `~/Library/Logs/mihomo/` and/or its log files got re-owned by `root`
-(observed via `sudo ls -la ~/Library/Logs/mihomo/` — owner shows `root` instead
-of your user). This can happen when a `darwin-rebuild`/`just build` activation
-run recreates or reloads the launchd agent before the `mihomoSetup` activation
-script's `chown -R` has taken effect. Since launchd runs the agent as your user
-(not root), it can't open a root-owned log file, and the whole `/bin/sh -c '...'`
-job fails before mihomo even execs.
-
-**Check for it:**
+If a stale GUI-domain job from an older configuration is still loaded, remove it
+before restarting the daemon:
 
 ```bash
-sudo ls -la ~/Library/Logs/mihomo/   # look for owner != your username
-log show --predicate 'eventMessage contains "mihomo"' --last 1h --info | grep FATAL
+launchctl bootout gui/$(id -u)/io.github.metacubex.mihomo
+sudo launchctl kickstart -k system/io.github.metacubex.mihomo
 ```
 
-The second command surfaces the `logger`-based FATAL message the launchd job
-emits via syslog when it detects the log dir isn't writable — this still shows
-up even when the log *files themselves* can't be written to.
-
-**Fix:**
-
-```bash
-sudo chown -R $(whoami):staff ~/Library/Logs/mihomo/
-launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
-```
+The Nix activation script performs this GUI cleanup automatically during the
+migration to the daemon.

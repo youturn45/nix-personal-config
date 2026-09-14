@@ -8,7 +8,6 @@ uv manages projects; Nix manages ambient tools. pip is not used anywhere.
 |---|---|---|---|
 | Package manager | Nix | `uv` | `home/common/python/default.nix` |
 | Ambient CLI tools | Nix | `ruff` (ad-hoc lint/format, editor format-on-save) | `home/common/python/default.nix` |
-| Jupyter server | Nix | `python312.withPackages`: `jupyterlab`, `jupyter-client`, `ipykernel`, `ipython` | `home/common/python/default.nix` |
 | Project runtime deps | uv | whatever the code imports | each repo's `pyproject.toml` `[project] dependencies` |
 | Project dev tools | uv | `pytest`, `mypy`, pinned `ruff`, `ipykernel`, … | each repo's `[dependency-groups] dev` |
 | One-off tools | uv | anything not worth installing | `uvx <tool>` (no install) |
@@ -22,7 +21,7 @@ Ask these questions in order:
 1. **Does my code `import` it at runtime?** → `uv add <pkg>` (runtime dependency).
 2. **Does it need to see the project's code/deps to work** (test runner, type checker, kernel)? → `uv add --dev <pkg>`. A global install of these is useless by construction.
 3. **Is it a self-contained tool I use across all projects on scratch files** (formatter, linter)? → Nix, as a **top-level package** (`pkgs.ruff`) in `home/common/python/default.nix`. *Additionally* pin it per-project with `uv add --dev` in any repo where CI enforces its output — tool versions change what "clean" means.
-4. **Is it infrastructure serving all projects** (Jupyter server)? → Nix, inside `python312.withPackages`. This is the only legitimate use of `withPackages` — things that must share one Python environment.
+4. **Is it project-facing infrastructure** (for example, JupyterLab)? → keep it in a dedicated uv project so its server and kernels are reproducible together.
 5. **Do I need it once, right now?** → `uvx <tool>`, install nothing.
 
 Rule of thumb for 1 vs 2: if you deleted every `import` of it and the app still runs, it's `--dev`.
@@ -38,10 +37,11 @@ uv add --dev pytest ruff mypy        # workbench tools, pinned in uv.lock
 uv run pytest                        # runs in .venv — no activation, ever
 ```
 
-**Notebooks:** the JupyterLab server is global (Nix); each project registers its own kernel so notebooks see that project's packages:
+**Notebooks:** install JupyterLab and the kernel in the project so notebooks see that project's packages:
 
 ```bash
-uv add --dev ipykernel
+uv add --dev jupyterlab ipykernel
+uv run jupyter lab
 uv run python -m ipykernel install --user --name myproject
 ```
 

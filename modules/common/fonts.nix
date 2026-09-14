@@ -1,6 +1,6 @@
-{pkgs, ...}: {
+{pkgs-stable, ...}: {
   # Shared fonts configuration for both nix-darwin and NixOS
-  fonts.packages = with pkgs; [
+  fonts.packages = with pkgs-stable; [
     # Icon fonts
     material-design-icons
     font-awesome
