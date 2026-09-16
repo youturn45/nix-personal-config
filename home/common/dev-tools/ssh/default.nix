@@ -14,28 +14,36 @@
     enable = true;
     enableDefaultConfig = false;
 
-    settings = {
-      "*" =
-        {
-          # Automatically add keys to SSH agent
-          AddKeysToAgent = "yes";
-          IdentityFile = "~/.ssh/Youturn";
-        }
-        // lib.optionalAttrs pkgs-stable.stdenv.isDarwin {
-          # Ignore the Apple-only directive when parsed by non-Apple SSH clients.
-          IgnoreUnknown = "UseKeychain";
-          UseKeychain = "yes";
-        };
+    settings =
+      {
+        "*" =
+          {
+            # Automatically add keys to SSH agent
+            AddKeysToAgent = "yes";
+            IdentityFile = "~/.ssh/Youturn";
+          }
+          // lib.optionalAttrs pkgs-stable.stdenv.isDarwin {
+            # Ignore the Apple-only directive when parsed by non-Apple SSH clients.
+            IgnoreUnknown = "UseKeychain";
+            UseKeychain = "yes";
+          };
 
-      "github.com" = {
-        HostName = "ssh.github.com";
-        User = "git";
-        Port = 443;
-        # Use Youturn key, with fallback to other keys if not available
-        IdentityFile = "~/.ssh/Youturn";
-        IdentitiesOnly = false; # Allow SSH to try other keys if Youturn is not available
+        "github.com" = {
+          HostName = "ssh.github.com";
+          User = "git";
+          Port = 443;
+          # Use Youturn key, with fallback to other keys if not available
+          IdentityFile = "~/.ssh/Youturn";
+          IdentitiesOnly = false; # Allow SSH to try other keys if Youturn is not available
+        };
+      }
+      // lib.optionalAttrs pkgs-stable.stdenv.isDarwin {
+        "nightowl" = {
+          HostName = "10.0.0.6";
+          User = myvars.username;
+          ProxyCommand = "/usr/bin/nc -X 5 -x 127.0.0.1:7891 %h %p";
+        };
       };
-    };
   };
 
   # Ensure SSH key is loaded automatically on login (Linux only)
