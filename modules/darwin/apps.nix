@@ -54,10 +54,10 @@ in {
     onActivation = {
       autoUpdate = false; # Skip fetching updates for faster builds
       upgrade = false; # Skip upgrading packages for faster builds
-      # 'zap': uninstalls all formulae(and related files) not listed in the generated Brewfile
-      cleanup = "zap";
-      # brew bundle --cleanup now requires --force in newer versions
-      extraFlags = ["--force"];
+      # brew bundle's inline cleanup ignores HOMEBREW_BUNDLE_CLEANUP_NO_MAS and
+      # attempts to uninstall unrelated App Store apps (including Pages/Numbers).
+      # Leave existing apps and packages alone during activation.
+      cleanup = "none";
     };
 
     # Applications to install from Mac App Store using mas.

@@ -150,6 +150,8 @@
     # synchronisation of your history between machines, via an Atuin server.
     atuin = {
       enable = true;
+      # History DB migrations from newer releases cannot be read by stable Atuin.
+      package = pkgs-unstable.atuin;
       enableBashIntegration = true;
       enableZshIntegration = true;
       enableNushellIntegration = true;

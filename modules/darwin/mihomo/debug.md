@@ -18,7 +18,7 @@ Mihomo runs as a single **root-owned LaunchDaemon** managed by nix-darwin. The `
 5. `exec`s mihomo with `~/.config/clash.meta` as the config directory
 
 **Helper scripts:**
-- `mihomo-reload` — explicitly restarts the system launchd service and replaces its PID
+- `mihomo-reload` — restarts the system launchd service, or enables and bootstraps it if unloaded
 - `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then restarts the system service
 
 **Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory. It clones the config repo from GitHub over SSH using `~/.ssh/Youturn` only if the checkout is missing. Existing checkouts are updated explicitly with `mihomo-sync`, which uses the same SSH key and reloads Mihomo after a successful pull. Nix rollbacks do not roll back this separate config checkout.

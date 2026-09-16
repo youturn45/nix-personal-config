@@ -50,6 +50,11 @@
       url = "github:ghostty-org/ghostty";
     };
 
+    claude-code = {
+      url = "https://github.com/sadjow/claude-code-nix/archive/refs/heads/main.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     # agenix, used for managing secrets -- DISABLED, see modules/common/_secrets.nix
     # for why and how to re-enable. Uncomment this block as step one of that.
     # agenix = {
@@ -104,6 +109,7 @@
     # mkNixosHost below. Our own modules use pkgs-stable/pkgs-unstable only.
     mkSpecialArgs = system: {
       inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit (inputs) claude-code;
       vars = myvars; # Alias for modules expecting 'vars'
 
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable system;
@@ -116,6 +122,7 @@
     # Linux-specific specialArgs for NixOS (no `pkgs` here either, same reason as above)
     nixosSpecialArgs = {
       inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit (inputs) claude-code;
       vars = myvars; # Alias for modules expecting 'vars'
 
       pkgs-unstable = mkPkgs inputs.nixpkgs-unstable "x86_64-linux";

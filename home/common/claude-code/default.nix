@@ -2,20 +2,9 @@
   config,
   lib,
   pkgs-stable,
-  pkgs-unstable,
+  claude-code,
   ...
 }: let
-  claudeNativePackage =
-    {
-      "aarch64-darwin" = "@anthropic-ai/claude-code-darwin-arm64";
-      "x86_64-darwin" = "@anthropic-ai/claude-code-darwin-x64";
-      "aarch64-linux" = "@anthropic-ai/claude-code-linux-arm64";
-      "x86_64-linux" = "@anthropic-ai/claude-code-linux-x64";
-    }
-    .${
-      pkgs-stable.stdenv.hostPlatform.system
-    };
-
   settingsJson = builtins.toJSON {
     hooks = {};
     env = {
@@ -94,6 +83,8 @@
   };
   settingsFile = pkgs-stable.writeText "claude-managed-settings.json" settingsJson;
 in {
+  home.packages = [claude-code.packages.${pkgs-stable.stdenv.hostPlatform.system}.default];
+
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;
 
   # All hook scripts deployed automatically — just add a script to hooks/ and it's live
@@ -144,23 +135,5 @@ in {
     else
       echo '{"teammateMode": "tmux"}' > "$_claude_json"
     fi
-  '';
-
-  # Install Claude Code on activation (requires Node.js from nodejs module)
-  home.activation.installClaudeCode = lib.hm.dag.entryAfter ["installNpm"] ''
-    export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    export PATH="$HOME/.npm-global/bin:${pkgs-unstable.nodejs_latest}/bin:$PATH"
-
-    echo "Installing or updating Claude Code..."
-    rm -rf "$HOME/.npm-global/lib/node_modules/@anthropic-ai/.claude-code-"* 2>/dev/null || true
-    npm install -g @anthropic-ai/claude-code@latest --allow-scripts=@anthropic-ai/claude-code
-
-    # npm can silently omit Claude Code's platform-native optional dependency,
-    # leaving bin/claude.exe as a fallback message. Install the matching native
-    # package at the wrapper's exact version, then rerun the official installer.
-    _claude_package_json="$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/package.json"
-    _claude_version="$(${pkgs-stable.jq}/bin/jq -r .version "$_claude_package_json")"
-    npm install -g "${claudeNativePackage}@$_claude_version"
-    ${pkgs-unstable.nodejs_latest}/bin/node "$HOME/.npm-global/lib/node_modules/@anthropic-ai/claude-code/install.cjs"
   '';
 }
