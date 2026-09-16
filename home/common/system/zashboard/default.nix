@@ -48,7 +48,7 @@
   '';
 in {
   # macOS: launchd user agent
-  launchd.agents.zashboard = lib.mkIf pkgs.stdenv.isDarwin {
+  launchd.agents.zashboard = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     enable = true;
     config = {
       ProgramArguments = [
@@ -67,7 +67,7 @@ in {
   };
 
   # NixOS: systemd user service
-  systemd.user.services.zashboard = lib.mkIf (!pkgs.stdenv.isDarwin) {
+  systemd.user.services.zashboard = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) {
     Unit.Description = "Zashboard - Clash Meta Dashboard";
     Service = {
       ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString servePort} --directory ${zashboardConfigured}";

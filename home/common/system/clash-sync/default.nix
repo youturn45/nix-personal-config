@@ -11,19 +11,19 @@
 
   # Clash Verge Rev active profile directory (macOS)
   vergeClashDir =
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
     else "";
 
   # Optional iCloud mirror for Clash Verge Rev (can be overridden at runtime)
   iCloudMirrorDir =
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
     else "";
 
   # ClashX Meta iCloud directory
   clashMetaICloudDir =
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
     else "";
 
@@ -38,7 +38,7 @@
     CLASH_META_ICLOUD_DIR="${clashMetaICloudDir}"
     REPO="${clashRepo}"
     IS_DARWIN="${
-      if pkgs.stdenv.isDarwin
+      if pkgs.stdenv.hostPlatform.isDarwin
       then "true"
       else "false"
     }"

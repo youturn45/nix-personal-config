@@ -6,7 +6,7 @@
   ...
 }: {
   # Enable SSH agent service to start automatically (Linux only)
-  services.ssh-agent = lib.mkIf (!pkgs.stdenv.isDarwin) {
+  services.ssh-agent = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) {
     enable = true;
   };
 
@@ -14,27 +14,27 @@
     enable = true;
     enableDefaultConfig = false;
 
-    matchBlocks = {
+    settings = {
       "*" = {
         # Automatically add keys to SSH agent
-        addKeysToAgent = "yes";
-        identityFile = "~/.ssh/Youturn";
+        AddKeysToAgent = "yes";
+        IdentityFile = "~/.ssh/Youturn";
       };
 
       github = {
-        host = "github.com";
-        hostname = "ssh.github.com";
-        user = "git";
-        port = 443;
+        header = "Host github.com";
+        HostName = "ssh.github.com";
+        User = "git";
+        Port = 443;
         # Use Youturn key, with fallback to other keys if not available
-        identityFile = "~/.ssh/Youturn";
-        identitiesOnly = false; # Allow SSH to try other keys if Youturn is not available
+        IdentityFile = "~/.ssh/Youturn";
+        IdentitiesOnly = false; # Allow SSH to try other keys if Youturn is not available
       };
     };
 
     # SSH client configuration
     extraConfig = ''
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
+      ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
         # UseKeychain is an Apple-only directive; IgnoreUnknown must come
         # first so non-Apple ssh builds (e.g. mosh's bundled nixpkgs openssh)
         # skip it instead of aborting config parsing.
@@ -45,7 +45,7 @@
   };
 
   # Ensure SSH key is loaded automatically on login (Linux only)
-  home.sessionVariables = lib.mkIf (!pkgs.stdenv.isDarwin) {
+  home.sessionVariables = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) {
     # SSH agent socket will be set by the service
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };

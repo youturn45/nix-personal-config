@@ -66,7 +66,7 @@
     alejandra # Nix formatter
     rustfmt # Rust formatter
     # ruff (Python formatter/linter) - provided by home/common/python/default.nix
-    nodePackages.prettier # JS/TS/JSON/YAML/MD formatter
+    prettier # JS/TS/JSON/YAML/MD formatter
     stylua # Lua formatter
   ];
 
@@ -102,6 +102,7 @@
     # A command-line fuzzy finder
     fzf = {
       enable = true;
+      historyWidget.command = ""; # Atuin owns Ctrl-R.
       # https://github.com/catppuccin/fzf
       # catppuccin-mocha
       colors = {

@@ -15,7 +15,7 @@ in {
   home = {
     username = myvars.username;
     homeDirectory =
-      if pkgs.stdenv.isDarwin
+      if pkgs.stdenv.hostPlatform.isDarwin
       then "/Users/${myvars.username}"
       else "/home/${myvars.username}";
     stateVersion = myvars.homeStateVersion;

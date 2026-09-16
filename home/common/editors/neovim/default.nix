@@ -19,6 +19,7 @@ in {
   # NixVim configuration - Step 1: Basic options
   programs.nixvim = {
     enable = true;
+    nixpkgs.source = pkgs.path;
 
     # Default editor settings
     viAlias = true;

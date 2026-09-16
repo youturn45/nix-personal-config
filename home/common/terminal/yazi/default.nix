@@ -8,6 +8,7 @@
   programs.yazi = {
     enable = true;
     package = pkgs-unstable.yazi;
+    shellWrapperName = "yy";
     # Changing working directory when exiting Yazi
     enableBashIntegration = true;
     enableNushellIntegration = true;

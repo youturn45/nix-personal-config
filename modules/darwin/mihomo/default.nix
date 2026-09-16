@@ -30,6 +30,11 @@ in {
       echo "mihomo: reloading..."
       ${reloadScript}
     '')
+
+    (pkgs.writeShellScriptBin "mihomo-restart" ''
+      echo "mihomo: restarting..." >&2
+      exec sudo launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+    '')
   ];
 
   # Clone config repo on first build; pull on subsequent builds

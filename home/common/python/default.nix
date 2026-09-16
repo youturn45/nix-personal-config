@@ -18,7 +18,7 @@
       uv
       ruff
 
-      (python312.withPackages (ps:
+      (python3.withPackages (ps:
         with ps; [
           # Jupyter server for SSH/remote development; projects register
           # their own kernels via `uv run python -m ipykernel install`
@@ -28,7 +28,7 @@
           ipython
         ]))
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       # NixOS: System libraries needed for binary wheels
       stdenv.cc.cc.lib # Use this instead of gcc-unwrapped.lib to avoid collision
       glibc
@@ -54,13 +54,13 @@
   # that don't exist on NixOS, so venvs must build on the Nix Python.
   # Darwin uses uv's default (managed) interpreters, which survive Nix
   # rebuilds and garbage collection.
-  home.file.".config/uv/uv.toml" = lib.mkIf pkgs.stdenv.isLinux {
+  home.file.".config/uv/uv.toml" = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     text = ''
       python-preference = "system"
     '';
   };
 
-  programs.zsh.shellAliases = lib.optionalAttrs pkgs.stdenv.isLinux {
+  programs.zsh.shellAliases = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
     # NixOS: Test scientific packages
     test-numpy = "uv run python -c \"import numpy; print('✅ numpy works:', numpy.__version__)\"";
     test-scipy = "uv run python -c \"import scipy; print('✅ scipy works:', scipy.__version__)\"";
@@ -69,7 +69,7 @@
     test-scientific = "uv run python -c \"import numpy, scipy, pandas, sklearn; print('✅ All scientific packages work!')\"";
   };
 
-  home.sessionVariables = lib.optionalAttrs pkgs.stdenv.isLinux {
+  home.sessionVariables = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
     # NixOS: Make system libraries available to UV-installed packages
     LD_LIBRARY_PATH = lib.makeLibraryPath [
       pkgs.stdenv.cc.cc.lib # Use this instead of gcc-unwrapped.lib to avoid collision

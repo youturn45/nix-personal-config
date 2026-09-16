@@ -9,14 +9,14 @@
   # Platform-agnostic home directory path
   # Darwin uses /Users, Linux uses /home
   homeDir =
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "/Users/${myvars.username}"
     else "/home/${myvars.username}";
 
   # Platform-specific group
   # Darwin uses "staff", NixOS uses "users"
   userGroup =
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "staff"
     else "users";
 in {

@@ -19,7 +19,7 @@
 
   # Combine aliases based on platform
   shellAliases =
-    if pkgs.stdenv.isLinux
+    if pkgs.stdenv.hostPlatform.isLinux
     then baseAliases // nixosAliases
     else baseAliases;
 
