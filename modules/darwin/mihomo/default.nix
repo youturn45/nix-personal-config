@@ -32,8 +32,16 @@ in {
     '')
 
     (pkgs.writeShellScriptBin "mihomo-restart" ''
-      echo "mihomo: restarting..." >&2
-      exec sudo launchctl kickstart -k gui/$(id -u)/io.github.metacubex.mihomo
+      set -e
+      label="io.github.metacubex.mihomo"
+      plist="/Library/LaunchAgents/$label.plist"
+      # kickstart only restarts launchd's already-loaded (possibly stale) job
+      # definition -- bootout+bootstrap forces it to reread the plist, so a
+      # rebuild that bumped the mihomo binary/config actually takes effect.
+      echo "mihomo: reloading launchd job..." >&2
+      sudo launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+      sudo launchctl bootstrap "gui/$(id -u)" "$plist"
+      echo "mihomo: restarted"
     '')
   ];
 
