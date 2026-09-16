@@ -1,5 +1,5 @@
 {
-  pkgs,
+  pkgs-stable,
   lib,
   ...
 }: let
@@ -30,7 +30,7 @@
 
   apiList = map mkEntry backends;
 
-  initScript = pkgs.writeText "zashboard-init.js" ''
+  initScript = pkgs-stable.writeText "zashboard-init.js" ''
     (function () {
       var apiListKey = "setup/api-list";
       if (!localStorage.getItem(apiListKey)) {
@@ -40,19 +40,18 @@
   '';
 
   # Derive a patched copy of zashboard with the init script injected into index.html
-  zashboardConfigured = pkgs.runCommand "zashboard-configured" {} ''
-    cp -r ${pkgs.zashboard}/. $out
+  zashboardConfigured = pkgs-stable.runCommand "zashboard-configured" {} ''
+    cp -r ${pkgs-stable.zashboard}/. $out
     chmod -R u+w $out
     cp ${initScript} $out/init.js
     sed -i 's|</head>|<script src="/init.js"></script></head>|' $out/index.html
   '';
 in {
   # macOS: launchd user agent
-  launchd.agents.zashboard = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-    enable = true;
+  launchd.agents.zashboard = lib.mkIf pkgs-stable.stdenv.isDarwin {    enable = true;
     config = {
       ProgramArguments = [
-        "${pkgs.python3}/bin/python3"
+        "${pkgs-stable.python3}/bin/python3"
         "-m"
         "http.server"
         (toString servePort)
@@ -67,10 +66,9 @@ in {
   };
 
   # NixOS: systemd user service
-  systemd.user.services.zashboard = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) {
-    Unit.Description = "Zashboard - Clash Meta Dashboard";
+  systemd.user.services.zashboard = lib.mkIf (!pkgs-stable.stdenv.isDarwin) {    Unit.Description = "Zashboard - Clash Meta Dashboard";
     Service = {
-      ExecStart = "${pkgs.python3}/bin/python3 -m http.server ${toString servePort} --directory ${zashboardConfigured}";
+      ExecStart = "${pkgs-stable.python3}/bin/python3 -m http.server ${toString servePort} --directory ${zashboardConfigured}";
       Restart = "on-failure";
     };
     Install.WantedBy = ["default.target"];

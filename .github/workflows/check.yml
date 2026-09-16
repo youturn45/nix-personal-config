@@ -1,0 +1,55 @@
+name: Check Nix configurations
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  darwin:
+    name: Evaluate ${{ matrix.host }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [Rorschach, NightOwl, SilkSpectre]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Evaluate Darwin system
+        run: nix eval --raw --no-write-lock-file '.#darwinConfigurations.${{ matrix.host }}.system.drvPath'
+
+  nixos:
+    name: Evaluate NixOS and installer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Check Nix formatting
+        run: nix fmt --no-write-lock-file -- --check .
+
+      - name: Check flake
+        run: nix flake check --no-build --no-write-lock-file
+
+      - name: Evaluate NixOS system
+        run: nix eval --raw --no-write-lock-file .#nixosConfigurations.ozymandias.config.system.build.toplevel.drvPath
+
+      - name: Evaluate installer ISO
+        run: nix eval --raw --no-write-lock-file .#packages.x86_64-linux.ozymandias-iso.drvPath

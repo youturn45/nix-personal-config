@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   ...
 }: let
   cfg = config.youturn.roles;
@@ -11,13 +11,14 @@ in {
     services.openssh = {
       enable = true;
       settings = {
-        PasswordAuthentication = true;
-        PermitRootLogin = "yes";
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
+        PermitRootLogin = "no";
       };
     };
 
     # Server-side tools (expand over time: airflow/overleaf stacks, etc.).
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs-stable; [
       duckdb
     ];
   };

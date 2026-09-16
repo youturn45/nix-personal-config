@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   myvars,
   ...
 }: {
@@ -13,7 +13,7 @@
     rm -f ${config.home.homeDirectory}/.gitconfig
   '';
 
-  home.packages = with pkgs; [
+  home.packages = with pkgs-stable; [
   ];
 
   programs.git = {

@@ -1,10 +1,10 @@
 {
-  pkgs,
+  pkgs-stable,
   nur-ryan4yin,
   ...
 }: {
   # https://github.com/catppuccin/btop/blob/main/themes/catppuccin_mocha.theme
-  xdg.configFile."btop/themes".source = "${nur-ryan4yin.packages.${pkgs.stdenv.hostPlatform.system}.catppuccin-btop}/themes";
+  xdg.configFile."btop/themes".source = "${nur-ryan4yin.packages.${pkgs-stable.stdenv.hostPlatform.system}.catppuccin-btop}/themes";
 
   # replacement of htop/nmon
   programs.btop = {

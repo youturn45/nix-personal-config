@@ -1,5 +1,5 @@
 {
-  pkgs,
+  pkgs-stable,
   myvars,
   ...
 }: {
@@ -11,7 +11,7 @@
     browsing = true;
     defaultShared = true;
 
-    drivers = with pkgs; [
+    drivers = with pkgs-stable; [
       hplip
       gutenprint
     ];

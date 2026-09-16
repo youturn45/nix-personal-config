@@ -1,9 +1,9 @@
 {
   ghostty,
-  pkgs,
+  pkgs-stable,
   ...
 }: {
   home.packages = [
-    ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ghostty.packages.${pkgs-stable.stdenv.hostPlatform.system}.default
   ];
 }

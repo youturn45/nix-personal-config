@@ -1,8 +1,16 @@
 {
-  pkgs,
+  config,
+  lib,
+  pkgs-stable,
   myvars,
   ...
-}: {
+}: let
+  isNightOwl = config.networking.hostName == "NightOwl";
+  withoutOnNightOwl = excluded: apps:
+    if isNightOwl
+    then lib.subtractLists excluded apps
+    else apps;
+in {
   ##########################################################################
   #
   #  Install all apps and packages here.
@@ -23,7 +31,7 @@
   # But on macOS, it's less stable than homebrew.
   #
   # Related Discussion: https://discourse.nixos.org/t/darwin-again/29331
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs-stable; [
     # Core system tools - available system-wide
     # Note: zip, p7zip, zstd moved to modules/common/default.nix
     coreutils
@@ -49,14 +57,14 @@
       # 'zap': uninstalls all formulae(and related files) not listed in the generated Brewfile
       cleanup = "zap";
       # brew bundle --cleanup now requires --force in newer versions
-      extraFlags = [ "--force" ];
+      extraFlags = ["--force"];
     };
 
     # Applications to install from Mac App Store using mas.
     # You need to install all these Apps manually first so that your apple account have records for them.
     # otherwise Apple Store will refuse to install them.
     # For details, see https://github.com/mas-cli/mas
-    masApps = {
+    masApps = lib.optionalAttrs (!isNightOwl) {
       # Feel free to add your favorite apps here.
       Wechat = 836500024;
       #TencentMeeting = 1484048379;
@@ -68,7 +76,7 @@
 
     # `brew install`
     # Feel free to add your favorite apps here.
-    brews = [
+    brews = withoutOnNightOwl ["batt"] [
       "libomp"
       "batt"
       #  "ffmpeg"
@@ -76,7 +84,7 @@
 
     # `brew install --cask`
     # Feel free to add your favorite apps here.
-    casks = [
+    casks = withoutOnNightOwl ["superwhisper" "steam" "cursor"] [
       # ============================================
       # Browsers
       # ============================================

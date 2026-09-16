@@ -200,12 +200,12 @@ iso proxy_mode="auto": (smart-proxy proxy_mode)
 #
 ############################################################################
 
-# Format Nix files and validate flake
+# Check formatting and validate flake without modifying files
 [group('test')]
 validate:
   @echo "🔍 Running validation..."
-  @just fmt
-  @nix flake check --no-build
+  @just fmt-check
+  @nix flake check --no-build --no-write-lock-file
 
 # Build test without switching
 [group('test')]
@@ -236,13 +236,21 @@ safe-build host=hostname proxy_mode="auto": (_validate-darwin-host host) current
 # Test all Darwin hosts
 [group('test')]
 test-all proxy_mode="auto":
-  @echo "🚀 Testing all Darwin hosts..."
-  @just smart-proxy {{proxy_mode}}
-  @for host in {{darwin_hosts}}; do \
-    echo "Testing $host..."; \
-    darwin-rebuild build --flake .#$host >/dev/null 2>&1 && \
-      echo "✅ $host: PASS" || echo "❌ $host: FAIL"; \
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo "🚀 Testing all Darwin hosts..."
+  just smart-proxy "{{proxy_mode}}"
+  failed=0
+  for host in {{darwin_hosts}}; do
+    echo "Testing $host..."
+    if darwin-rebuild build --flake ".#$host"; then
+      echo "✅ $host: PASS"
+    else
+      echo "❌ $host: FAIL" >&2
+      failed=1
+    fi
   done
+  exit "$failed"
 
 ############################################################################
 #
@@ -316,7 +324,12 @@ gc:
 # Format Nix files
 [group('nix')]
 fmt:
-  nix-shell -p alejandra --run "alejandra ."
+  nix fmt --no-write-lock-file -- .
+
+# Check Nix formatting without modifying files
+[group('test')]
+fmt-check:
+  nix fmt --no-write-lock-file -- --check .
 
 # Show GC roots
 [group('nix')]

@@ -1,11 +1,11 @@
 {
-  pkgs,
+  pkgs-stable,
   lib,
   ...
 }: {
   # using nix determinate, disable nix-daemon
   nix.enable = true;
-  nix.package = pkgs.nix;
+  nix.package = pkgs-stable.nix;
 
   # enable flakes globally
   nix.settings = {
@@ -34,6 +34,8 @@
     # End Nix
   '';
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  # Unfree packages are already allowed at construction time (see mkPkgs in
+  # flake.nix) for the externally-built `nixpkgs.pkgs` this system uses.
+  # Setting nixpkgs.config.* here too would conflict -- NixOS/nix-darwin
+  # assert against combining an externally-built pkgs with nixpkgs.config.*.
 }

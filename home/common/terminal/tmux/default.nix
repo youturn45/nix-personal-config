@@ -2,7 +2,7 @@
 #
 # A running tmux server does not re-read config on rebuild — reload with
 # `prefix + r`, or `tmux kill-server` to start fresh.
-{pkgs, ...}: {
+{pkgs-stable, ...}: {
   programs.tmux = {
     enable = true;
 
@@ -14,7 +14,7 @@
     historyLimit = 50000;
     baseIndex = 1; # also sets pane-base-index
 
-    plugins = with pkgs.tmuxPlugins; [
+    plugins = with pkgs-stable.tmuxPlugins; [
       {
         plugin = catppuccin;
         extraConfig = ''
@@ -43,6 +43,9 @@
     extraConfig = ''
       # True color passthrough from the outer terminal
       set -as terminal-features ",*:RGB"
+
+      # Forward terminal escape sequences emitted by programs inside tmux
+      set -g allow-passthrough on
 
       # Programs inside tmux (nvim, SSH sessions) may set the clipboard via OSC52
       set -g set-clipboard on

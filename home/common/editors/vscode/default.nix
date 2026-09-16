@@ -1,11 +1,11 @@
-{pkgs, ...}: {
+{pkgs-stable, ...}: {
   programs.vscode = {
     enable = true;
-    # Swap to pkgs.vscodium if you prefer VSCodium.
-    package = pkgs.vscode;
+    # Swap to pkgs-stable.vscodium if you prefer VSCodium.
+    package = pkgs-stable.vscode;
 
     profiles.default.extensions =
-      (with pkgs.vscode-extensions; [
+      (with pkgs-stable.vscode-extensions; [
         bbenoist.nix
         catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
@@ -15,7 +15,7 @@
       ++
       # Add marketplace-only extensions here if needed.
       # Example:
-      # (pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+      # (pkgs-stable.vscode-utils.extensionsFromVscodeMarketplace [
       #   {
       #     name = "copilot";
       #     publisher = "GitHub";

@@ -1,5 +1,5 @@
 {
-  pkgs,
+  pkgs-stable,
   lib,
   myLib,
   ...
@@ -15,7 +15,7 @@
     ++ (myLib.collectModulesRecursively ./gui);
 
   # Darwin-specific packages
-  # home.packages = with pkgs; [
+  # home.packages = with pkgs-stable; [
   #   # macOS-specific tools
   # ];
 

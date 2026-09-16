@@ -15,8 +15,8 @@
     description = myvars.username;
   };
 
-  # home-manager.users."${username}" = { pkgs, ... }: {
-  #   home.packages = [ pkgs.atool pkgs.httpie pkgs.cowsay];
+  # home-manager.users."${username}" = { pkgs-stable, ... }: {
+  #   home.packages = [ pkgs-stable.atool pkgs-stable.httpie pkgs-stable.cowsay];
   #   programs.bash.enable = true;
 
   # The state version is required and should stay at the version you

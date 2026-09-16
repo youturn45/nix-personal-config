@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Nix configuration for macOS (nix-darwin) and NixOS. Uses Flakes with automatic module discovery. Claude cannot run Nix builds — review code only, user runs builds.
+Nix configuration for macOS (nix-darwin) and NixOS. Uses Flakes with automatic module discovery. Claude cannot run Nix builds (`just build`/`just owl`/`darwin-rebuild switch`/`nixos-rebuild switch`/`nix build`) — those switch the live system and require the user's sudo password, so the user runs them. Claude MAY run `nix flake check --no-build` (or `just validate`) to validate that configs evaluate correctly after edits — it catches eval/syntax errors without building or activating anything.
 
 ## Systems
 

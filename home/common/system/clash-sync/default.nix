@@ -1,6 +1,6 @@
 {
   config,
-  pkgs,
+  pkgs-stable,
   myvars,
   lib,
   ...
@@ -11,24 +11,21 @@
 
   # Clash Verge Rev active profile directory (macOS)
   vergeClashDir =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
     else "";
 
   # Optional iCloud mirror for Clash Verge Rev (can be overridden at runtime)
   iCloudMirrorDir =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
     else "";
 
   # ClashX Meta iCloud directory
   clashMetaICloudDir =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
     else "";
 
   # Sync script that pulls from git and syncs to iCloud (macOS only)
-  syncClashScript = pkgs.writeShellScriptBin "sync_clash" ''
+  syncClashScript = pkgs-stable.writeShellScriptBin "sync_clash" ''
     set -e
 
     LOCAL_DIR="${localClashDir}"
@@ -38,8 +35,7 @@
     CLASH_META_ICLOUD_DIR="${clashMetaICloudDir}"
     REPO="${clashRepo}"
     IS_DARWIN="${
-      if pkgs.stdenv.hostPlatform.isDarwin
-      then "true"
+      if pkgs-stable.stdenv.isDarwin      then "true"
       else "false"
     }"
 
@@ -57,15 +53,15 @@
     # Check if local directory is a git repository
     if [ ! -d "$LOCAL_DIR/.git" ]; then
       echo -e "''${YELLOW}[Git]''${NC} Cloning repository for the first time..."
-      ${pkgs.git}/bin/git clone "$REPO" "$LOCAL_DIR"
+      ${pkgs-stable.git}/bin/git clone "$REPO" "$LOCAL_DIR"
     else
       echo -e "''${YELLOW}[Git]''${NC} Pulling latest changes..."
       cd "$LOCAL_DIR"
-      ${pkgs.git}/bin/git pull origin main || ${pkgs.git}/bin/git pull origin master || {
+      ${pkgs-stable.git}/bin/git pull origin main || ${pkgs-stable.git}/bin/git pull origin master || {
         echo -e "''${RED}[Git]''${NC} Failed to pull from remote. Trying to fetch..."
-        ${pkgs.git}/bin/git fetch origin
-        BRANCH=$(${pkgs.git}/bin/git rev-parse --abbrev-ref HEAD)
-        ${pkgs.git}/bin/git reset --hard "origin/$BRANCH"
+        ${pkgs-stable.git}/bin/git fetch origin
+        BRANCH=$(${pkgs-stable.git}/bin/git rev-parse --abbrev-ref HEAD)
+        ${pkgs-stable.git}/bin/git reset --hard "origin/$BRANCH"
       }
     fi
 
@@ -84,7 +80,7 @@
       if [ -n "$ICLOUD_DIR" ]; then
         mkdir -p "$ICLOUD_DIR"
         echo -e "''${YELLOW}[Rsync]''${NC} Mirroring Clash config -> Clash Verge Rev iCloud..."
-        ${pkgs.rsync}/bin/rsync -av --delete \
+        ${pkgs-stable.rsync}/bin/rsync -av --delete \
           --exclude='.git' \
           --exclude='.gitignore' \
           --exclude='.gitmodules' \
@@ -95,7 +91,7 @@
       # Sync to ClashX Meta iCloud directory if it exists
       if [ -d "$CLASH_META_ICLOUD_DIR" ]; then
         echo -e "''${YELLOW}[Rsync]''${NC} Mirroring Clash config -> ClashX Meta iCloud..."
-        ${pkgs.rsync}/bin/rsync -av --delete \
+        ${pkgs-stable.rsync}/bin/rsync -av --delete \
           --exclude='.git' \
           --exclude='.gitignore' \
           --exclude='.gitmodules' \

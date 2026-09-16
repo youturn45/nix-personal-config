@@ -6,8 +6,11 @@ on:
       - "flake.nix"
       - "flake.lock"
       - "hosts/nixos/**"
+      - "home/**"
       - "modules/nixos/**"
+      - "modules/common/**"
       - "my-lib/**"
+      - "secrets/**"
       - "vars/**"
       - ".github/workflows/build-nixos-iso.yml"
   workflow_dispatch:

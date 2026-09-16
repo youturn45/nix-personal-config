@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   ...
 }: let
   cfg = config.youturn.roles;
@@ -15,7 +15,7 @@ in {
     };
 
     # Wayland desktop tools can live in this role as you evolve it.
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs-stable; [
       hyprland
     ];
   };

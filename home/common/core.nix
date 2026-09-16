@@ -1,12 +1,12 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   pkgs-unstable,
   nur-ryan4yin,
   ...
 }: {
-  home.packages = with pkgs; [
+  home.packages = with pkgs-stable; [
     # Core utilities moved to system-level (modules/common/default.nix):
     # curl, wget, tmux, htop, gnumake, jq, just
 
@@ -102,7 +102,6 @@
     # A command-line fuzzy finder
     fzf = {
       enable = true;
-      historyWidget.command = ""; # Atuin owns Ctrl-R.
       # https://github.com/catppuccin/fzf
       # catppuccin-mocha
       colors = {

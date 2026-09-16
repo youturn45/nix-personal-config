@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  pkgs,
+  pkgs-stable,
   pkgs-unstable,
   ...
 }:
@@ -19,7 +19,7 @@ in {
   # NixVim configuration - Step 1: Basic options
   programs.nixvim = {
     enable = true;
-    nixpkgs.source = pkgs.path;
+    nixpkgs.source = pkgs-stable.path;
 
     # Default editor settings
     viAlias = true;
