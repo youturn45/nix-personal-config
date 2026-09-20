@@ -24,15 +24,13 @@
   # Platform-agnostic home directory path
   # Darwin uses /Users, Linux uses /home
   homeDir =
-    if pkgs-stable.stdenv.isDarwin
-    then "/Users/${myvars.username}"
+    if pkgs-stable.stdenv.isDarwin    then "/Users/${myvars.username}"
     else "/home/${myvars.username}";
 
   # Platform-specific group
   # Darwin uses "staff", NixOS uses "users"
   userGroup =
-    if pkgs-stable.stdenv.isDarwin
-    then "staff"
+    if pkgs-stable.stdenv.isDarwin    then "staff"
     else "users";
 in {
   # Install agenix CLI tool

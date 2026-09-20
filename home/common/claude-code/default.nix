@@ -1,10 +1,10 @@
 {
-  claude-code-nix,
   lib,
   pkgs-stable,
+  claude-code,
   ...
 }: let
-  claude-code = claude-code-nix.packages.${pkgs-stable.stdenv.hostPlatform.system}.default;
+  claude-code-package = claude-code.packages.${pkgs-stable.stdenv.hostPlatform.system}.default;
 
   # Defaults for ~/.claude/settings.json. Permissions live in managed settings
   # (modules/common/claude-code); everything in this file belongs to Claude Code.
@@ -17,7 +17,7 @@
 in {
   programs.claude-code = {
     enable = true;
-    package = claude-code;
+    package = claude-code-package;
   };
 
   home.file.".claude/CLAUDE.md".source = ./CLAUDE.md;

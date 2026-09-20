@@ -17,7 +17,7 @@
         "type": "github"
       }
     },
-    "claude-code-nix": {
+    "claude-code": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs-unstable"
@@ -25,17 +25,14 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1789243306,
-        "narHash": "sha256-YTEDtq7KPYlR5kMdioqHSdq5LP7Ol4lNFN1jffCUCXU=",
-        "owner": "sadjow",
-        "repo": "claude-code-nix",
-        "rev": "e2fe3829b5fcbd493256b42a8f2bfbf86771dbdb",
-        "type": "github"
+        "lastModified": 1789790521,
+        "narHash": "sha256-bV8YsQ4mV92qwj7kwYH6FFKvECRos8SyrAFvgikXxsY=",
+        "type": "tarball",
+        "url": "https://github.com/sadjow/claude-code-nix/archive/refs/heads/main.tar.gz"
       },
       "original": {
-        "owner": "sadjow",
-        "repo": "claude-code-nix",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://github.com/sadjow/claude-code-nix/archive/refs/heads/main.tar.gz"
       }
     },
     "codex-cli-nix": {
@@ -46,11 +43,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788995571,
-        "narHash": "sha256-I58IVp7HfT3TTKZJ5kh7/Lttu9DnRZFC0qmvxnIvIj4=",
+        "lastModified": 1789762479,
+        "narHash": "sha256-4KCSgkNu6206dYNXEgUSd4XznX+8De/T/KYQDWAmqY8=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "33542c7e7139127a4bac1cbe0fac8c81a570410a",
+        "rev": "a7ed999eef6da100f126543dd5ab8817ddf003e6",
         "type": "github"
       },
       "original": {
@@ -344,7 +341,7 @@
     },
     "root": {
       "inputs": {
-        "claude-code-nix": "claude-code-nix",
+        "claude-code": "claude-code",
         "codex-cli-nix": "codex-cli-nix",
         "ghostty": "ghostty",
         "haumea": "haumea",

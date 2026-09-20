@@ -13,9 +13,22 @@
   gitSSH = "ssh -i ${sshKey} -o StrictHostKeyChecking=accept-new -o BatchMode=yes";
   restartScript = ''
     set -e
-    echo "mihomo: restarting system service..."
-    /usr/bin/sudo /bin/launchctl kickstart -k system/io.github.metacubex.mihomo
-    echo "mihomo restarted"
+    service=system/io.github.metacubex.mihomo
+    plist=/Library/LaunchDaemons/io.github.metacubex.mihomo.plist
+
+    if /usr/bin/sudo /bin/launchctl print "$service" >/dev/null 2>&1; then
+      echo "mihomo: restarting system service..."
+      /usr/bin/sudo /bin/launchctl kickstart -k "$service"
+    else
+      if [ ! -f "$plist" ]; then
+        echo "mihomo: service plist missing: $plist (run darwin-rebuild switch)" >&2
+        exit 1
+      fi
+      echo "mihomo: loading system service..."
+      /usr/bin/sudo /bin/launchctl enable "$service"
+      /usr/bin/sudo /bin/launchctl bootstrap system "$plist"
+    fi
+    echo "mihomo: system service started"
   '';
 in {
   environment.systemPackages = [

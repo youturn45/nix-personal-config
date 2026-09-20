@@ -11,20 +11,17 @@
 
   # Clash Verge Rev active profile directory (macOS)
   vergeClashDir =
-    if pkgs-stable.stdenv.isDarwin
-    then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Application Support/io.github.clash-verge-rev.clash-verge-rev"
     else "";
 
   # Optional iCloud mirror for Clash Verge Rev (can be overridden at runtime)
   iCloudMirrorDir =
-    if pkgs-stable.stdenv.isDarwin
-    then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Mobile Documents/com~apple~CloudDocs/ClashVergeRev"
     else "";
 
   # ClashX Meta iCloud directory
   clashMetaICloudDir =
-    if pkgs-stable.stdenv.isDarwin
-    then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
+    if pkgs-stable.stdenv.isDarwin    then "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~com~metacubex~ClashX/Documents"
     else "";
 
   # Sync script that pulls from git and syncs to iCloud (macOS only)
@@ -38,8 +35,7 @@
     CLASH_META_ICLOUD_DIR="${clashMetaICloudDir}"
     REPO="${clashRepo}"
     IS_DARWIN="${
-      if pkgs-stable.stdenv.isDarwin
-      then "true"
+      if pkgs-stable.stdenv.isDarwin      then "true"
       else "false"
     }"
 

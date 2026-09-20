@@ -16,11 +16,18 @@
     [
       uv
       ruff
+
+      (python3.withPackages (ps:
+        with ps; [
+          # Jupyter server for SSH/remote development; projects register
+          # their own kernels via `uv run python -m ipykernel install`
+          jupyterlab
+          jupyter-client
+          ipykernel # plain global kernel, sees only this environment
+          ipython
+        ]))
     ]
     ++ lib.optionals pkgs-stable.stdenv.isLinux [
-      # uv is configured to use the system interpreter on NixOS.
-      python312
-
       # NixOS: System libraries needed for binary wheels
       stdenv.cc.cc.lib # Use this instead of gcc-unwrapped.lib to avoid collision
       glibc
