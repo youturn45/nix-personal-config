@@ -84,9 +84,11 @@ in {
               networksetup -setwebproxy "$svc" 127.0.0.1 7890 2>/dev/null
               networksetup -setsecurewebproxy "$svc" 127.0.0.1 7890 2>/dev/null
               networksetup -setsocksfirewallproxy "$svc" 127.0.0.1 7891 2>/dev/null
+              # RFC1918 ranges are deliberately absent: bypassing them hands
+              # LAN-range traffic to Tailscale instead of mihomo. Loopback and
+              # link-local stay bypassed -- mihomo itself listens on 127.0.0.1.
               networksetup -setproxybypassdomains "$svc" \
-                "127.0.0.1" "localhost" "*.local" "169.254/16" \
-                "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" 2>/dev/null
+                "127.0.0.1" "localhost" "*.local" "169.254/16" 2>/dev/null
             done
           exec ${pkgs-unstable.mihomo}/bin/mihomo -d ${configDir}
         ''
