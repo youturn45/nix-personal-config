@@ -38,10 +38,12 @@
     audit=false
   '';
 
-  # Add npm global bin to PATH for user-installed packages
-  home.sessionPath = [
-    "$HOME/.npm-global/bin"
-  ];
+  # npm global bin goes on the END of PATH, never the front: home.sessionPath
+  # would prepend it ahead of /etc/profiles, letting a stray `npm install -g`
+  # shadow a Nix-managed tool of the same name (claude, codex, ...).
+  programs.zsh.initContent = ''
+    export PATH="$PATH:${config.home.homeDirectory}/.npm-global/bin"
+  '';
 
   # Set npm prefix to user directory
   home.sessionVariables = {
