@@ -39,11 +39,15 @@
       }
       // lib.optionalAttrs pkgs-stable.stdenv.isDarwin {
         "nightowl" = {
-          HostName = "10.0.0.6";
+          HostName = "100.85.105.81";
+          Port = 22;
           User = myvars.username;
-          ProxyCommand = "/usr/bin/nc -X 5 -x 127.0.0.1:7891 %h %p";
         };
       };
+  };
+
+  home.shellAliases = lib.optionalAttrs pkgs-stable.stdenv.isDarwin {
+    ssh-proxy = "ssh -o 'ProxyCommand=/usr/bin/nc -X 5 -x 127.0.0.1:7891 %h %p'";
   };
 
   # Ensure SSH key is loaded automatically on login (Linux only)
