@@ -5,12 +5,11 @@
   myvars,
   ...
 }: {
-  # `programs.git` will generate the config file: ~/.config/git/config
-  # to make git use this config file, `~/.gitconfig` should not exist!
-  #
-  #    https://git-scm.com/docs/git-config#Documentation/git-config.txt---global
+  # Normal Git reads both XDG config and ~/.gitconfig (the latter overrides).
+  # Preserve the legacy file/link in a unique sibling backup, never delete it.
+  # Keep Git/config writers quiescent during this one-way migration.
   home.activation.removeExistingGitconfig = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    rm -f ${config.home.homeDirectory}/.gitconfig
+    run ${pkgs-stable.python3}/bin/python3 ${./migrate-config.py} ${lib.escapeShellArg "${config.home.homeDirectory}/.gitconfig"}
   '';
 
   home.packages = with pkgs-stable; [

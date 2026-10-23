@@ -12,8 +12,18 @@
     env = {
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
     };
+    # Desktop banners from inside tmux (see hooks/tmux-notify.sh)
+    hooks.Notification = [
+      {
+        hooks = [
+          {
+            type = "command";
+            command = "~/.claude/hooks/tmux-notify.sh";
+          }
+        ];
+      }
+    ];
   };
-  settingsFile = pkgs-stable.writeText "claude-settings-defaults.json" settingsJson;
 in {
   programs.claude-code = {
     enable = true;
@@ -46,27 +56,16 @@ in {
   # settings.json stays a real, Claude-owned file. Nix only fills in missing
   # defaults (deep merge, the live file wins), so /model, /config and
   # "Always allow" edits survive rebuilds.
+  # Stop app/config writers during activation: atomic replace is not a lock.
+  # run guards the whole helper, including redirection, mkdir and temp files.
   home.activation.claudeSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    _settings="$HOME/.claude/settings.json"
-    mkdir -p "$HOME/.claude"
-    if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
-      _tmp="$(mktemp)"
-      ${pkgs-stable.jq}/bin/jq -s '.[1] * .[0]' "$_settings" ${settingsFile} > "$_tmp" && mv "$_tmp" "$_settings"
-    else
-      rm -f "$_settings"
-      cat ${settingsFile} > "$_settings"
-    fi
+    run ${pkgs-stable.python3}/bin/python3 ${./merge-settings.py} \
+      defaults "$HOME/.claude/settings.json" ${lib.escapeShellArg settingsJson}
   '';
 
-  # Merge Claude runtime config into ~/.claude.json without replacing it —
-  # Claude Code writes auth tokens there, so we can't manage it as a read-only symlink
+  # Force only teammateMode; all other runtime state remains Claude-owned.
   home.activation.claudeRuntimeConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    _claude_json="$HOME/.claude.json"
-    _tmp="$(mktemp)"
-    if [ -f "$_claude_json" ]; then
-      ${pkgs-stable.jq}/bin/jq '. + {"teammateMode": "tmux"}' "$_claude_json" > "$_tmp" && mv "$_tmp" "$_claude_json"
-    else
-      echo '{"teammateMode": "tmux"}' > "$_claude_json"
-    fi
+    run ${pkgs-stable.python3}/bin/python3 ${./merge-settings.py} \
+      runtime "$HOME/.claude.json"
   '';
 }

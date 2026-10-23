@@ -13,162 +13,29 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # NixOS-specific initialization
     export TERM="xterm-256color"
-    
+
     # Fix key bindings for NixOS terminals
-    bindkey "^?" backward-delete-char     # Mac delete key (DEL character)
-    bindkey "^H" backward-delete-char     # Backspace (Ctrl+H)
-    bindkey "\177" backward-delete-char   # DEL character (127) - Mac delete
-    bindkey "\b" backward-delete-char     # Backspace alternative
-    bindkey "\e[3~" delete-char           # Forward delete (fn+delete on Mac)
-    bindkey "^[[3~" delete-char           # Forward delete alternative
-    bindkey "^[3;5~" delete-char          # Ctrl+forward delete
-    bindkey "^[[P" delete-char            # Forward delete alternative
+    bindkey "^?" backward-delete-char
+    bindkey "^H" backward-delete-char
+    bindkey "\177" backward-delete-char
+    bindkey "\b" backward-delete-char
+    bindkey "\e[3~" delete-char
+    bindkey "^[[3~" delete-char
+    bindkey "^[3;5~" delete-char
+    bindkey "^[[P" delete-char
 
     # Navigation keys
-    bindkey "^[[H" beginning-of-line      # Home key
-    bindkey "^[[F" end-of-line            # End key
-    bindkey "^[[1~" beginning-of-line     # Home alternative
-    bindkey "^[[4~" end-of-line           # End alternative
+    bindkey "^[[H" beginning-of-line
+    bindkey "^[[F" end-of-line
+    bindkey "^[[1~" beginning-of-line
+    bindkey "^[[4~" end-of-line
 
-    # Set terminal options for compatibility
     stty erase '^?'
     stty werase '^W'
 fi
 
-# Proxy configuration presets
-PROXY_LOCAL_HTTP="http://127.0.0.1:7890"
-PROXY_LOCAL_SOCKS="socks5://127.0.0.1:7891"
-PROXY_NETWORK_HTTP="http://10.0.0.3:7890"
-PROXY_NETWORK_SOCKS="socks5://10.0.0.3:7891"
-
-function proxy() {
-    local cmd="${1:-help}"
-
-    case "$cmd" in
-        on)
-            local mode="${2:-local}"
-            local proxy_http proxy_socks label
-            if [[ "$mode" == "local" ]]; then
-                proxy_http="$PROXY_LOCAL_HTTP"
-                proxy_socks="$PROXY_LOCAL_SOCKS"
-                label="local (127.0.0.1)"
-            elif [[ "$mode" == "network" ]]; then
-                proxy_http="$PROXY_NETWORK_HTTP"
-                proxy_socks="$PROXY_NETWORK_SOCKS"
-                label="network (10.0.0.3)"
-            else
-                printf "Error: invalid mode '%s'. Use 'local' or 'network'.\n" "$mode"
-                return 1
-            fi
-            export http_proxy="$proxy_http"
-            export https_proxy="$proxy_http"
-            export HTTP_PROXY="$proxy_http"
-            export HTTPS_PROXY="$proxy_http"
-            export all_proxy="$proxy_socks"
-            export ALL_PROXY="$proxy_socks"
-            unset no_proxy NO_PROXY
-            # npm/pnpm ignore http_proxy/https_proxy; they only read npm_config_*
-            export npm_config_proxy="$proxy_http"
-            export npm_config_https_proxy="$proxy_http"
-            printf "Proxy enabled — %s\n" "$label"
-            printf "  HTTP:  %s\n" "$proxy_http"
-            printf "  SOCKS: %s\n" "$proxy_socks"
-            ;;
-        off)
-            unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
-            unset all_proxy ALL_PROXY
-            unset npm_config_proxy npm_config_https_proxy
-            printf "Proxy disabled.\n"
-            ;;
-        show)
-            if [[ -n "$http_proxy" ]]; then
-                printf "Proxy: enabled\n"
-                printf "  HTTP:  %s\n" "$http_proxy"
-                printf "  HTTPS: %s\n" "$https_proxy"
-                printf "  SOCKS: %s\n" "$all_proxy"
-            else
-                printf "Proxy: disabled\n"
-            fi
-            ;;
-        test)
-            if [[ -z "$http_proxy" ]]; then
-                printf "Proxy is not enabled. Run 'proxy on' first.\n"
-                return 1
-            fi
-            printf "Testing connection through %s ...\n" "$http_proxy"
-            if curl -sf --max-time 5 --proxy "$http_proxy" https://www.google.com > /dev/null 2>&1; then
-                printf "Connection successful.\n"
-            else
-                printf "Connection failed.\n"
-                return 1
-            fi
-            ;;
-        macos-on)
-            if [[ "$OSTYPE" != "darwin"* ]]; then
-                printf "Error: macos-on is only supported on macOS.\n"
-                return 1
-            fi
-            local mode="${2:-local}"
-            local proxy_http proxy_socks label
-            if [[ "$mode" == "local" ]]; then
-                proxy_http="$PROXY_LOCAL_HTTP"
-                proxy_socks="$PROXY_LOCAL_SOCKS"
-                label="local (127.0.0.1)"
-            elif [[ "$mode" == "network" ]]; then
-                proxy_http="$PROXY_NETWORK_HTTP"
-                proxy_socks="$PROXY_NETWORK_SOCKS"
-                label="network (10.0.0.3)"
-            else
-                printf "Error: invalid mode '%s'. Use 'local' or 'network'.\n" "$mode"
-                return 1
-            fi
-            local http_addr="${proxy_http#http://}"
-            local http_host="${http_addr%:*}"
-            local http_port="${http_addr##*:}"
-            local socks_addr="${proxy_socks#socks5://}"
-            local socks_host="${socks_addr%:*}"
-            local socks_port="${socks_addr##*:}"
-            networksetup -listallnetworkservices | tail -n +2 \
-                | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
-                | while IFS= read -r svc; do
-                    networksetup -setwebproxy "$svc" "$http_host" "$http_port" 2>/dev/null
-                    networksetup -setsecurewebproxy "$svc" "$http_host" "$http_port" 2>/dev/null
-                    networksetup -setsocksfirewallproxy "$svc" "$socks_host" "$socks_port" 2>/dev/null
-                done
-            printf "macOS system proxy enabled — %s\n" "$label"
-            printf "  HTTP:  %s:%s\n" "$http_host" "$http_port"
-            printf "  SOCKS: %s:%s\n" "$socks_host" "$socks_port"
-            ;;
-        macos-off)
-            if [[ "$OSTYPE" != "darwin"* ]]; then
-                printf "Error: macos-off is only supported on macOS.\n"
-                return 1
-            fi
-            networksetup -listallnetworkservices | tail -n +2 \
-                | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
-                | while IFS= read -r svc; do
-                    networksetup -setwebproxystate "$svc" off 2>/dev/null
-                    networksetup -setsecurewebproxystate "$svc" off 2>/dev/null
-                    networksetup -setsocksfirewallproxystate "$svc" off 2>/dev/null
-                done
-            printf "macOS system proxy disabled.\n"
-            ;;
-        help|*)
-            printf "Usage: proxy <command> [options]\n\n"
-            printf "Commands:\n"
-            printf "  on [local|network]       Enable shell proxy env vars (default: local)\n"
-            printf "  off                      Disable shell proxy env vars\n"
-            printf "  macos-on [local|network] Set macOS system proxy via networksetup\n"
-            printf "  macos-off                Clear macOS system proxy via networksetup\n"
-            printf "  show                     Show current proxy status\n"
-            printf "  test                     Test proxy connectivity\n"
-            printf "  help                     Show this help message\n"
-            ;;
-    esac
-}
-
-# Enable proxy by default
-proxy on local > /dev/null
+# Proxy functions and the single platform-aware startup selection are injected
+# by default.nix. Do not auto-enable proxy here.
 
 # Directory navigation
 alias ..='cd ..'
@@ -197,6 +64,3 @@ alias egrep='egrep --color=auto'
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
-
-# Auto-enable proxy on shell start
-proxy on

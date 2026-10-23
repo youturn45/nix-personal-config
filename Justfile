@@ -116,17 +116,17 @@ smart-proxy mode="auto":
   # Skip on non-Darwin platforms
   if [ "$(uname -s)" != "Darwin" ]; then
     echo "📡 Non-Darwin platform, skipping nix-daemon proxy configuration"
-    [ -n "${http_proxy:-}" ] && echo "🔍 Terminal proxy detected: $http_proxy (shell-only)"
+    [ -n "${http_proxy:-}" ] && echo "🔍 Terminal proxy detected (shell-only; endpoint credentials hidden)"
     exit 0
   fi
 
   case "{{mode}}" in
     auto)
       if [ -n "${http_proxy:-}" ]; then
-        echo "🔍 Terminal proxy detected: $http_proxy"
+        echo "🔍 Terminal proxy detected (endpoint credentials hidden)"
         sudo python3 scripts/darwin_set_proxy.py "$http_proxy"
       else
-        echo "📡 No proxy detected, using local mode"
+        echo "📡 No terminal proxy; checking local proxy reachability before applying"
         sudo python3 scripts/darwin_set_proxy.py local
       fi
       ;;
@@ -200,12 +200,15 @@ iso proxy_mode="auto": (smart-proxy proxy_mode)
 #
 ############################################################################
 
-# Check formatting and validate flake without modifying files
+# No-build validation: all hosts, installer and strict generated tests
 [group('test')]
-validate:
-  @echo "🔍 Running validation..."
-  @just fmt-check
-  @nix flake check --no-build --no-write-lock-file
+validate *ARGS:
+  python3 scripts/validate.py {{ARGS}}
+
+# Same strict generated validation as CI (all platforms by default)
+[group('test')]
+test *ARGS:
+  python3 scripts/validate.py {{ARGS}}
 
 # Build test without switching
 [group('test')]
@@ -221,8 +224,7 @@ build-test host=hostname proxy_mode="auto": (_validate-host host) (smart-proxy p
 # Show current generation before building
 [group('test')]
 current-gen:
-  @echo "📋 Current system generation:"
-  @nix profile history --profile /nix/var/nix/profiles/system | head -n 5
+  @just generations
 
 # Safe build: validate → build-test → switch
 [group('test')]
@@ -265,16 +267,21 @@ rollback:
   set -euo pipefail
   echo "⏪ Rolling back to previous generation..."
   if [ "$(uname -s)" = "Darwin" ]; then
-    sudo darwin-rebuild rollback
+    sudo darwin-rebuild --rollback
   else
-    sudo nixos-rebuild rollback
+    sudo nixos-rebuild switch --rollback
   fi
 
 # List recent generations
 [group('rollback')]
 generations:
-  @echo "📜 Recent system generations:"
-  @nix profile history --profile /nix/var/nix/profiles/system | head -n 10
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [ "$(uname -s)" = "Darwin" ]; then
+    darwin-rebuild --list-generations
+  else
+    nix-env --list-generations --profile /nix/var/nix/profiles/system
+  fi
 
 # Emergency rollback
 [group('rollback')]
@@ -302,7 +309,7 @@ upp input:
 # List all generations
 [group('nix')]
 history:
-  nix profile history --profile /nix/var/nix/profiles/system
+  @just generations
 
 # Open nix repl
 [group('nix')]
@@ -348,23 +355,23 @@ brew:
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   brew install just
 
-# Install Lix (Nix alternative)
+# Retired: use the current upstream Nix/nix-darwin installation instructions
 [group('setup')]
 lix:
-  curl -sSf -L https://install.lix.systems/lix | sh -s -- install
+  @echo "Retired: this flake uses upstream Nix; see docs/build.md for bootstrap guidance." >&2
+  @exit 1
 
-# Setup Darwin channels
+# Retired: this repository uses locked flakes, not Darwin channels
 [group('setup')]
 darwin-channel:
-  nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-  nix-channel --update
-  nix-build '<darwin>' -A darwin-rebuild
-  nix flake update
+  @echo "Retired: use the flake-based nix-darwin bootstrap in docs/build.md; no channels or lock update." >&2
+  @exit 1
 
 # Build and switch to configuration
 [group('setup')]
 dot:
-  ~/result/bin/darwin-rebuild switch --flake .
+  @echo "Retired channel-era bootstrap: follow docs/build.md, then use just build HOST." >&2
+  @exit 1
 
 ############################################################################
 #

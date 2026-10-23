@@ -48,7 +48,8 @@
   '';
 in {
   # macOS: launchd user agent
-  launchd.agents.zashboard = lib.mkIf pkgs-stable.stdenv.isDarwin {    enable = true;
+  launchd.agents.zashboard = lib.mkIf pkgs-stable.stdenv.isDarwin {
+    enable = true;
     config = {
       ProgramArguments = [
         "${pkgs-stable.python3}/bin/python3"
@@ -66,7 +67,8 @@ in {
   };
 
   # NixOS: systemd user service
-  systemd.user.services.zashboard = lib.mkIf (!pkgs-stable.stdenv.isDarwin) {    Unit.Description = "Zashboard - Clash Meta Dashboard";
+  systemd.user.services.zashboard = lib.mkIf (!pkgs-stable.stdenv.isDarwin) {
+    Unit.Description = "Zashboard - Clash Meta Dashboard";
     Service = {
       ExecStart = "${pkgs-stable.python3}/bin/python3 -m http.server ${toString servePort} --directory ${zashboardConfigured}";
       Restart = "on-failure";

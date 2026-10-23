@@ -18,15 +18,9 @@
     $DRY_RUN_CMD mkdir -p ${config.home.homeDirectory}/.npm-cache
   '';
 
-  # Keep npm on the explicitly selected release instead of the version bundled
-  # with Node.js. The Node-provided npm bootstraps this user-scoped installation.
-  home.activation.installNpm = lib.hm.dag.entryAfter ["setupNpm"] ''
-    export NPM_CONFIG_PREFIX="$HOME/.npm-global"
-    export PATH="${pkgs-unstable.nodejs_latest}/bin:$PATH"
-
-    echo "Installing or updating npm 12.0.2..."
-    ${pkgs-unstable.nodejs_latest}/bin/npm install -g npm@12.0.2
-  '';
+  # npm comes from the locked Node.js package above. Do not mutate a separate
+  # npm installation or access the registry during Home Manager activation.
+  # Existing user-global packages remain untouched and below Nix tools on PATH.
 
   # Set up npmrc for proper configuration
   home.file.".npmrc".text = ''

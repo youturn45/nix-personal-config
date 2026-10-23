@@ -1,223 +1,107 @@
-# Proxy Setup
+# Proxy policy and ownership
 
-## Overview
+## Explicit policy, not opportunistic direct fallback
 
-All mirrors have been dropped — every tool below hits origin directly, routing through the local mihomo proxy only when one is actually reachable.
+Home Manager owns shell startup through `youturn.proxy.default`, an enum of
+`off`, `local`, and `network`. Its platform default uses `pkgs.stdenv.isDarwin`:
+Macs select **local**, Linux selects **off**. Override it in host/user Home Manager
+configuration, for example:
 
-| Tool | Strategy | Detection | Inherits shell `HTTP(S)_PROXY`? | Config location |
-|---|---|---|---|---|
-| Homebrew | Origin, via proxy if reachable | Dynamic (`nc` check on activation: inherited proxy, then `127.0.0.1:7890`) | Yes, by design — script reads it, then re-exports for curl/git | `modules/darwin/homebrew-proxy.nix` |
-| Go (`go install`, `go get`) | Origin, via proxy if set | None — no activation-time detection | Yes — Go's `net/http.ProxyFromEnvironment` honors it natively; `GOPROXY` uses Go's built-in default (`https://proxy.golang.org,direct`) | `home/common/dev-tools/go/default.nix` |
-| Nix (binary cache) | Origin only | None | No — daemon-level, see below | `modules/darwin/nix-core.nix` uses Nix's built-in default substituters (just `cache.nixos.org`) |
-| uv | Origin only | None | Yes — reqwest/pip-style env detection, no config needed | `home/common/python/default.nix` (`index-url = https://pypi.org/simple`) |
-| pip | Static mirror only | None | Yes — pip's vendored `requests` library auto-detects it, no config needed | `home/common/dev-tools/_pip/default.nix` (unchanged, out of scope) |
-| npm/pnpm | Origin only | None | **No** — npm ignores raw `HTTP_PROXY`/`http_proxy`; needs `npm_config_proxy`/`npm_config_https_proxy` instead (now exported by the `proxy` zsh function) | `home/common/terminal/shells/.zshrc` |
-| bun | Origin only | None | Yes — reads `HTTP_PROXY`/`HTTPS_PROXY` natively | n/a |
-
-System proxy itself (Wi-Fi/LAN HTTP+SOCKS) is set by the Mihomo launchd daemon — see below.
-
-## Design
-
-Mihomo (Clash Meta) runs as a single root-owned nix-darwin launchd daemon, replacing ClashX Meta as the system proxy.
-
-**Config** is cloned from a private GitHub repo on every `just build`:
-- First build: clones `git@github.com:youturn45/clash.meta.git` into `~/.config/clash.meta/`
-- Subsequent builds: `git pull --ff-only` to sync latest changes
-- SSH key used: `~/.ssh/Youturn`
-
-**On startup**, the launchd daemon:
-1. Creates the log directory (`~/Library/Logs/mihomo/`)
-2. Sets system proxy on all real network interfaces (Wi-Fi, USB LAN — skips Tailscale, Bridge, JTAG)
-3. Launches mihomo pointing at `~/.config/clash.meta/`
-
-**Ports** (defined in `~/.config/clash.meta/config.yaml`):
-
-| Port | Protocol | Use |
-|------|----------|-----|
-| 7890 | HTTP | System web proxy |
-| 7891 | SOCKS5 | System SOCKS proxy |
-| 7893 | HTTP/SOCKS mixed | Optional mixed proxy |
-| 9090 | HTTP API | External controller / dashboard |
-
-**Key files:**
-- Nix module: `modules/darwin/mihomo/default.nix`
-- Config repo: `~/.config/clash.meta/`
-- Logs: `~/Library/Logs/mihomo/`
-- LaunchDaemon plist: `/Library/LaunchDaemons/io.github.metacubex.mihomo.plist`
-
----
-
-## Package Manager / Tooling Integration
-
-### Homebrew
-
-**File:** `modules/darwin/homebrew-proxy.nix` — runs as a `system.activationScripts.homebrew` block (root, on every build).
-
-Decision order:
-1. If `http_proxy`/`HTTP_PROXY` is inherited **and** reachable (`nc -z`) → use it.
-2. Else if `127.0.0.1:7890` (local mihomo) is listening → use it directly, even without an inherited env var.
-3. Else → unset every `HOMEBREW_*`/proxy env var and hit origin (Homebrew/GitHub) with no proxy at all.
-
-No mirror env vars (`HOMEBREW_BOTTLE_DOMAIN`, `HOMEBREW_API_DOMAIN`, etc.) are ever set — they're only unset, defensively, in case they leaked in from an interactive shell.
-
-**Env inheritance:** `curl` (used by `brew`'s downloader) and `git` both honor lowercase `http_proxy`/`https_proxy` natively. This has historically been inconsistent for uppercase `HTTPS_PROXY` and gets stripped under `sudo` without `-E` — which is why the activation script explicitly re-exports all four (`http_proxy`, `https_proxy`, `HTTP_PROXY`, `HTTPS_PROXY`) itself rather than relying on whatever the caller already has set.
-
-### Go (`go install`, `go get`)
-
-**File:** `home/common/dev-tools/go/default.nix`.
-
-No detection logic at all. `GOPROXY` is left unset, so Go uses its own built-in default (`https://proxy.golang.org,direct`) — origin first, direct fallback, both native to the `go` binary. Go's standard `net/http` client calls `http.ProxyFromEnvironment`, which honors `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` (or lowercase) automatically — so whatever proxy the `proxy` zsh function exported is picked up with zero extra config.
-
-### Nix (binary cache substituters)
-
-**File:** `modules/darwin/nix-core.nix` — no longer overrides `nix.settings.substituters`; Nix's built-in default (`https://cache.nixos.org`) is used as-is.
-
-Note: `flake.nix` has a commented-out `nixConfig` block referencing a USTC mirror — it's inactive and unrelated to the system substituters above.
-
-**Env inheritance:** this is *not* a "does the tool honor env vars" question — substituter/store fetches run through `nix-daemon`, a system service that doesn't see your interactive shell's exported `HTTP_PROXY`/`http_proxy` (daemons don't inherit a user shell's environment). Proxying the daemon itself goes through a completely separate mechanism: `just build`/`just smart-proxy` calls `scripts/darwin_set_proxy.py`, which writes `http_proxy`/`https_proxy` directly into the nix-daemon's own launchd plist (`/Library/LaunchDaemons/org.nixos.nix-daemon.plist`) and restarts it. That's independent of `.zshrc` and already working — no change needed there.
-
-### uv
-
-**File:** `home/common/python/default.nix` — writes `~/.config/uv/uv.toml` with `index-url = "https://pypi.org/simple"` (origin, no mirror).
-
-**Env inheritance:** uv is Rust/reqwest-based and follows pip's networking conventions — it honors `HTTP_PROXY`/`HTTPS_PROXY`/`ALL_PROXY` natively, no extra config needed.
-
-### pip
-
-**File:** `home/common/dev-tools/_pip/default.nix` — writes `~/.config/pip/pip.conf`.
-
-Static mirror only, no fallback or detection: `index-url = https://mirror.nju.edu.cn/pypi/web/simple` (Nanjing University). Out of scope for the origin-only pass — left as-is. Commented-out alternatives in the same file: `mirror.nju.edu.cn` (dup), `mirrors.bfsu.edu.cn` (Beijing Foreign Studies University).
-
-**Env inheritance:** pip's vendored `requests` library auto-detects `HTTP_PROXY`/`HTTPS_PROXY` (and lowercase) from the environment with no config needed.
-
-### npm / pnpm / bun
-
-**File:** `home/common/dev-tools/nodejs/default.nix` (packages/`.npmrc`), `home/common/terminal/shells/.zshrc` (proxy wiring).
-
-No mirror config, `.npmrc` only sets `prefix`, `cache`, `init-author-name`, `init-license`, `fund=false`, `audit=false`. But npm/pnpm — unlike almost every other tool here — **do not** read raw `HTTP_PROXY`/`http_proxy` (a long-standing, still-open npm limitation). They do read `npm_config_proxy`/`npm_config_https_proxy` env vars, so the `proxy` zsh function now exports those too, mirrored to the same value as `http_proxy`/`https_proxy`, and unsets them in `proxy off`. `bun` is unaffected by this — it reads `HTTP_PROXY`/`HTTPS_PROXY` natively.
-
----
-
-## Debugging Ports
-
-**See all listening ports (no sudo needed):**
-```bash
-netstat -an -p tcp | grep LISTEN | grep -E "7890|7891|7892|7893|9090|1053"
+```nix
+youturn.proxy.default = "network";
+# Optional endpoint overrides (URLs must contain an explicit port):
+# youturn.proxy.networkHttp = "http://proxy.example:7890";
+# youturn.proxy.networkSocks = "socks5://proxy.example:7891";
 ```
 
-**See which process owns a port (requires sudo for root-owned processes):**
-```bash
-sudo lsof -nP -i :7890
-sudo lsof -nP -i :9090
+`localHttp/localSocks` default to loopback ports 7890/7891. The existing network
+preset remains ports 7890/7891 at 10.0.0.3; nothing discovers a network proxy.
+Do not put credentials in Nix options: generated scripts are store-readable.
+
+All endpoint options require nonempty strings; empty values fail evaluation. A
+runtime override to empty endpoints blocks the selection with unusable loopback
+port-zero URLs rather than leaving a fresh shell in direct mode. For macOS system
+settings specifically, only unauthenticated `http://` and `socks5://` endpoints are
+supported. TLS-to-proxy, authenticated and role-mismatched URLs are rejected
+before any setting is changed; they are never silently reduced to host/port.
+
+Startup invokes the policy once, silently on success. `off` removes inherited
+shell proxy variables, including npm and bypass variables. `local` and `network`
+export the selection **before** bounded TCP checks. An unavailable endpoint
+produces an actionable warning and nonzero function status but leaves the proxy
+selected. It never silently changes to direct mode. This is a policy for tools
+that honor proxy variables, not a firewall or guarantee against applications
+which ignore them.
+
+Both lowercase/uppercase HTTP(S)/ALL_PROXY and `npm_config_proxy` /
+`npm_config_https_proxy` are maintained. `NO_PROXY` / `no_proxy` include only
+`localhost,127.0.0.1,::1`, never RFC1918 networks. Both unconditional startup
+calls previously in `.zshrc` have been removed.
+
+## Existing interactive interface
+
+- `proxy on [local|network]`: select shell proxy and check TCP endpoints.
+- `proxy off`: explicitly opt into direct shell mode.
+- `proxy show`: show whether selected without printing credentials; selection
+  does not imply reachability.
+- `proxy test`: bounded TCP checks followed by the existing explicit end-to-end
+  curl check against `https://www.google.com` through the selected HTTP proxy.
+  Only this user-invoked command makes that remote request; startup and daemon
+  prechecks do not. Tests replace curl and do not make the request.
+- `proxy macos-on [local|network]`, `proxy macos-off`: apply macOS system settings;
+  permissions may be required. They do not alter the shell selection.
+
+## macOS system settings: one private implementation
+
+`home/common/terminal/shells/proxy-policy.py` is shared by the shell and root
+Mihomo daemon via private `proxy-helper.nix`, not installed as a public command.
+Deployment invokes absolute `/usr/sbin/networksetup`; tests inject a fake runner
+or executable. Disabled `*` service lines and names containing Tailscale, Bridge,
+JTAG, Bluetooth or VPN are deliberately skipped.
+
+Each setter failure names its service and action; failures are counted and return
+nonzero, never followed by a false “enabled” success. Partial settings may remain:
+there is no unsafe automatic rollback/direct fallback. Correct permissions or
+settings and retry the intended selection. System bypasses preserve loopback,
+`*.local` and link-local `169.254/16`, without RFC1918 bypasses.
+
+The root daemon applies settings **without a TCP precheck**, then starts the
+engine only on success. Checking its socket before starting would deadlock first
+startup. Failure is visible in its error log and exits the launcher; launchd's
+existing KeepAlive may retry. This does not stop an already-running service.
+Safe config sync/export/preflight and activation ownership are unchanged;
+`mihomo-sync` remains the only public Mihomo management command.
+
+## Nix daemon is a separate owner
+
+Shell and system settings do not configure nix-daemon. The existing
+`scripts/darwin_set_proxy.py [local|URL|off]` owns its plist environment. It safely
+validates host/port and performs a bounded TCP probe of the chosen proxy before
+any plist write or daemon command, including unchanged-plist health checks.
+Unreachable proxies raise `ProxyError` with explicit `off` opt-in guidance; no
+settings are silently cleared. Diagnostics never echo URL credentials. `off`
+skips the proxy probe. Existing daemon health/readiness and failed-restart
+recovery remain in force. Its injectable probe keeps unit tests offline.
+
+## Other tools and scope
+
+Go, uv, pip and bun retain their native environment handling. npm/pnpm get the
+explicit npm variables above. Repository activation/download policies (including
+Homebrew) are separate owners; this shell/system change does not claim to
+rewrite those policies or remove their existing fallbacks. Nix binary cache
+configuration is likewise distinct from daemon proxy environment.
+
+## Verification and deployment boundary
+
+Run offline unit tests with:
+
+```sh
+python3 -m unittest discover -s scripts/_tests -p 'test_*proxy*.py'
 ```
 
-**Test if mihomo is actually serving on 7890:**
-```bash
-curl -s --max-time 5 -x http://127.0.0.1:7890 https://www.google.com -o /dev/null -w "%{http_code}\n"
-# 200 or 302 = working
-```
-
-**Check current system proxy settings:**
-```bash
-networksetup -getwebproxy Wi-Fi
-networksetup -getsecurewebproxy Wi-Fi
-networksetup -getsocksfirewallproxy Wi-Fi
-```
-
-**List all proxy-related processes:**
-```bash
-ps aux | grep -iE "mihomo|clash|verge" | grep -v grep
-```
-
-**Identify port conflicts — check what ClashX Meta's cached config uses:**
-```bash
-ls ~/Library/Caches/com.MetaCubeX.ClashX.meta/cacheConfigs/
-cat ~/Library/Caches/com.MetaCubeX.ClashX.meta/cacheConfigs/<uuid>.yaml | grep -E "port|external-controller"
-```
-
----
-
-## Useful Commands
-
-### Process management
-
-```bash
-# Find mihomo PID
-pgrep mihomo
-
-# Check all proxy-related processes
-ps aux | grep -iE "mihomo|clash|verge" | grep -v grep
-
-# Restart the managed Mihomo process
-sudo launchctl kickstart -k system/io.github.metacubex.mihomo
-
-# Stop Mihomo (KeepAlive may start it again; bootout disables it until reloaded)
-sudo launchctl bootout system/io.github.metacubex.mihomo
-```
-
-### LaunchDaemon management
-
-```bash
-# Check launchd status
-sudo launchctl print system/io.github.metacubex.mihomo
-
-# View the installed plist
-cat /Library/LaunchDaemons/io.github.metacubex.mihomo.plist
-
-# Bootstrap the daemon (if not loaded)
-sudo launchctl bootstrap system /Library/LaunchDaemons/io.github.metacubex.mihomo.plist
-
-# Unload the daemon
-sudo launchctl bootout system/io.github.metacubex.mihomo
-
-# Restart the daemon and replace its PID
-sudo launchctl kickstart -k system/io.github.metacubex.mihomo
-
-# List all LaunchDaemons
-ls /Library/LaunchDaemons/ | grep -v apple
-```
-
-### Logs
-
-```bash
-# Live log tail
-tail -f ~/Library/Logs/mihomo/mihomo.log
-tail -f ~/Library/Logs/mihomo/mihomo.error.log
-
-# Last 50 lines
-tail -50 ~/Library/Logs/mihomo/mihomo.log
-```
-
-### Config reload through the API (without restarting)
-
-```bash
-curl -X PUT "http://127.0.0.1:9090/configs?force=true" \
-  -H "Content-Type: application/json" \
-  -d '{"path": "/Users/youturn/.config/clash.meta/config.yaml"}'
-```
-
-### Re-apply system proxy settings manually
-
-Run this if you switch proxy apps and need to point back to mihomo:
-
-```bash
-networksetup -listallnetworkservices | tail -n +2 \
-  | grep -viE "tailscale|bridge|jtag|bluetooth|vpn" \
-  | while IFS= read -r svc; do
-    networksetup -setwebproxy "$svc" 127.0.0.1 7890 2>/dev/null
-    networksetup -setsecurewebproxy "$svc" 127.0.0.1 7890 2>/dev/null
-    networksetup -setsocksfirewallproxy "$svc" 127.0.0.1 7893 2>/dev/null
-  done
-```
-
-### Packaged commands
-
-These are available system-wide after `just build`:
-
-```bash
-# Pull latest config from GitHub and restart mihomo
-mihomo-sync
-
-# Restart mihomo without pulling
-mihomo-reload
-```
+Tests use temporary plists, injected TCP checks, fake networksetup runners, and
+`zsh -f` with only the private proxy fragment—not the user's full rc. Generated
+Home Manager/daemon projections belong to the repository integration runner.
+Source implementation and fixture validation are **not live deployment**: no
+switch/build/install/restart, live network settings, private proxy configuration,
+credentials or remote/model requests are part of this work.

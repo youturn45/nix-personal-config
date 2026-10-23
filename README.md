@@ -38,19 +38,12 @@ A comprehensive [Nix Flake](https://zero-to-nix.com/concepts/flakes) configurati
 
 ### Initial Setup (New Mac)
 
-```bash
-# Install Homebrew and just
-just brew
-
-# Install Nix (or Lix variant)
-just lix
-
-# Setup Darwin channels
-just darwin-channel
-
-# Build and switch to configuration
-just dot
-```
+Install upstream Nix with flakes enabled using the current
+[Nix installation instructions](https://nixos.org/download/), then follow the
+[nix-darwin flake bootstrap instructions](https://github.com/nix-darwin/nix-darwin#flakes)
+with this checkout and an explicit host. Bootstrap builds/activation are user-run
+operations; see [docs/build.md](docs/build.md). The old `lix`, `darwin-channel`
+and channel-era `dot` recipes are retired and fail without installing anything.
 
 **Important**: Update the `hostname` variable in the Justfile before building.
 
@@ -60,8 +53,8 @@ just dot
 # Unified build command - all-in-one with options
 just build                    # Build current host (Rorschach)
 just build NightOwl           # Build specific host
-just build --debug            # Build with debug output
-just build --proxy network    # Build with specific proxy mode
+just build Rorschach auto true # Build with debug output (positional arguments)
+just build NightOwl local     # Build with explicit local proxy mode
 
 # Quick host aliases
 just ror                      # Quick build for Rorschach
@@ -69,7 +62,7 @@ just silk                     # Quick build for SilkSpectre
 just owl                      # Quick build for NightOwl
 
 # Available hosts: Rorschach, NightOwl, SilkSpectre
-# Available proxy modes: auto, local, network, off
+# Available proxy modes: auto, local, off (auto uses http_proxy when set)
 ```
 
 ### Safe Development Workflow
@@ -80,7 +73,9 @@ just safe-build              # For current host
 just safe-build NightOwl     # For specific host
 
 # Individual testing steps
-just validate                # Pre-build validation (format + flake check)
+just validate                # No-build ALL-host evaluation + strict generated tests
+just test --offline          # Same entry point, cached locked inputs only
+just fmt-check               # Separate formatting check; may realize formatter
 just build-test              # Test build without switching
 just build-test SilkSpectre  # Test build for specific host
 just current-gen             # Show current generation
@@ -94,7 +89,7 @@ just emergency-rollback      # Quick emergency rollback
 ### Recommended Workflow
 
 1. Make changes to configuration
-2. `just validate` - Check format and validate flake
+2. `just validate` - Evaluate all hosts/ISO and run strict tests; check formatting separately
 3. `just build-test` - Test build without applying
 4. `just safe-build` - Apply changes if build test passes
 5. `just rollback` - Rollback if issues occur

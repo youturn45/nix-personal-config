@@ -9,12 +9,11 @@
   # Keep guest account disabled explicitly on this host.
   system.defaults.loginwindow.GuestEnabled = lib.mkForce false;
 
-  # Ensure loginwindow autologin user is set at the system domain.
-  # Note: macOS still requires proper autologin credential state (kcpassword),
-  # which is typically created when enabling Automatic Login in System Settings.
-  system.activationScripts.nightowlAutoLogin.text = ''
-    /usr/bin/defaults write /Library/Preferences/com.apple.loginwindow autoLoginUser "${myvars.username}" || true
-  '';
+  # Written to /Library/Preferences/com.apple.loginwindow by nix-darwin's
+  # `defaults` activation. This only names the user: macOS still needs the
+  # autologin credential state (/etc/kcpassword), configured manually through
+  # Automatic Login in System Settings. Nix never handles those credentials.
+  system.defaults.loginwindow.autoLoginUser = myvars.username;
 
   # Optional hardening knobs can be added here later (sleep, firewall profile, etc.)
 }

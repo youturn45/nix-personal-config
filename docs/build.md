@@ -4,8 +4,8 @@
 
 `just build` (and its per-host aliases `ror`/`owl`/`silk`/`ozy`) is the standard entry point for rebuilding a host. It runs two steps before handing off to `darwin-rebuild`/`nixos-rebuild`:
 
-1. **Host resolution & validation** — `_validate-host` / `_resolve-host` (justfile:31-61) normalize aliases (`owl` → `NightOwl`, etc.) and reject unknown hosts before anything else runs.
-2. **Proxy configuration** — the `smart-proxy` dependency (justfile:112-146) writes proxy settings into the nix-daemon's launchd plist via `scripts/darwin_set_proxy.py`, restarting the daemon if the setting changed. See `docs/proxy.md` for the full per-tool proxy strategy.
+1. **Host resolution & validation** — `_validate-host` / `_resolve-host` normalize aliases (`owl` → `NightOwl`, etc.) and reject unknown hosts before anything else runs.
+2. **Proxy configuration** — the `smart-proxy` dependency passes the selected URL (or `local`/`off`) to `scripts/darwin_set_proxy.py`. The helper checks reachability before applying an enabled proxy, and restarts the daemon only when settings change or an unchanged configuration is unhealthy. `auto` chooses inherited `http_proxy` when set, otherwise local; it does not silently select a different route if that choice is unreachable. See `docs/proxy.md` for the full strategy.
 
 Then the actual switch:
 
@@ -34,7 +34,7 @@ A tarball URL is Nix's plain "tarball" fetcher instead — one ordinary HTTPS GE
 
 Tarball URLs cover the inputs that actually got hit by rate limiting (`nixpkgs-darwin`, `nixpkgs-nixos`, `nixpkgs-unstable`, `nix-darwin`, `home-manager`, `nixvim`), so builds no longer *depend* on GitHub auth at all. The rest of the flake's inputs (`nix-homebrew`, `haumea`, `ghostty`, `nur-ryan4yin`) still use `github:` shorthand — they weren't part of the input restructuring and haven't needed to change.
 
-**Tradeoff of tarball URLs:** they hardcode a branch name (`refs/heads/nixpkgs-26.05-darwin`) rather than treating it as a generic git ref, so if that branch is ever renamed/deleted the URL needs updating by hand — whereas `github:` would just need a new ref string. Both forms still lock to a specific revision in `flake.lock` either way.
+**Tradeoff of tarball URLs:** they hardcode a branch name (`refs/heads/nixpkgs-26.05-darwin`) rather than treating it as a generic git ref, so if that branch is ever renamed/deleted the URL needs updating by hand — whereas `github:` would just need a new ref string. Both forms verify locked content, but these branch-addressed tarball inputs do **not** record a fixed Git revision. A cold fetch can fail after the branch moves even though a cached evaluation succeeds. Immutable input-address migration is separate work; it is not implemented by the validation fixes.
 
 ## GitHub token / secrets management (disabled)
 
@@ -66,13 +66,65 @@ error: unable to download 'https://api.github.com/repos/.../commits/HEAD': HTTP 
 
 Scope the update to the specific input that actually drifted instead.
 
+## No-build validation and regression tests
+
+`just validate`, `just test`, and `python3 scripts/validate.py` share one entry
+point. The default evaluates **all** three Darwin `.system.drvPath` attributes,
+Linux's toplevel, and the ISO derivation, in addition to
+`nix flake check --no-build --no-write-lock-file`. Flake check alone does not
+force Darwin system evaluation. NightOwl's real evaluated projection is passed
+through a private mode-0600 temporary file to all three strict regression suites;
+empty suites, missing fields, failures and skips fail the run. Temporary data is
+removed on success/failure. See [_tests/README.md](../_tests/README.md).
+
+Scopes support CI's existing matrix, not a claim of full local coverage:
+
+```bash
+just test --offline                     # all coverage, cached locked inputs
+just validate --host NightOwl           # one Darwin host + all strict suites
+python3 scripts/validate.py --platform linux # Linux toplevel + ISO
+```
+
+Normal locked-input fetching is allowed by default. No package/system build,
+lock rewrite, sudo, proxy update or service restart is performed. Formatting is
+separate: `just fmt-check` (also explicit in CI) may realize a formatter package
+and is therefore not part of this no-build validation.
+
+## Recovery commands (user-run only)
+
+`just rollback` selects the installed platform's supported syntax:
+`sudo darwin-rebuild --rollback` on Darwin, and
+`sudo nixos-rebuild switch --rollback` on Linux. The Linux flag/action contract
+is documented in the pinned nixpkgs source under
+`pkgs/by-name/ni/nixos-rebuild-ng/nixos-rebuild.8.scd` (synopsis and `--rollback`).
+`emergency-rollback` delegates to the same recipe; it does not bypass failures.
+These commands change the live system and are tested only with command spies.
+
+`just generations`, `just history`, and `just current-gen` share the read-only
+platform-specific listing: `darwin-rebuild --list-generations` on Darwin,
+`nix-env --list-generations --profile /nix/var/nix/profiles/system` on Linux.
+They do not use `nix profile history`, whose manifest format differs from
+these system profiles.
+
+## First-machine bootstrap
+
+Install upstream Nix with flakes using the current
+[Nix instructions](https://nixos.org/download/), then follow
+[nix-darwin's flake instructions](https://github.com/nix-darwin/nix-darwin#flakes)
+with this checkout and the explicit Darwin host. Inspect the pinned
+`nix-darwin` input and configuration first; bootstrap builds and activation are
+user actions, not automated validation. Once `darwin-rebuild` is available,
+use `just build HOST`. Do not add Darwin channels or update the lock just to
+bootstrap. The obsolete `lix`, `darwin-channel` and channel-era `dot` recipes
+now fail with guidance and perform no installation or update.
+
 ## Other build-related recipes
 
 | Recipe | What it does |
 |---|---|
 | `just build [host] [proxy_mode] [debug]` | Full pipeline described above. `debug=true` adds `--show-trace --verbose`. |
 | `just ror` / `just owl` / `just silk` / `just ozy` | Aliases for `build` pinned to a specific host. |
-| `just build-test [host]` | `validate` (fmt + `nix flake check`) then `nixos-rebuild`/`darwin-rebuild build` (no switch). Runs `smart-proxy`. |
+| `just build-test [host]` | Shared no-build `validate`, then `nixos-rebuild`/`darwin-rebuild build` (no switch). Runs `smart-proxy`. |
 | `just safe-build [host]` | `current-gen` → `build-test` → switch. Darwin-only. |
 | `just test-all` | Builds (not switches) every Darwin host in sequence, reporting pass/fail. |
 | `just iso` | Builds the NixOS installer ISO via `nix build`, not `nixos-rebuild`. |

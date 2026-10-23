@@ -17,11 +17,10 @@ Mihomo runs as a single **root-owned LaunchDaemon** managed by nix-darwin. The `
 4. Sets SOCKS5 proxy to `127.0.0.1:7891` on each service
 5. `exec`s mihomo with `~/.config/clash.meta` as the config directory
 
-**Helper scripts:**
-- `mihomo-reload` — restarts the system launchd service, or enables and bootstraps it if unloaded
-- `mihomo-sync` — git-pulls `~/.config/clash.meta` from the private repo, then restarts the system service
+**Management command:**
+- `mihomo-sync` — clones or safely fast-forwards `~/.config/clash.meta`, exports important config/rules to the personal iCloud `Mihomo` folder, then restarts the system service. Export and restart helpers are private, not separate commands.
 
-**Activation script** (`system.activationScripts.mihomoSetup`) — runs on every `darwin-rebuild switch` to create the log directory. It clones the config repo from GitHub over SSH using `~/.ssh/Youturn` only if the checkout is missing. Existing checkouts are updated explicitly with `mihomo-sync`, which uses the same SSH key and reloads Mihomo after a successful pull. Nix rollbacks do not roll back this separate config checkout.
+**Activation setup** (prepended to nix-darwin's `launchd` activation script, before the daemon is loaded) — runs on every `darwin-rebuild switch`. It stops any obsolete GUI-domain job, creates the log directory and the two log files, and chowns only those three paths to you; it aborts if any of them is a symlink or the wrong file type. It clones the config repo from GitHub over SSH using `~/.ssh/Youturn` only if the checkout is missing. Existing checkouts are updated explicitly with `mihomo-sync`, which uses the same SSH key and reloads Mihomo after a successful pull. Nix rollbacks do not roll back this separate config checkout.
 
 ---
 
@@ -55,7 +54,7 @@ sudo launchctl kickstart system/io.github.metacubex.mihomo
 Run mihomo directly to see parse errors immediately:
 
 ```bash
-/run/current-system/sw/bin/mihomo -d ~/.config/clash.meta
+/run/current-system/sw/bin/mihomo -t -d ~/.config/clash.meta
 ```
 
 Common fatal errors:
@@ -89,8 +88,7 @@ sudo launchctl bootstrap system /Library/LaunchDaemons/io.github.metacubex.mihom
 ## Sync config from remote
 
 ```bash
-mihomo-sync   # git pull + restart
-mihomo-reload # restart only (no git pull)
+mihomo-sync   # safe update + engine validation + selective iCloud export + restart
 ```
 
 ---

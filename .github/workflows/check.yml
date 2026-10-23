@@ -26,8 +26,21 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
-      - name: Evaluate Darwin system
-        run: nix eval --raw --no-write-lock-file '.#darwinConfigurations.${{ matrix.host }}.system.drvPath'
+      - name: Set up Python for shared validation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # NightOwl also evaluates the generated projection and runs ALL three strict
+      # suites (_tests, scripts/_tests, modules/darwin/mihomo/_tests), with no skips.
+      - name: Install just for recovery command-spy tests
+        if: matrix.host == 'NightOwl'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Shared no-build validation (strict regression suites on NightOwl)
+        run: python3 scripts/validate.py --host '${{ matrix.host }}'
 
   nixos:
     name: Evaluate NixOS and installer
@@ -42,14 +55,14 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
+      - name: Set up Python for shared validation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Shared no-build validation (Linux toplevel and installer ISO)
+        run: python3 scripts/validate.py --platform linux
+
+      # Separate from evaluation: nix fmt can realize the formatter package.
       - name: Check Nix formatting
         run: nix fmt --no-write-lock-file -- --check .
-
-      - name: Check flake
-        run: nix flake check --no-build --no-write-lock-file
-
-      - name: Evaluate NixOS system
-        run: nix eval --raw --no-write-lock-file .#nixosConfigurations.ozymandias.config.system.build.toplevel.drvPath
-
-      - name: Evaluate installer ISO
-        run: nix eval --raw --no-write-lock-file .#packages.x86_64-linux.ozymandias-iso.drvPath
