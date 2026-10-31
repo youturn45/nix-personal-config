@@ -54,7 +54,7 @@ class RecoveryTests(unittest.TestCase):
 
 
 class ProxyRecipeTests(unittest.TestCase):
-    def test_smart_proxy_never_echoes_endpoint_credentials(self):
+    def test_smart_proxy_prints_selected_endpoint(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sudo = root / 'sudo'
@@ -69,7 +69,7 @@ class ProxyRecipeTests(unittest.TestCase):
                 result = subprocess.run(['just', '--justfile', str(ROOT / 'Justfile'), 'smart-proxy', 'auto'],
                                         env=env, cwd=ROOT, text=True, capture_output=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertNotIn('FIXTURE_CREDENTIAL', result.stdout + result.stderr)
+                self.assertIn('Terminal proxy detected: ' + env['http_proxy'], result.stdout)
 
 
 class ValidationTests(unittest.TestCase):

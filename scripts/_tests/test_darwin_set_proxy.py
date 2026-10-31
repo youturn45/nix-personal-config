@@ -174,12 +174,12 @@ class ReachabilityTests(ProxyTestCase):
             self.assertEqual(run.calls, [])
             self.assertEqual(self.plist_path.read_bytes(), before)
 
-    def test_credentials_not_printed(self):
+    def test_selected_proxy_printed(self):
         self.write(BASE_PLIST)
         status, out, err = self.run_main(['http://user:secret@proxy.example:80'],
                                        FakeRun(self.clock, probe_results=[0]))
         self.assertEqual(status, 0)
-        self.assertNotIn('secret', out + err)
+        self.assertIn('Setting nix-daemon proxy: http://user:secret@proxy.example:80', out)
 
 
 class ModeTests(ProxyTestCase):

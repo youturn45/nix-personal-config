@@ -44,7 +44,9 @@ proxy() {
             ;;
         show)
             if [[ -n "$http_proxy" ]]; then
-                print 'Proxy: selected (reachability not implied; credentials hidden). Run proxy test.'
+                print "HTTP proxy: $http_proxy"
+                print "SOCKS proxy: $all_proxy"
+                print 'Proxy selected (reachability not implied). Run proxy test.'
             else
                 print 'Proxy: disabled (direct mode).'
             fi
@@ -53,7 +55,6 @@ proxy() {
             [[ -n "$http_proxy" ]] || { print -u2 'proxy: run proxy on first'; return 1; }
             "$_YOUTURN_PROXY_HELPER" probe "$http_proxy" "$all_proxy" || return 1
             # Explicit user-requested end-to-end check, not startup behavior.
-            # Never echo the URL (it may contain credentials).
             if curl -sf --max-time 5 --noproxy '' --proxy "$http_proxy" https://www.google.com >/dev/null 2>&1; then
                 print 'Connection successful.'
             else

@@ -42,7 +42,7 @@ calls previously in `.zshrc` have been removed.
 
 - `proxy on [local|network]`: select shell proxy and check TCP endpoints.
 - `proxy off`: explicitly opt into direct shell mode.
-- `proxy show`: show whether selected without printing credentials; selection
+- `proxy show`: show the full selected HTTP and SOCKS proxy URLs; selection
   does not imply reachability.
 - `proxy test`: bounded TCP checks followed by the existing explicit end-to-end
   curl check against `https://www.google.com` through the selected HTTP proxy.
@@ -79,7 +79,7 @@ Shell and system settings do not configure nix-daemon. The existing
 validates host/port and performs a bounded TCP probe of the chosen proxy before
 any plist write or daemon command, including unchanged-plist health checks.
 Unreachable proxies raise `ProxyError` with explicit `off` opt-in guidance; no
-settings are silently cleared. Diagnostics never echo URL credentials. `off`
+settings are silently cleared. Diagnostics show the full selected proxy URL. `off`
 skips the proxy probe. Existing daemon health/readiness and failed-restart
 recovery remain in force. Its injectable probe keeps unit tests offline.
 

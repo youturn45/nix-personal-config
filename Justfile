@@ -116,14 +116,14 @@ smart-proxy mode="auto":
   # Skip on non-Darwin platforms
   if [ "$(uname -s)" != "Darwin" ]; then
     echo "📡 Non-Darwin platform, skipping nix-daemon proxy configuration"
-    [ -n "${http_proxy:-}" ] && echo "🔍 Terminal proxy detected (shell-only; endpoint credentials hidden)"
+    [ -n "${http_proxy:-}" ] && echo "🔍 Terminal proxy detected: $http_proxy (shell-only)"
     exit 0
   fi
 
   case "{{mode}}" in
     auto)
       if [ -n "${http_proxy:-}" ]; then
-        echo "🔍 Terminal proxy detected (endpoint credentials hidden)"
+        echo "🔍 Terminal proxy detected: $http_proxy"
         sudo python3 scripts/darwin_set_proxy.py "$http_proxy"
       else
         echo "📡 No terminal proxy; checking local proxy reachability before applying"

@@ -157,7 +157,7 @@ def wait_for_daemon(run, sleep, clock):
 def describe(proxy):
     if proxy is None:
         return "Removing proxy from nix-daemon"
-    return "Setting nix-daemon proxy (endpoint credentials hidden)"
+    return f"Setting nix-daemon proxy: {proxy}"
 
 
 def read_plist(plist_path):
