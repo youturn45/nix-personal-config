@@ -5,6 +5,9 @@
     userfullname = "David Liu";
     useremail = "youturn45@gmail.com";
 
+    # Must be available without a passphrase for unattended agenix decryption.
+    secretsIdentityName = "Youturn";
+
     # System Configuration
     system = "aarch64-darwin";
     timeZone = "Asia/Shanghai"; # Centralized timezone configuration

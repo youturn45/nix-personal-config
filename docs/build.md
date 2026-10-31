@@ -32,21 +32,31 @@ response body: {"message":"API rate limit exceeded for <ip>. ..."}
 
 A tarball URL is Nix's plain "tarball" fetcher instead — one ordinary HTTPS GET against `github.com` itself, no API host, no rate limit, no token needed.
 
-Tarball URLs cover the inputs that actually got hit by rate limiting (`nixpkgs-darwin`, `nixpkgs-nixos`, `nixpkgs-unstable`, `nix-darwin`, `home-manager`, `nixvim`), so builds no longer *depend* on GitHub auth at all. The rest of the flake's inputs (`nix-homebrew`, `haumea`, `ghostty`, `nur-ryan4yin`) still use `github:` shorthand — they weren't part of the input restructuring and haven't needed to change.
+Tarball URLs cover the inputs that actually got hit by rate limiting (`nixpkgs-darwin`, `nixpkgs-nixos`, `nixpkgs-unstable`, `nix-darwin`, `home-manager`, `nixvim`), reducing unauthenticated API traffic. Remaining `github:` inputs and transitive inputs can still hit API rate limits and use the agenix token below. The rest of the flake's inputs (`nix-homebrew`, `haumea`, `ghostty`, `nur-ryan4yin`) still use `github:` shorthand — they weren't part of the input restructuring and haven't needed to change.
 
 **Tradeoff of tarball URLs:** they hardcode a branch name (`refs/heads/nixpkgs-26.05-darwin`) rather than treating it as a generic git ref, so if that branch is ever renamed/deleted the URL needs updating by hand — whereas `github:` would just need a new ref string. Both forms verify locked content, but these branch-addressed tarball inputs do **not** record a fixed Git revision. A cold fetch can fail after the branch moves even though a cached evaluation succeeds. Immutable input-address migration is separate work; it is not implemented by the validation fixes.
 
-## GitHub token / secrets management (disabled)
+## GitHub authentication with agenix
 
-This repo has `agenix`-based secrets management (`modules/common/_secrets.nix`, `secrets/github-token.age`), originally meant to authenticate `github:`-shorthand flake input fetches against `api.github.com`. It's disabled by default, not deleted — the `agenix` flake input, its `outputs`/`specialArgs` wiring, and the `agenix.darwinModules.default`/`agenix.nixosModules.default` imports are all commented out (search for "DISABLED" in `flake.nix`, `modules/darwin/default.nix`, `modules/nixos/default.nix`), and the module itself lives at `modules/common/_secrets.nix` — underscore-prefixed so `collectModulesRecursively` skips it (see CLAUDE.md's module-discovery rules), rather than deleted.
+GitHub API authentication is managed by `modules/common/secrets/default.nix`.
+Agenix decrypts `secrets/github-nix.conf.age` to a runtime file containing
+`access-tokens = github.com=…`. The system `nix.conf` includes that file using
+`!include`; the token is never evaluated into a Nix derivation or stored in
+plaintext in this checkout. Both the configured user and root can read it,
+covering direct `nix` commands and the existing `sudo -E` rebuild recipe.
 
-Why it's off:
+See [secrets setup](../secrets/README.md) for token creation, encryption,
+SSH key requirements, and the first authenticated rebuild. Before that encrypted
+file exists, evaluation emits a warning and leaves authentication unconfigured.
+The obsolete `secrets/github-token.age` is unused.
 
-- The secret (`secrets/github-token.age`) was encrypted for a different SSH key than the one actually present on these machines (`~/.ssh/Youturn`), so it could never be decrypted here anyway.
-- `agenix` (the CLI) is itself installed by this Nix config, so it can't exist before a machine's first successful build — any pre-build script depending on it is circular.
-- Tarball URLs (above) already eliminate the need for GitHub auth on the inputs that actually mattered.
-
-**To re-enable:** rename `modules/common/_secrets.nix` back to `secrets.nix`, uncomment the `agenix` input block in `flake.nix` (input definition, `outputs` destructuring, both `specialArgs` `inherit` lines), uncomment `agenix.darwinModules.default`/`agenix.nixosModules.default` in `modules/darwin/default.nix`/`modules/nixos/default.nix`, and re-encrypt `secrets/github-token.age` for whichever SSH key will actually be present on every target machine.
+The first rebuild needs the helper's `run` action: fetching inputs happens before
+agenix activation. On Darwin, agenix decrypts through a launchd service at boot
+and activation. `!include` tolerates the file being absent before that service
+runs; authentication is available to subsequent Nix invocations once it finishes.
+An already running daemon may need its normal configuration reload/restart to
+pick up a rotated token. Ordinary flake evaluation uses the invoking client's
+configuration.
 
 ## Troubleshooting
 

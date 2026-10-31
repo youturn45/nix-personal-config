@@ -1,282 +1,92 @@
-# Secrets Management with Agenix
+# GitHub authentication for Nix
 
-This directory contains encrypted secrets managed by [agenix](https://github.com/ryantm/agenix).
+[Agenix](https://github.com/ryantm/agenix) decrypts `github-nix.conf.age` at
+activation/boot. Its plaintext is a Nix config fragment:
 
-## Overview
+```text
+access-tokens = github.com=YOUR_TOKEN
+```
 
-Secrets are encrypted using age encryption with SSH keys. Only authorized SSH keys (defined in `secrets.nix` in this directory) can decrypt these secrets.
+`modules/common/secrets/default.nix` includes the runtime secret from the system
+`nix.conf`. Only its path enters the Nix store. The file is mode `0400`, owned by
+the configured user, and also readable by root for `sudo` rebuilds. This grants
+that user and root access to the token. The old `github-token.age` is unused.
 
-## Current Secrets
+## Set up a dedicated token
 
-- `github-token.age` - GitHub Personal Access Token
-- `ssh-key-rorschach.age` - SSH private key for Rorschach host
+1. Create a [GitHub personal access token](https://github.com/settings/personal-access-tokens/new).
+   For public flake inputs, a fine-grained token with public read access is enough;
+   private repositories require explicit repository access and Contents read
+   permission. Set an expiration and repeat encryption when rotating the token.
+   Broad `repo` or `workflow` scopes are unnecessary for public inputs.
+2. Check the recipients in `secrets/secrets.nix`. The initial recipient is the
+   public key from this machine's `~/.ssh/Youturn.pub`. Add other machines' public
+   keys before encrypting if they use different keys.
+3. From the repository root, run:
 
-## Setup Instructions
+   ```bash
+   python3 scripts/github_nix_token.py encrypt
+   git add secrets/github-nix.conf.age
+   ```
 
-### 1. Generate an SSH Key for Secrets Management
+   Paste the dedicated token at the hidden local prompt. It is passed to `age`
+   through stdin and never written to a plaintext temporary file or command
+   argument. This requires Python 3, `age`, and `nix-instantiate`, which are already
+   available on the current machine. It does not depend on installing agenix first.
+   Stage all configuration changes as well: Git flakes omit untracked files.
+4. The first rebuild needs authentication **before** agenix is activated:
 
-If you don't already have an SSH key, generate one:
+   ```bash
+   python3 scripts/github_nix_token.py run -- just build silk
+   ```
+
+   Replace `silk` with the intended host (`ror`, `owl`, or `ozy`). The helper
+   decrypts in memory and supplies the setting through `NIX_CONFIG` to that
+   command. The existing rebuild recipe preserves it through `sudo -E`.
+   Do not wrap commands that dump their environment or Nix configuration.
+5. After activation and successful agenix decryption, ordinary `just build` and
+   `nix flake update INPUT` invocations read the runtime file automatically.
+   Check without displaying the token:
+
+   ```bash
+   test -r /run/agenix/github-nix && echo "GitHub auth file is readable"
+   ```
+
+   A cached evaluation alone does not prove that GitHub accepted the token.
+   An expired/revoked token must be replaced and the configuration rebuilt.
+
+## SSH identities and other hosts
+
+`vars/default.nix` sets `secretsIdentityName = "Youturn"`. Agenix looks for that
+key under the configured user's `.ssh` directory on each host. The private key
+must be locally present and usable without an interactive passphrase at boot;
+a login SSH agent cannot unlock a key for the system service. Prefer a dedicated
+unattended age/SSH identity if your existing key needs a passphrase, and update
+both the recipients and identity configuration accordingly. Never add a private
+key to this repository.
+
+Changing recipients requires **re-encrypting**, not just editing `secrets.nix`:
+run the encryption helper again with the token, stage the ciphertext, and rebuild
+each host. Each listed public key can independently decrypt the same token.
+The helper's `--identity PATH` option (before `run`) can override its default key
+for the first rebuild. Host-specific identity paths can override `age.identityPaths`
+with `lib.mkForce` in their host configuration.
+
+The agenix CLI is installed by the system configuration. Once installed, edit
+the full config fragment with:
 
 ```bash
-# On your Mac (Rorschach)
-ssh-keygen -t ed25519 -C "agenix-key-$(hostname)"
-
-# Accept the default location (~/.ssh/id_ed25519)
-# Set a strong passphrase
-```
-
-### 2. Add Your Public Key to secrets.nix
-
-Copy your public key:
-
-```bash
-cat ~/.ssh/id_ed25519.pub
-```
-
-Then update the `Youturn` variable in `secrets/secrets.nix` with your actual public key.
-
-If you have multiple machines, add their keys too:
-
-```nix
-# In secrets/secrets.nix
-youturn-nightowl = "ssh-ed25519 AAAA... youturn@NightOwl";
-youturn-silkspectre = "ssh-ed25519 AAAA... youturn@SilkSpectre";
-
-allKeys = [
-  Youturn
-  youturn-nightowl
-  youturn-silkspectre
-];
-```
-
-### 3. Create and Encrypt the GitHub Token
-
-```bash
-# Navigate to repository root
-cd ~/nix-personal-config
-
-# Create a GitHub token at: https://github.com/settings/tokens
-# Select appropriate scopes (repo, workflow, etc.)
-
-# Create a temporary file with your token
-echo "ghp_YourGitHubTokenHere" > /tmp/github-token.txt
-
-# Encrypt the token using agenix
-# The -i flag specifies your SSH private key
-# The --rules flag specifies the location of secrets.nix
-RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-
-# This will open your $EDITOR (vim/nano/etc)
-# Paste your token, save, and exit
-# Alternatively, you can pipe it directly:
-cat /tmp/github-token.txt | RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-
-# Securely delete the temporary file
-rm -P /tmp/github-token.txt  # macOS
-# or
-shred -u /tmp/github-token.txt  # Linux
-```
-
-### 4. Build and Apply Your Configuration
-
-```bash
-# Test the build first
-just build-test
-
-# If successful, apply the configuration
-just safe-build
-
-# Or use the quick alias
-just ror
-```
-
-### 5. Verify the Secret is Available
-
-After building, the decrypted secret will be available at:
-
-```bash
-# Check if the file exists
-ls -la ~/.config/github/token
-
-# Read the token (be careful not to expose it!)
-cat ~/.config/github/token
-
-# Or use the helper command
-github-token
-```
-
-## Using the GitHub Token
-
-### In Scripts
-
-```bash
-#!/usr/bin/env bash
-
-# Read the token from the file
-GITHUB_TOKEN=$(cat ~/.config/github/token)
-
-# Use it with GitHub API
-curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-  https://api.github.com/user/repos
-```
-
-### With Environment Variable
-
-The system sets `GITHUB_TOKEN_FILE` environment variable automatically:
-
-```bash
-# In your shell
-GITHUB_TOKEN=$(cat "$GITHUB_TOKEN_FILE")
-```
-
-### With GitHub CLI (gh)
-
-```bash
-# Login using the token
-cat ~/.config/github/token | gh auth login --with-token
-
-# Or set it as an environment variable
-export GITHUB_TOKEN=$(cat ~/.config/github/token)
-gh repo list
-```
-
-### With Git
-
-```bash
-# For HTTPS clone/push, use the token as password
-git clone https://$(cat ~/.config/github/token)@github.com/user/repo.git
-
-# Or configure git credential helper
-git config --global credential.helper store
-echo "https://$(cat ~/.config/github/token)@github.com" >> ~/.git-credentials
-```
-
-## Managing Secrets
-
-### Adding a New Secret
-
-1. Add the secret definition to `secrets/secrets.nix`:
-
-```nix
-{
-  "secrets/my-new-secret.age".publicKeys = allKeys;
-}
-```
-
-2. Create and encrypt the secret:
-
-```bash
-RULES=secrets/secrets.nix agenix -e secrets/my-new-secret.age -i ~/.ssh/id_ed25519
-```
-
-3. Add the secret to `modules/common/secrets.nix`:
-
-```nix
-age.secrets.my-new-secret = {
-  file = ../../secrets/my-new-secret.age;
-  path = "/Users/${myvars.username}/.config/my-app/secret";
-  owner = myvars.username;
-  group = "staff";
-  mode = "0400";
-};
-```
-
-4. Rebuild your system:
-
-```bash
-just safe-build
-```
-
-### Editing an Existing Secret
-
-```bash
-# Edit the GitHub token
-RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/id_ed25519
-
-# Save and rebuild
-just safe-build
-```
-
-### Re-encrypting Secrets (After Adding New Keys)
-
-When you add a new authorized key to `secrets/secrets.nix`, you need to re-encrypt all secrets:
-
-```bash
-# Re-encrypt all secrets
 cd secrets
-for file in *.age; do
-  RULES=secrets/secrets.nix agenix -r -e "$file" -i ~/.ssh/id_ed25519
-done
+agenix -e github-nix.conf.age -i ~/.ssh/Youturn
 ```
 
-### Listing Available Secrets
+Keep the `access-tokens = github.com=` prefix; this secret contains a full Nix
+config line, not a bare token. Prefer the prompt helper if your editor writes
+plaintext swap or backup files.
 
-```bash
-# See all encrypted secrets
-ls -la secrets/*.age
+Before ciphertext exists, the module emits a warning and leaves authentication
+unconfigured. It deliberately does not activate the obsolete encrypted secret.
 
-# See all configured secrets in the system
-darwin-rebuild build --flake .#Rorschach --show-trace 2>&1 | grep "age.secrets"
-```
-
-## Security Best Practices
-
-1. **Never commit unencrypted secrets** - Only `.age` files should be in git
-2. **Use strong SSH key passphrases** - Your secrets are only as secure as your SSH key
-3. **Rotate tokens regularly** - Update GitHub tokens periodically
-4. **Limit token scopes** - Only grant necessary permissions to GitHub tokens
-5. **Use different tokens for different purposes** - Don't reuse tokens across services
-6. **Backup your SSH keys** - Store encrypted backups of your SSH private keys
-7. **Review authorized keys** - Regularly audit `secrets/secrets.nix` for unauthorized keys
-8. **Use read-only permissions** - Set mode to `0400` for sensitive secrets
-
-## Troubleshooting
-
-### "Permission denied" when accessing secret
-
-```bash
-# Check file permissions
-ls -la ~/.config/github/token
-
-# Should be owned by you with mode 0400
-# If not, rebuild:
-just safe-build
-```
-
-### "Cannot decrypt" error
-
-```bash
-# Verify your public key is in secrets/secrets.nix
-cat ~/.ssh/id_ed25519.pub
-grep "$(cat ~/.ssh/id_ed25519.pub)" secrets/secrets.nix
-
-# If not found, add it and re-encrypt
-RULES=secrets/secrets.nix agenix -r -e secrets/github-token.age -i ~/.ssh/id_ed25519
-```
-
-### Secret file not found after rebuild
-
-```bash
-# Check the secret is defined in modules/common/secrets.nix
-grep "github-token" modules/common/secrets.nix
-
-# Verify the .age file exists
-ls -la secrets/github-token.age
-
-# Check build logs for errors
-just build-test 2>&1 | grep -i age
-```
-
-### Need to use a different SSH key
-
-```bash
-# Specify the key explicitly with -i flag
-RULES=secrets/secrets.nix agenix -e secrets/github-token.age -i ~/.ssh/other_key_ed25519
-```
-
-## Additional Resources
-
-- [Agenix Documentation](https://github.com/ryantm/agenix)
-- [Age Encryption Specification](https://age-encryption.org/)
-- [GitHub Token Documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-- [Nix Secrets Management Comparison](https://nixos.wiki/wiki/Comparison_of_secret_managing_schemes)
+References: [Nix config includes and access tokens](https://nix.dev/manual/nix/2.34/command-ref/conf-file.html),
+[agenix identity paths](https://github.com/ryantm/agenix/blob/main/doc/reference.md),
+[GitHub token permissions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).

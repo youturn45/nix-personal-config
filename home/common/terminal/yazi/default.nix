@@ -1,9 +1,16 @@
 {
   pkgs-stable,
   pkgs-unstable,
-  nur-ryan4yin,
   ...
-}: {
+}: let
+  # Keep the existing theme revision without depending on NUR's package exports.
+  themes = pkgs-stable.fetchFromGitHub {
+    owner = "yazi-rs";
+    repo = "themes";
+    rev = "8abf251851b9b7559f810a65932cd7735b202dfa";
+    hash = "sha256-f8Mwacw8FoZ5S0wUdQcmtFZwrxDyabJfL7kPKhmOD1A=";
+  };
+in {
   # terminal file manager
   programs.yazi = {
     enable = true;
@@ -20,5 +27,5 @@
     };
   };
 
-  xdg.configFile."yazi/theme.toml".source = "${nur-ryan4yin.packages.${pkgs-stable.stdenv.hostPlatform.system}.catppuccin-yazi}/mocha.toml";
+  xdg.configFile."yazi/theme.toml".source = "${themes}/catppuccin/mocha.toml";
 }

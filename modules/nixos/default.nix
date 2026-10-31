@@ -1,12 +1,12 @@
 {
-  # agenix, -- DISABLED, see modules/common/_secrets.nix for how to re-enable
+  agenix,
   myLib,
   vars,
   ...
 }: {
   imports =
     [
-      # agenix.nixosModules.default # DISABLED, see modules/common/_secrets.nix
+      agenix.nixosModules.default
       ../common # Import common modules shared with Darwin
     ]
     ++ (myLib.collectModulesRecursively ./.); # Import any additional NixOS modules

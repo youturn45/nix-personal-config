@@ -61,12 +61,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # agenix, used for managing secrets -- DISABLED, see modules/common/_secrets.nix
-    # for why and how to re-enable. Uncomment this block as step one of that.
-    # agenix = {
-    #   url = "github:ryantm/agenix";
-    #   inputs.nixpkgs.follows = "nixpkgs-darwin";
-    # };
+    # agenix, used for runtime secrets (tarball avoids API auth during bootstrap).
+    agenix = {
+      url = "https://github.com/ryantm/agenix/archive/5e5b88a0c8e56f291a108c2fe9934054d9745b2e.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs-darwin";
+    };
 
     # nixvim, used for managing neovim configuration
     nixvim = {
@@ -90,7 +89,7 @@
     haumea,
     ghostty,
     nixvim,
-    # agenix, -- DISABLED, uncomment along with the input block above
+    agenix,
     ...
   }: let
     inherit (nixpkgs-darwin) lib;
@@ -114,7 +113,7 @@
     # ours) is set via the `nixpkgs.pkgs` option instead, in mkDarwinHost /
     # mkNixosHost below. Our own modules use pkgs-stable/pkgs-unstable only.
     mkSpecialArgs = system: {
-      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim agenix;
       inherit (inputs) claude-code codex-cli-nix;
       vars = myvars; # Alias for modules expecting 'vars'
 
@@ -127,7 +126,7 @@
 
     # Linux-specific specialArgs for NixOS (no `pkgs` here either, same reason as above)
     nixosSpecialArgs = {
-      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim; # add `agenix` back here too when re-enabling
+      inherit myvars myLib nur-ryan4yin ghostty home-manager nixvim agenix;
       inherit (inputs) claude-code codex-cli-nix;
       vars = myvars; # Alias for modules expecting 'vars'
 
